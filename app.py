@@ -39,6 +39,12 @@ st.markdown(
 )
 
 
+_EXTERNAL_CHAPTERS = {
+    5:  {"label": "Ch. 5 — TAM/SAM/SOM Agent ↗",   "url": "https://tam-agent.streamlit.app"},
+    11: {"label": "Ch. 11 — Personal Branding ↗",   "url": "https://personal-branding-chatbot.streamlit.app"},
+}
+
+
 def render_sidebar() -> int | None:
     with st.sidebar:
         st.markdown(f"## 🎯 {APP_NAME}")
@@ -48,11 +54,16 @@ def render_sidebar() -> int | None:
         selected = st.session_state.get("selected_chapter", None)
 
         for num, info in CHAPTERS.items():
-            label = f"Ch. {num} — {info['title']}"
-            if info["active"]:
+            if num in _EXTERNAL_CHAPTERS:
+                st.link_button(
+                    _EXTERNAL_CHAPTERS[num]["label"],
+                    _EXTERNAL_CHAPTERS[num]["url"],
+                    use_container_width=True,
+                )
+            elif info["active"]:
+                label = f"Ch. {num} — {info['title']}"
                 if st.button(label, key=f"ch_{num}", use_container_width=True):
                     st.session_state["selected_chapter"] = num
-                    # Reset chapter state when switching chapters
                     for key in list(st.session_state.keys()):
                         if key.startswith("ch7_"):
                             del st.session_state[key]
@@ -82,16 +93,20 @@ def render_home():
         and build the habits that separate top performers.
 
         ### Get started
-        Select **Chapter 7 — Discovery & SPIN Questioning** from the sidebar to begin
-        your first simulation.
+        Choose any active chapter from the sidebar to begin.
         """
     )
 
     cols = st.columns(3)
     with cols[0]:
-        st.info("**Active now**\n\nCh. 7 — Discovery & SPIN Questioning")
+        st.info(
+            "**Active now**\n\n"
+            "✅ Ch. 5 — TAM/SAM/SOM Agent ↗\n\n"
+            "✅ Ch. 7 — Discovery & SPIN Questioning\n\n"
+            "✅ Ch. 11 — Personal Branding Agent ↗"
+        )
     with cols[1]:
-        st.warning("**Coming soon**\n\n10 additional chapter simulations")
+        st.warning("**Coming soon**\n\n8 additional chapter simulations")
     with cols[2]:
         st.success("**Your goal**\n\nScore 75+ to earn a Strong Foundation rating")
 
