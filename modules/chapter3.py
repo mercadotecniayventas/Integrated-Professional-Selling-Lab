@@ -311,3 +311,230 @@ not just the software.
 11. Do not ask the student questions unless it feels completely natural. \
     Let the student do the work of drawing you out.
 """
+
+
+# ---------------------------------------------------------------------------
+# Coach prompt
+# ---------------------------------------------------------------------------
+
+def get_coach_prompt(conversation_history: list, student_name: str, scenario: str) -> str:
+    s = SCENARIOS[scenario]
+
+    lines = []
+    for msg in conversation_history:
+        speaker = s["buyer_name"] if msg["role"] == "assistant" else f"STUDENT ({student_name})"
+        lines.append(f"{speaker}: {msg['content']}")
+    transcript = "\n\n".join(lines)
+
+    return f"""You are an expert B2B sales coach evaluating an active listening roleplay \
+conversation.
+
+STUDENT NAME: {student_name}
+SCENARIO: {s['buyer_name']}, {s['buyer_title']} at {s['company']} — \
+student represents {s['rep_company']} selling {s['product']}
+
+The buyer's reality has 4 layers revealed progressively:
+  Surface: general operational challenge (always visible)
+  Layer 2: real business impact — unlocked by paraphrasing/reflecting
+  Layer 3: personal/emotional stakes — unlocked by emotional acknowledgment
+  Layer 4: buyer's true vision — unlocked by accurate multi-point summary
+
+=== FULL CONVERSATION TRANSCRIPT ===
+{transcript}
+=== END TRANSCRIPT ===
+
+Evaluate the student across the 5 dimensions below. \
+Return ONLY a valid JSON object. No markdown, no backticks, \
+no text before or after.
+
+CRITICAL: Start your response with {{ and end with }}.
+
+The JSON must have exactly this shape:
+
+{{
+  "dimensions": [
+    {{
+      "name": "Listening Responses",
+      "max_points": 25,
+      "score": <integer 0-25>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote of the student's best listening response>",
+      "coaching_note": "<null if score >= 70% of max, otherwise 2-3 sentences of specific behavioral coaching>"
+    }},
+    {{
+      "name": "Silence Tolerance",
+      "max_points": 20,
+      "score": <integer 0-20>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote showing patience or its absence>",
+      "coaching_note": "<null if score >= 70% of max, otherwise 2-3 sentences>"
+    }},
+    {{
+      "name": "Question Depth",
+      "max_points": 20,
+      "score": <integer 0-20>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote of their best or weakest question>",
+      "coaching_note": "<null if score >= 70% of max, otherwise 2-3 sentences>"
+    }},
+    {{
+      "name": "Agenda Control",
+      "max_points": 20,
+      "score": <integer 0-20>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote — product mention if it occurred, or confirmation it didn't>",
+      "coaching_note": "<null if score >= 70% of max, otherwise 2-3 sentences>"
+    }},
+    {{
+      "name": "Summary Quality",
+      "max_points": 15,
+      "score": <integer 0-15>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote of summary attempt, or 'No summary attempted'>",
+      "coaching_note": "<null if score >= 70% of max, otherwise 2-3 sentences>"
+    }}
+  ],
+  "depth_reached": "<one of: surface / layer2 / layer3 / layer4>",
+  "plain_english_summary": "<2 sentences: what the student did well and where they fell short, in plain language>",
+  "strongest_moment": "<1-2 sentences quoting the exact exchange that showed the student at their best>",
+  "critical_gap": "<1-2 sentences identifying the most important listening behavior the student missed and why it mattered in this specific conversation>",
+  "behavioral_recommendation": "<One sentence: the single most important listening habit to practice before the next simulation>"
+}}
+
+=== SCORING RUBRIC ===
+
+1. LISTENING RESPONSES (25 pts)
+Did the student use active listening tools — paraphrasing, reflecting back, \
+emotional labeling, minimal encouragers ("tell me more," "go on"), or summarizing?
+- 25 pts: Used 3 or more distinct listening tools across the conversation
+- 18 pts: Used 2 distinct listening tools
+- 10 pts: Used 1 listening tool at least once, clearly and intentionally
+- 0 pts: No listening tools — only questions or declarative statements throughout
+
+2. SILENCE TOLERANCE (20 pts)
+Did the student allow the buyer to complete thoughts before responding?
+- 20 pts: Never interrupted or jumped in before the buyer finished; \
+  allowed responses to land before following up
+- 14 pts: Mostly patient; one interruption or one premature follow-up question
+- 8 pts: Two or more interruptions, or consistently filled pauses \
+  with new questions before the buyer's thought was complete
+- 0 pts: Repeatedly interrupted or pivoted mid-buyer-response; \
+  buyer said "Sorry, I was still thinking about that" or equivalent
+
+3. QUESTION DEPTH (20 pts)
+Did the student ask second-level questions that built directly on what the buyer said?
+- 20 pts: Asked 2 or more second-level questions that used the buyer's \
+  own words and dug into something specific the buyer just said
+- 14 pts: Asked 1 clear second-level question that built on a buyer statement
+- 8 pts: Questions were topically relevant but generic — not built on \
+  the buyer's specific language or most recent statement
+- 0 pts: All questions were pre-planned and generic, \
+  with no visible connection to what the buyer just shared
+
+4. AGENDA CONTROL (20 pts)
+Did the student stay in diagnostic/listening mode or pivot to a product pitch?
+- 20 pts: Never mentioned the product or solution unprompted; \
+  maintained full listening and diagnostic posture throughout
+- 14 pts: Mentioned the product or a feature once but returned to \
+  listening without dwelling on it
+- 8 pts: Pivoted to product pitch or feature explanation before \
+  the buyer had signaled any readiness or invitation
+- 0 pts: Led with product features, a pitch, or "our solution does X" \
+  early in the conversation
+
+5. SUMMARY QUALITY (15 pts)
+Did the student attempt to synthesize and reflect back the buyer's full situation?
+- 15 pts: At some point delivered an accurate summary using the buyer's \
+  own language that captured multiple elements of what the buyer shared
+- 10 pts: Attempted a summary but missed one or more key elements \
+  the buyer had clearly communicated
+- 5 pts: Only summarized the surface-level challenge — \
+  did not reflect back business impact or deeper concerns
+- 0 pts: No summary attempted at any point in the conversation
+
+=== DEPTH REACHED GUIDANCE ===
+Determine which layer the buyer revealed based on the transcript:
+- "surface": buyer only shared the general operational challenge
+- "layer2": buyer revealed specific business impact (numbers, consequences)
+- "layer3": buyer shared personal or political stakes, internal friction, \
+  or emotional weight
+- "layer4": buyer articulated their real vision or desired outcome
+
+=== END RUBRIC ===
+
+Score strictly against the transcript. Award points only for demonstrated \
+behavior, not intent. Quote the student directly in every evidence field.
+
+CRITICAL: Return ONLY the JSON object. Start with {{ and end with }}."""
+
+
+# ---------------------------------------------------------------------------
+# API helpers
+# ---------------------------------------------------------------------------
+
+def call_buyer_api(messages: list, scenario: str) -> str:
+    client = OpenAI(api_key=get_openai_api_key())
+    system_msg = {"role": "system", "content": get_system_prompt(scenario)}
+    response = client.chat.completions.create(
+        model=MODEL_BUYER,
+        messages=[system_msg] + messages,
+        temperature=TEMP_BUYER,
+    )
+    return response.choices[0].message.content.strip()
+
+
+def call_coach_api(conversation_history: list, student_name: str, scenario: str) -> dict:
+    client = OpenAI(api_key=get_openai_api_key())
+    prompt = get_coach_prompt(conversation_history, student_name, scenario)
+    response = client.chat.completions.create(
+        model=MODEL_COACH,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=TEMP_COACH,
+    )
+    raw = response.choices[0].message.content.strip()
+    raw = re.sub(r'^```json\s*', '', raw)
+    raw = re.sub(r'```\s*$', '', raw)
+    raw = raw.strip()
+    start = raw.find('{')
+    end = raw.rfind('}') + 1
+    if start != -1 and end > start:
+        raw = raw[start:end]
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return {
+            "dimensions": [],
+            "depth_reached": "unknown",
+            "plain_english_summary": "Could not parse coach response.",
+            "strongest_moment": "Please try again.",
+            "critical_gap": "Scorecard could not be generated — run simulation again.",
+            "behavioral_recommendation": "Re-run the simulation to receive feedback.",
+            "_error": True,
+        }
+
+
+def call_tts_api(text: str):
+    try:
+        client = OpenAI(api_key=get_openai_api_key())
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice="onyx",
+            input=text,
+        )
+        return response.content
+    except Exception:
+        return None
+
+
+def call_whisper_api(audio_bytes: bytes):
+    try:
+        client = OpenAI(api_key=get_openai_api_key())
+        audio_file = io.BytesIO(audio_bytes)
+        audio_file.name = "recording.webm"
+        result = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file,
+        )
+        return result.text.strip() or None
+    except Exception:
+        return None
