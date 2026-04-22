@@ -239,3 +239,172 @@ Speak as a compliance-minded executive, not as someone being sold to.
 10. Use specific details (the Warning Letter, the $1.4M, the 14 months) only after they have \
 been earned through precise, relevant questions.
 """
+
+
+# ---------------------------------------------------------------------------
+# Coach prompt
+# ---------------------------------------------------------------------------
+
+def get_coach_prompt(conversation_history: list, student_name: str, scenario: str) -> str:
+    s = SCENARIOS[scenario]
+
+    lines = []
+    for msg in conversation_history:
+        speaker = s["buyer_name"] if msg["role"] == "assistant" else f"STUDENT ({student_name})"
+        lines.append(f"{speaker}: {msg['content']}")
+    transcript = "\n\n".join(lines)
+
+    return f"""You are an expert B2B sales coach. Your job is to evaluate a discovery \
+conversation between a student salesperson and a simulated buyer.
+
+STUDENT NAME: {student_name}
+SCENARIO: {s['buyer_name']}, {s['buyer_title']} at {s['company']} — selling {s['product']}
+
+=== FULL CONVERSATION TRANSCRIPT ===
+{transcript}
+=== END TRANSCRIPT ===
+
+Evaluate the student across the 6 dimensions below. Return ONLY a valid JSON object — \
+no markdown fences, no extra text before or after.
+
+The JSON must have exactly this shape:
+
+{{
+  "dimensions": [
+    {{
+      "name": "SPIN Coverage",
+      "max_points": 20,
+      "score": <integer 0-20>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote of one student question>"
+    }},
+    {{
+      "name": "Implication Quality",
+      "max_points": 25,
+      "score": <integer 0-25>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote of one student question>"
+    }},
+    {{
+      "name": "Depth of Questioning",
+      "max_points": 20,
+      "score": <integer 0-20>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote of one student question>"
+    }},
+    {{
+      "name": "Preparation Signals",
+      "max_points": 10,
+      "score": <integer 0-10>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote that shows a prep failure, or 'No preparation failures detected'>"
+    }},
+    {{
+      "name": "Listening & Adaptive Behavior",
+      "max_points": 15,
+      "score": <integer 0-15>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote of one student question>"
+    }},
+    {{
+      "name": "Need-Payoff Execution",
+      "max_points": 10,
+      "score": <integer 0-10>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote, or 'No Need-Payoff question asked'>"
+    }}
+  ],
+  "strongest_moment": "<1-2 sentences quoting and praising the student's single best question or sequence>",
+  "critical_gap": "<1-2 sentences identifying the most important thing the student failed to do>",
+  "behavioral_recommendation": "<One specific, actionable behavior the student should practice in their next simulation>"
+}}
+
+=== SCORING RUBRIC ===
+
+1. SPIN COVERAGE (20 pts)
+Did the student use all four SPIN question types intentionally?
+- 20 pts: All four types used clearly — Situation, Problem, Implication, Need-Payoff
+- 15 pts: Three types used; fourth attempted but weak or ambiguous
+- 10 pts: Two types clearly present; others absent
+- 5 pts: Overwhelmingly Situation questions; minimal Problem, no Implication or Need-Payoff
+- 0 pts: No recognizable SPIN structure
+
+2. IMPLICATION QUALITY (25 pts)
+Were Implication questions reactive to what the buyer just said, or pre-written and generic?
+- 25 pts: Every Implication question built directly on the buyer's prior answer, connecting \
+pain to real business consequences — clearly not scripted
+- 18–24 pts: Most Implication questions were reactive; one or two felt generic
+- 10–17 pts: Some Implication questions present but often generic, not tied to what buyer said
+- 5–9 pts: Implication questions present but felt pre-planned and formulaic
+- 0–4 pts: No Implication questions, or all were generic and disconnected from the conversation
+
+3. DEPTH OF QUESTIONING (20 pts)
+Did the student follow buyer answers down to Level 2 and Level 3?
+- 20 pts: Followed threads to both Level 2 AND Level 3 — buyer revealed deep consequences
+- 15 pts: Reached Level 2 consistently; reached Level 3 at least once
+- 10 pts: Occasionally reached Level 2; mostly stayed at surface level
+- 5 pts: Stayed almost entirely at surface; rarely followed up on any answer
+- 0 pts: Never followed a thread; moved to a new topic after every buyer answer
+
+4. PREPARATION SIGNALS (10 pts)
+Did the student avoid asking questions that basic research would have answered?
+- 10 pts: Never asked about facts available on the company website; showed contextual awareness
+- 7–9 pts: Mostly prepared; one minor question that showed lack of research
+- 4–6 pts: Asked 2–3 questions that triggered or should have triggered "check our website"
+- 0–3 pts: Multiple basic questions showing clear lack of pre-call research
+
+5. LISTENING & ADAPTIVE BEHAVIOR (15 pts)
+Did each student question build on the buyer's immediately preceding answer?
+- 15 pts: Strong thread-following throughout — each question clearly built on what buyer just said
+- 11–14 pts: Mostly adaptive; one or two pivots felt disconnected from prior answer
+- 6–10 pts: Mixed — some adaptive questions, but student often moved to a different topic \
+without following the thread
+- 0–5 pts: Student mostly asked pre-planned questions regardless of buyer responses; \
+poor listening evident
+
+6. NEED-PAYOFF EXECUTION (10 pts)
+Did the student ask a Need-Payoff question that caused the buyer to articulate value?
+- 10 pts: Student asked a clear Need-Payoff question; buyer articulated desired future \
+in their own words
+- 7–9 pts: Need-Payoff question asked; buyer partially articulated value but was over-led \
+by the student's framing
+- 4–6 pts: Attempted Need-Payoff but phrased it as a product pitch rather than an open question
+- 0–3 pts: No Need-Payoff question asked; session ended without buyer stating a desired outcome
+
+=== END RUBRIC ===
+
+Evaluate strictly against the transcript. Do not award points for intent — only for \
+demonstrated behavior. Return ONLY the JSON object."""
+
+
+# ---------------------------------------------------------------------------
+# API helpers
+# ---------------------------------------------------------------------------
+
+def call_buyer_api(messages: list, scenario: str) -> str:
+    client = OpenAI(api_key=get_openai_api_key())
+    system_msg = {"role": "system", "content": get_system_prompt(scenario)}
+    response = client.chat.completions.create(
+        model=MODEL_BUYER,
+        messages=[system_msg] + messages,
+        temperature=TEMP_BUYER,
+    )
+    return response.choices[0].message.content.strip()
+
+
+def call_coach_api(conversation_history: list, student_name: str, scenario: str) -> dict:
+    client = OpenAI(api_key=get_openai_api_key())
+    prompt = get_coach_prompt(conversation_history, student_name, scenario)
+    response = client.chat.completions.create(
+        model=MODEL_COACH,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=TEMP_COACH,
+    )
+    raw = response.choices[0].message.content.strip()
+    # Strip accidental markdown fences if the model adds them
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+        raw = raw.strip()
+    return json.loads(raw)
