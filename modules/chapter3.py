@@ -465,7 +465,8 @@ Determine which layer the buyer revealed based on the transcript:
 Score strictly against the transcript. Award points only for demonstrated \
 behavior, not intent. Quote the student directly in every evidence field.
 
-CRITICAL: Return ONLY the JSON object. Start with {{ and end with }}."""
+CRITICAL: Return pure JSON only. No markdown, no backticks. \
+Start with {{ and end with }}."""
 
 
 # ---------------------------------------------------------------------------
