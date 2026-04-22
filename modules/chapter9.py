@@ -325,3 +325,208 @@ BEHAVIOR FOR CONCERN 4:
 10. After all 4 concerns are addressed, you are willing to discuss next steps \
     but do not close yourself — let the student propose the path forward.
 """
+
+
+# ---------------------------------------------------------------------------
+# Coach prompt
+# ---------------------------------------------------------------------------
+
+def get_coach_prompt(conversation_history: list, student_name: str, scenario: str) -> str:
+    s = SCENARIOS[scenario]
+
+    lines = []
+    for msg in conversation_history:
+        speaker = s["buyer_name"] if msg["role"] == "assistant" else f"STUDENT ({student_name})"
+        lines.append(f"{speaker}: {msg['content']}")
+    transcript = "\n\n".join(lines)
+
+    return f"""You are an expert B2B sales coach evaluating a proposal review and \
+objection-handling conversation.
+
+STUDENT NAME: {student_name}
+SCENARIO: {s['buyer_name']}, {s['buyer_title']} at {s['company']} — \
+selling {s['product']} for {s['rep_company']}
+
+The buyer raised 4 concerns in sequence:
+  C1 — Price
+  C2 — Timing
+  C3 — Status Quo / Change Risk
+  C4 — "I need to think about it" (false objection masking political risk)
+
+=== FULL CONVERSATION TRANSCRIPT ===
+{transcript}
+=== END TRANSCRIPT ===
+
+Evaluate the student across the 5 dimensions below. \
+Return ONLY a valid JSON object — no markdown, no backticks, \
+no text before or after the JSON.
+
+CRITICAL: Start your response with {{ and end with }}.
+
+The JSON must have exactly this shape:
+
+{{
+  "dimensions": [
+    {{
+      "name": "First Response Quality",
+      "max_points": 25,
+      "score": <integer 0-25>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote of one student message>"
+    }},
+    {{
+      "name": "False Objection Detection",
+      "max_points": 20,
+      "score": <integer 0-20>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote, or 'Student did not probe C4'>"
+    }},
+    {{
+      "name": "Price Handling",
+      "max_points": 20,
+      "score": <integer 0-20>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote of student's price response>"
+    }},
+    {{
+      "name": "Emotional Composure",
+      "max_points": 20,
+      "score": <integer 0-20>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote showing composure or its absence>"
+    }},
+    {{
+      "name": "Closing Orientation",
+      "max_points": 15,
+      "score": <integer 0-15>,
+      "rationale": "<2-3 sentences>",
+      "evidence": "<verbatim quote of close attempt, or 'No close attempted'>"
+    }}
+  ],
+  "plain_english_summary": "<2 sentences: overall performance in plain language, no jargon>",
+  "strongest_moment": "<1-2 sentences quoting the student's single best response>",
+  "critical_gap": "<1-2 sentences on the most important thing the student failed to do>",
+  "behavioral_recommendation": "<One specific, actionable behavior to practice in the next simulation>",
+  "process_insight": "<1-2 sentences on what the pattern of concerns revealed about upstream discovery — what should the student have surfaced in discovery to make this conversation easier?>"
+}}
+
+=== SCORING RUBRIC ===
+
+1. FIRST RESPONSE QUALITY (25 pts)
+Did the student ask a clarifying question before responding to each concern?
+- 25 pts: Asked a clarifying question before responding to 3 or 4 of the 4 concerns
+- 18 pts: Asked a clarifying question before responding to 2 of the 4 concerns
+- 10 pts: Asked a clarifying question before responding to 1 of the 4 concerns
+- 0 pts: Rebuttals only — launched into responses without asking anything first
+
+2. FALSE OBJECTION DETECTION (20 pts)
+Did the student recognize C4 as a surface response masking a deeper concern?
+- 20 pts: Identified it as a surface response, asked a probing question, \
+  and fully uncovered the political risk beneath it
+- 12 pts: Sensed something deeper but did not fully uncover the real concern
+- 5 pts: Asked one clarifying question but accepted the first follow-up answer \
+  without digging further
+- 0 pts: Accepted "I need to think about it" at face value without any follow-up
+
+3. PRICE HANDLING (20 pts)
+How did the student respond to the price concern?
+- 20 pts: Reframed value using specific pain points and numbers the buyer \
+  shared in discovery (cost of inaction, remediation costs, client losses, etc.)
+- 14 pts: Used ROI logic or value arguments but not tied to this buyer's situation
+- 8 pts: Offered a discount or concession before having a value conversation
+- 0 pts: Immediately discounted or capitulated without any value defense
+
+4. EMOTIONAL COMPOSURE (20 pts)
+Did the student stay calm, curious, and professional throughout?
+- 20 pts: Calm and curious across all 4 concerns — no defensiveness, \
+  no urgency pressure, no frustration
+- 14 pts: Mostly composed, with one moment of defensiveness or mild pressure
+- 8 pts: Noticeable frustration or use of pressure tactics in 2 or more exchanges
+- 0 pts: Argumentative, defensive throughout, or used false urgency
+
+5. CLOSING ORIENTATION (15 pts)
+Did the student attempt to close, and how well was it handled?
+- 15 pts: Natural collaborative close after all concerns addressed — \
+  asked for a specific next step, framed as joint progress
+- 10 pts: Close attempted but framed as the seller winning rather than mutual progress
+- 5 pts: Close attempted prematurely, before all concerns were resolved
+- 0 pts: No close attempt, or the student abandoned the deal
+
+=== END RUBRIC ===
+
+Score strictly against the transcript. Award points only for demonstrated \
+behavior, not intent. Quote the student directly in every evidence field.
+
+CRITICAL: Return ONLY the JSON object. Start with {{ and end with }}."""
+
+
+# ---------------------------------------------------------------------------
+# API helpers
+# ---------------------------------------------------------------------------
+
+def call_buyer_api(messages: list, scenario: str) -> str:
+    client = OpenAI(api_key=get_openai_api_key())
+    system_msg = {"role": "system", "content": get_system_prompt(scenario)}
+    response = client.chat.completions.create(
+        model=MODEL_BUYER,
+        messages=[system_msg] + messages,
+        temperature=TEMP_BUYER,
+    )
+    return response.choices[0].message.content.strip()
+
+
+def call_coach_api(conversation_history: list, student_name: str, scenario: str) -> dict:
+    client = OpenAI(api_key=get_openai_api_key())
+    prompt = get_coach_prompt(conversation_history, student_name, scenario)
+    response = client.chat.completions.create(
+        model=MODEL_COACH,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=TEMP_COACH,
+    )
+    raw = response.choices[0].message.content.strip()
+    raw = re.sub(r'^```json\s*', '', raw)
+    raw = re.sub(r'```\s*$', '', raw)
+    raw = raw.strip()
+    start = raw.find('{')
+    end = raw.rfind('}') + 1
+    if start != -1 and end > start:
+        raw = raw[start:end]
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return {
+            "dimensions": [],
+            "plain_english_summary": "Could not parse coach response.",
+            "strongest_moment": "Please try again.",
+            "critical_gap": "Scorecard could not be generated — run simulation again.",
+            "behavioral_recommendation": "Re-run the simulation to receive feedback.",
+            "process_insight": "",
+            "_error": True,
+        }
+
+
+def call_tts_api(text: str):
+    try:
+        client = OpenAI(api_key=get_openai_api_key())
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice="onyx",
+            input=text,
+        )
+        return response.content
+    except Exception:
+        return None
+
+
+def call_whisper_api(audio_bytes: bytes):
+    try:
+        client = OpenAI(api_key=get_openai_api_key())
+        audio_file = io.BytesIO(audio_bytes)
+        audio_file.name = "recording.webm"
+        result = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file,
+        )
+        return result.text.strip() or None
+    except Exception:
+        return None
