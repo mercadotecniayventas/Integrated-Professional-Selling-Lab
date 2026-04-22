@@ -116,6 +116,9 @@ def main():
 
     if selected is None:
         render_home()
+    elif selected == 3:
+        from modules.chapter3 import run_chapter3
+        run_chapter3()
     elif selected == 7:
         from modules.chapter7 import run_chapter7
         run_chapter7()

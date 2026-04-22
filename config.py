@@ -17,7 +17,7 @@ COLOR_CARD_BG = "#1A2332"
 CHAPTERS = {
     1: {"title": "The Selling Profession", "active": False},
     2: {"title": "Ethics in Sales", "active": False},
-    3: {"title": "Buyer Behavior", "active": False},
+    3: {"title": "Active Listening Roleplay", "active": True},
     4: {"title": "Prospecting", "active": False},
     5: {"title": "Pre-Approach & Planning", "active": False},
     6: {"title": "Approach & Opening", "active": False},
