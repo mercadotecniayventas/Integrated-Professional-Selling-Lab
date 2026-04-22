@@ -724,6 +724,26 @@ def screen_scorecard() -> None:
             "| Below 60 | Rerun Recommended |"
         )
 
+    # Plain-English summary (Change A)
+    spin_dim = next((d for d in dimensions if d["name"] == "SPIN Coverage"), None)
+    spin_score = spin_dim["score"] if spin_dim else 0
+    if spin_score >= 18:
+        spin_count = 4
+    elif spin_score >= 13:
+        spin_count = 3
+    elif spin_score >= 7:
+        spin_count = 2
+    elif spin_score >= 2:
+        spin_count = 1
+    else:
+        spin_count = 0
+
+    st.info(
+        f"You covered **{spin_count} of the 4 SPIN types** in this conversation. "
+        f"Your strongest moment: {data['strongest_moment']} "
+        f"Your main opportunity: {data['critical_gap']}"
+    )
+
     st.markdown("### Dimension Breakdown")
 
     for dim in dimensions:
@@ -746,6 +766,16 @@ def screen_scorecard() -> None:
                 )
             elif evidence:
                 st.caption(f"Note: {evidence}")
+
+            # Coaching note for dimensions below 70 % of max (Change B)
+            if pct < 0.7:
+                if evidence and not evidence.startswith("No "):
+                    st.warning(
+                        f"**Coaching note:** {dim['rationale']}\n\n"
+                        f"*From your session: \"{evidence}\"*"
+                    )
+                else:
+                    st.warning(f"**Coaching note:** {dim['rationale']}")
 
     st.markdown("---")
 
