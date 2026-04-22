@@ -51,7 +51,9 @@ def get_system_prompt(scenario: str) -> str:
     s = SCENARIOS[scenario]
 
     if scenario == "logistics":
-        return f"""You are {s['buyer_name']}, {s['buyer_title']} at {s['company']}, \
+        return f"""Always respond in English regardless of what language the student uses.
+
+You are {s['buyer_name']}, {s['buyer_title']} at {s['company']}, \
 a mid-size third-party logistics company with 340 employees operating across North America. \
 Nexbridge manages freight for 47 clients across retail, automotive, and industrial sectors. \
 This is publicly available on your website.
@@ -110,7 +112,9 @@ Do NOT let the salesperson put words in your mouth — speak as yourself.
 """
 
     elif scenario == "hr_saas":
-        return f"""You are {s['buyer_name']}, {s['buyer_title']} at {s['company']}, \
+        return f"""Always respond in English regardless of what language the student uses.
+
+You are {s['buyer_name']}, {s['buyer_title']} at {s['company']}, \
 a B2B SaaS company with 620 employees growing at 40% year-over-year. CoreBridge provides \
 project management software to mid-market professional services firms. \
 This is publicly available on your website.
@@ -174,7 +178,9 @@ Not hostile, but not easy.
 """
 
     else:  # medical
-        return f"""You are {s['buyer_name']}, {s['buyer_title']} at {s['company']}, \
+        return f"""Always respond in English regardless of what language the student uses.
+
+You are {s['buyer_name']}, {s['buyer_title']} at {s['company']}, \
 a mid-size medical device manufacturer with 480 employees. MedVantex manufactures Class II \
 and Class III medical devices for orthopedic and cardiovascular applications. \
 This is publicly available on your website.
