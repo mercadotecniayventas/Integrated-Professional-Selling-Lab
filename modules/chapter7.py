@@ -1,7 +1,9 @@
+import io
 import json
 import streamlit as st
 from datetime import date
 from openai import OpenAI
+from streamlit_mic_recorder import mic_recorder
 from config import get_openai_api_key
 
 MODEL_BUYER = "gpt-4.1-mini"
@@ -416,6 +418,33 @@ def call_coach_api(conversation_history: list, student_name: str, scenario: str)
     return json.loads(raw)
 
 
+def call_tts_api(text: str):
+    try:
+        client = OpenAI(api_key=get_openai_api_key())
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice="onyx",
+            input=text,
+        )
+        return response.content
+    except Exception:
+        return None
+
+
+def call_whisper_api(audio_bytes: bytes):
+    try:
+        client = OpenAI(api_key=get_openai_api_key())
+        audio_file = io.BytesIO(audio_bytes)
+        audio_file.name = "recording.webm"
+        result = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file,
+        )
+        return result.text.strip() or None
+    except Exception:
+        return None
+
+
 # ---------------------------------------------------------------------------
 # Session state
 # ---------------------------------------------------------------------------
@@ -579,19 +608,26 @@ def screen_chat() -> None:
     messages: list = st.session_state["ch7_messages"]
     student_count: int = st.session_state["ch7_student_count"]
 
-    # Header
+    # Header row: buyer info | voice toggle | message count
     st.title("Chapter 7 — Discovery & SPIN Questioning")
-    col_left, col_right = st.columns([3, 1])
+    col_left, col_mid, col_right = st.columns([3, 1.2, 0.9])
     with col_left:
         st.markdown(
             f"**Buyer:** {s['buyer_name']}, {s['buyer_title']} &nbsp;·&nbsp; "
             f"*{s['company']}*",
             unsafe_allow_html=True,
         )
+    with col_mid:
+        voice_on = st.toggle(
+            "🔊 Voice",
+            value=st.session_state.get("ch7_voice_enabled", True),
+            key="ch7_voice_toggle",
+        )
+        st.session_state["ch7_voice_enabled"] = voice_on
     with col_right:
         st.markdown(
-            f"<div style='text-align:right; color:#aaa;'>Messages sent: "
-            f"<strong style='color:#FAFAFA;'>{student_count} / {MAX_STUDENT_MSGS}</strong></div>",
+            f"<div style='text-align:right; color:#aaa;'>Messages: "
+            f"<strong style='color:#FAFAFA;'>{student_count}/{MAX_STUDENT_MSGS}</strong></div>",
             unsafe_allow_html=True,
         )
 
@@ -606,6 +642,12 @@ def screen_chat() -> None:
             with st.chat_message("user", avatar="🎓"):
                 st.markdown(msg["content"])
 
+    # Play pending TTS audio — cleared immediately so it only fires once per reply
+    tts_bytes = st.session_state.get("ch7_tts_bytes")
+    if tts_bytes:
+        st.audio(tts_bytes, format="audio/mp3", autoplay=True)
+        st.session_state["ch7_tts_bytes"] = None
+
     # Gentle nudge after MAX_STUDENT_MSGS
     if student_count >= MAX_STUDENT_MSGS:
         st.info(
@@ -614,7 +656,31 @@ def screen_chat() -> None:
             "then click **Finalizar y recibir feedback** below."
         )
 
-    # Chat input (rendered at page bottom by Streamlit)
+    # Microphone input (always available regardless of voice toggle)
+    audio = mic_recorder(
+        start_prompt="🎤 Click to speak",
+        stop_prompt="⏹ Recording… click to stop",
+        key="ch7_mic",
+    )
+    if audio and audio.get("bytes"):
+        # Guard against reprocessing the same recording on reruns
+        if audio.get("id") != st.session_state.get("ch7_last_audio_id"):
+            st.session_state["ch7_last_audio_id"] = audio["id"]
+            with st.spinner("Transcribing…"):
+                transcribed = call_whisper_api(audio["bytes"])
+            if transcribed:
+                messages.append({"role": "user", "content": transcribed})
+                st.session_state["ch7_student_count"] += 1
+                st.session_state["ch7_messages"] = messages
+                st.session_state["ch7_generating"] = True
+                st.rerun()
+            else:
+                st.warning(
+                    "Could not transcribe the recording — please try again "
+                    "or type your question in the text box below."
+                )
+
+    # Text input — fallback always available
     user_input = st.chat_input(
         "Type your question to the buyer…",
         disabled=st.session_state.get("ch7_generating", False),
@@ -627,12 +693,19 @@ def screen_chat() -> None:
         st.session_state["ch7_generating"] = True
         st.rerun()
 
-    # If generating flag is set, call the API then clear the flag
+    # Generate buyer response when flag is set
     if st.session_state.get("ch7_generating", False):
         with st.spinner(f"{s['buyer_name']} is thinking…"):
             reply = call_buyer_api(messages, scenario)
         messages.append({"role": "assistant", "content": reply})
         st.session_state["ch7_messages"] = messages
+        if st.session_state.get("ch7_voice_enabled", True):
+            with st.spinner("Generating voice response…"):
+                tts = call_tts_api(reply)
+            if tts:
+                st.session_state["ch7_tts_bytes"] = tts
+            else:
+                st.warning("Voice generation failed — text response shown above.")
         st.session_state["ch7_generating"] = False
         st.rerun()
 
