@@ -20,6 +20,7 @@ SCENARIOS = {
         "buyer_title": "VP of Operations",
         "company": "Nexbridge Logistics",
         "product": "supply chain visibility software",
+        "voice": "onyx",
         "opening": (
             "Good morning. I have about 20 minutes. My assistant said you had something "
             "relevant to what we're working on — I'll let you drive."
@@ -31,6 +32,7 @@ SCENARIOS = {
         "buyer_title": "VP of People",
         "company": "CoreBridge Solutions",
         "product": "HR analytics software",
+        "voice": "nova",
         "opening": (
             "Hi, come on in. I'll be honest — I get a lot of vendor calls, so I'm curious "
             "what made you reach out specifically to us. What's on your mind?"
@@ -42,6 +44,7 @@ SCENARIOS = {
         "buyer_title": "VP of Operations",
         "company": "MedVantex",
         "product": "quality management software",
+        "voice": "onyx",
         "opening": (
             "Thanks for coming. I've got a hard stop at the hour. Our compliance team "
             "flagged your company as one to talk to — so let's see what you've got."
@@ -433,12 +436,12 @@ def call_coach_api(conversation_history: list, student_name: str, scenario: str)
         }
 
 
-def call_tts_api(text: str):
+def call_tts_api(text: str, voice: str = "onyx"):
     try:
         client = OpenAI(api_key=get_openai_api_key())
         response = client.audio.speech.create(
             model="tts-1",
-            voice="onyx",
+            voice=voice,
             input=text,
         )
         return response.content
@@ -716,7 +719,7 @@ def screen_chat() -> None:
         st.session_state["ch7_messages"] = messages
         if st.session_state.get("ch7_voice_enabled", True):
             with st.spinner("Generating voice response…"):
-                tts = call_tts_api(reply)
+                tts = call_tts_api(reply, voice=SCENARIOS[scenario]["voice"])
             if tts:
                 st.session_state["ch7_tts_bytes"] = tts
             else:

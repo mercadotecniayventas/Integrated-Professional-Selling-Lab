@@ -21,6 +21,7 @@ SCENARIOS = {
         "company": "Nexbridge Logistics",
         "product": "supply chain visibility software",
         "rep_company": "VisionTrack Solutions",
+        "voice": "onyx",
         "opening": (
             "Thanks for walking me through this. I've reviewed the proposal summary. "
             "Before we go further, I have a few concerns I need to raise."
@@ -33,6 +34,7 @@ SCENARIOS = {
         "company": "CoreBridge Solutions",
         "product": "HR analytics software",
         "rep_company": "TalentIQ",
+        "voice": "nova",
         "opening": (
             "Thanks for walking me through this. I've reviewed the proposal summary. "
             "Before we go further, I have a few concerns I need to raise."
@@ -45,6 +47,7 @@ SCENARIOS = {
         "company": "MedVantex",
         "product": "quality management software",
         "rep_company": "QualityPro",
+        "voice": "onyx",
         "opening": (
             "Thanks for walking me through this. I've reviewed the proposal summary. "
             "Before we go further, I have a few concerns I need to raise."
@@ -505,12 +508,12 @@ def call_coach_api(conversation_history: list, student_name: str, scenario: str)
         }
 
 
-def call_tts_api(text: str):
+def call_tts_api(text: str, voice: str = "onyx"):
     try:
         client = OpenAI(api_key=get_openai_api_key())
         response = client.audio.speech.create(
             model="tts-1",
-            voice="onyx",
+            voice=voice,
             input=text,
         )
         return response.content
@@ -764,7 +767,7 @@ def screen_chat() -> None:
         st.session_state["ch9_messages"] = messages
         if st.session_state.get("ch9_voice_enabled", True):
             with st.spinner("Generating voice response…"):
-                tts = call_tts_api(reply)
+                tts = call_tts_api(reply, voice=SCENARIOS[scenario]["voice"])
             if tts:
                 st.session_state["ch9_tts_bytes"] = tts
             else:

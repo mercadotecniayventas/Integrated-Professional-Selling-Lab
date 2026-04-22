@@ -25,6 +25,7 @@ SCENARIOS = {
         "industry": "Regional hospital network",
         "rep_company": "ClarityMed Solutions",
         "product": "healthcare analytics software",
+        "voice": "shimmer",
         "opening": (
             "Thanks for making time. I'll be honest — I have about 20 minutes "
             "and I've had three vendor meetings this week already. But go ahead."
@@ -41,6 +42,7 @@ SCENARIOS = {
         "industry": "Private university",
         "rep_company": "EduPath Analytics",
         "product": "student success and retention software",
+        "voice": "echo",
         "opening": (
             "Come in, sit down. I appreciate you coming to campus. "
             "Can I ask — have you worked with universities before?"
@@ -57,6 +59,7 @@ SCENARIOS = {
         "industry": "Regional retail chain, 34 stores",
         "rep_company": "SmartStock Solutions",
         "product": "inventory optimization software",
+        "voice": "nova",
         "opening": (
             "I'm going to be direct with you. We've tried two solutions in "
             "the past 18 months and neither worked. So I'm a little skeptical. "
@@ -514,12 +517,12 @@ def call_coach_api(conversation_history: list, student_name: str, scenario: str)
         }
 
 
-def call_tts_api(text: str):
+def call_tts_api(text: str, voice: str = "onyx"):
     try:
         client = OpenAI(api_key=get_openai_api_key())
         response = client.audio.speech.create(
             model="tts-1",
-            voice="onyx",
+            voice=voice,
             input=text,
         )
         return response.content
@@ -757,7 +760,7 @@ def screen_chat() -> None:
         st.session_state["ch3_messages"] = messages
         if st.session_state.get("ch3_voice_enabled", True):
             with st.spinner("Generating voice response…"):
-                tts = call_tts_api(reply)
+                tts = call_tts_api(reply, voice=SCENARIOS[scenario]["voice"])
             if tts:
                 st.session_state["ch3_tts_bytes"] = tts
             else:
