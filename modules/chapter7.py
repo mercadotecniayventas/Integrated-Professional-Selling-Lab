@@ -1,5 +1,6 @@
 import io
 import json
+import re
 import streamlit as st
 from datetime import date
 from openai import OpenAI
@@ -382,7 +383,10 @@ by the student's framing
 === END RUBRIC ===
 
 Evaluate strictly against the transcript. Do not award points for intent — only for \
-demonstrated behavior. Return ONLY the JSON object."""
+demonstrated behavior. Return ONLY the JSON object.
+
+CRITICAL: Your response must be pure JSON only. No markdown, no backticks, no explanation \
+text before or after. Start your response with {{ and end with }}."""
 
 
 # ---------------------------------------------------------------------------
@@ -409,13 +413,24 @@ def call_coach_api(conversation_history: list, student_name: str, scenario: str)
         temperature=TEMP_COACH,
     )
     raw = response.choices[0].message.content.strip()
-    # Strip accidental markdown fences if the model adds them
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-        raw = raw.strip()
-    return json.loads(raw)
+    # Aggressively clean any markdown wrapping before parsing
+    raw = re.sub(r'^```json\s*', '', raw)
+    raw = re.sub(r'```\s*$', '', raw)
+    raw = raw.strip()
+    start = raw.find('{')
+    end = raw.rfind('}') + 1
+    if start != -1 and end > start:
+        raw = raw[start:end]
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return {
+            "dimensions": [],
+            "strongest_moment": "Could not parse coach response.",
+            "critical_gap": "Please try again — the scorecard could not be generated.",
+            "behavioral_recommendation": "Run the simulation again to get your scorecard.",
+            "_error": True,
+        }
 
 
 def call_tts_api(text: str):
@@ -653,7 +668,7 @@ def screen_chat() -> None:
         st.info(
             "You've sent 14 messages — that's a solid discovery session. "
             "Consider asking a Need-Payoff question to close the discovery loop, "
-            "then click **Finalizar y recibir feedback** below."
+            "then click **Finish & get feedback** below."
         )
 
     # Microphone input (always available regardless of voice toggle)
@@ -711,13 +726,13 @@ def screen_chat() -> None:
 
     st.markdown("---")
 
-    # Finalizar button — available after at least one student exchange
+    # Finish button — available after at least one student exchange
     can_finish = student_count >= 1
     if not can_finish:
         st.caption("Ask at least one question before requesting feedback.")
 
     if st.button(
-        "Finalizar y recibir feedback",
+        "Finish & get feedback",
         disabled=not can_finish,
         type="primary",
         use_container_width=True,
