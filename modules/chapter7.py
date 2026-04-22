@@ -476,16 +476,74 @@ def screen_setup() -> None:
         label_visibility="collapsed",
     )
 
-    # Preview card for selected scenario
+    # Two-section briefing card
     chosen_key = scenario_options[chosen_index]
     s = SCENARIOS[chosen_key]
+
+    _BRIEFINGS = {
+        "logistics": {
+            "location": "Atlanta, GA",
+            "size": "280 employees",
+            "revenue": "$90M revenue",
+            "industry": "Mid-size freight brokerage, US Southeast",
+            "rep_company": "VisionTrack Solutions",
+            "selling": "Real-time supply chain visibility software",
+            "context": (
+                "30-minute discovery call. They have carrier visibility issues "
+                "but you don't know the details yet."
+            ),
+        },
+        "hr_saas": {
+            "location": "Austin, TX",
+            "size": "420 employees",
+            "revenue": "$65M revenue",
+            "industry": "HR technology and workforce management",
+            "rep_company": "TalentIQ",
+            "selling": "HR analytics and workforce planning software",
+            "context": (
+                "30-minute discovery call. They are scaling fast and you know "
+                "they recently opened 3 new offices."
+            ),
+        },
+        "medical": {
+            "location": "San Diego, CA",
+            "size": "310 employees",
+            "revenue": "$120M revenue",
+            "industry": "Medical device manufacturing",
+            "rep_company": "QualityPro",
+            "selling": "Quality management and compliance software",
+            "context": (
+                "30-minute discovery call. They operate in a highly "
+                "regulated environment."
+            ),
+        },
+    }
+
+    b = _BRIEFINGS[chosen_key]
     st.markdown(
         f"""
-        <div style="background:#1A2332; border:1px solid #2E5FA3; border-radius:8px;
-             padding:1rem 1.2rem; margin-top:0.5rem;">
-          <strong>{s['buyer_name']}</strong> · {s['buyer_title']}<br>
-          <span style="color:#4A90D9;">{s['company']}</span><br>
-          <span style="color:#aaa; font-size:0.9rem;">Selling: {s['product']}</span>
+        <div style="margin-top:0.75rem;">
+          <div style="background:#1A2332; border:1px solid #2E5FA3;
+               border-radius:8px 8px 0 0; padding:1rem 1.2rem;">
+            <div style="font-weight:700; color:#4A90D9;
+                 margin-bottom:0.6rem;">&#128203; Your Prospect</div>
+            <strong>{s['buyer_name']}</strong> &nbsp;&middot;&nbsp; {s['buyer_title']}<br>
+            {s['company']} &nbsp;&middot;&nbsp; {b['location']}<br>
+            <span style="color:#aaa;">{b['size']} &nbsp;&middot;&nbsp; {b['revenue']}</span><br>
+            <span style="color:#aaa;">{b['industry']}</span>
+          </div>
+          <div style="background:#112030; border:1px solid #2E5FA3; border-top:none;
+               border-radius:0 0 8px 8px; padding:1rem 1.2rem;">
+            <div style="font-weight:700; color:#27AE60;
+                 margin-bottom:0.6rem;">&#127919; Your Role</div>
+            <strong>{b['rep_company']}</strong><br>
+            Selling: {b['selling']}<br>
+            <span style="color:#aaa; font-style:italic;">{b['context']}</span><br>
+            <span style="color:#F39C12; font-size:0.85rem;
+                 display:block; margin-top:0.5rem;">
+              Read carefully — this briefing disappears once the meeting starts.
+            </span>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,
