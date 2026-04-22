@@ -119,6 +119,9 @@ def main():
     elif selected == 7:
         from modules.chapter7 import run_chapter7
         run_chapter7()
+    elif selected == 9:
+        from modules.chapter9 import run_chapter9
+        run_chapter9()
     else:
         info = CHAPTERS[selected]
         st.title(f"Chapter {selected} — {info['title']}")

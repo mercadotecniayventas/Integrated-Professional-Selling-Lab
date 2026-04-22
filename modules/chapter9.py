@@ -530,3 +530,405 @@ def call_whisper_api(audio_bytes: bytes):
         return result.text.strip() or None
     except Exception:
         return None
+
+
+# ---------------------------------------------------------------------------
+# Session state
+# ---------------------------------------------------------------------------
+
+def _init_state() -> None:
+    defaults = {
+        "ch9_phase": "setup",
+        "ch9_student_name": "",
+        "ch9_scenario": "logistics",
+        "ch9_messages": [],
+        "ch9_student_count": 0,
+        "ch9_scorecard": None,
+        "ch9_generating": False,
+        "ch9_voice_enabled": True,
+        "ch9_tts_bytes": None,
+        "ch9_last_audio_id": None,
+    }
+    for key, val in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = val
+
+
+def _reset_state() -> None:
+    keys = [k for k in st.session_state if k.startswith("ch9_")]
+    for k in keys:
+        del st.session_state[k]
+    _init_state()
+
+
+# ---------------------------------------------------------------------------
+# Screen 1 — Setup
+# ---------------------------------------------------------------------------
+
+def screen_setup() -> None:
+    st.title("Chapter 9 — Objections, Negotiation & Closing")
+    st.markdown("### Simulation Setup")
+    st.markdown(
+        "Configure your simulation below. "
+        "Your name will appear on the scorecard."
+    )
+    st.markdown("---")
+
+    student_name = st.text_input(
+        "Your full name",
+        value=st.session_state["ch9_student_name"],
+        placeholder="e.g. Ana García",
+        key="ch9_name_input",
+    )
+
+    st.markdown("#### Select a buyer scenario")
+    scenario_options = list(SCENARIOS.keys())
+    scenario_labels = [SCENARIOS[k]["label"] for k in scenario_options]
+    selected_index = scenario_options.index(st.session_state["ch9_scenario"])
+
+    chosen_index = st.radio(
+        "Scenario",
+        options=range(len(scenario_options)),
+        format_func=lambda i: scenario_labels[i],
+        index=selected_index,
+        label_visibility="collapsed",
+    )
+
+    chosen_key = scenario_options[chosen_index]
+    s = SCENARIOS[chosen_key]
+
+    _BRIEFINGS = {
+        "logistics": {
+            "location": "Atlanta, GA",
+            "size": "280 employees",
+            "revenue": "$90M revenue",
+            "industry": "Mid-size freight brokerage, US Southeast",
+        },
+        "hr_saas": {
+            "location": "Austin, TX",
+            "size": "420 employees",
+            "revenue": "$65M revenue",
+            "industry": "HR technology and workforce management",
+        },
+        "medical": {
+            "location": "San Diego, CA",
+            "size": "310 employees",
+            "revenue": "$120M revenue",
+            "industry": "Medical device manufacturing",
+        },
+    }
+
+    b = _BRIEFINGS[chosen_key]
+    st.markdown(
+        f"""
+        <div style="margin-top:0.75rem;">
+          <div style="background:#1A2332; border:1px solid #2E5FA3;
+               border-radius:8px 8px 0 0; padding:1rem 1.2rem;">
+            <div style="font-weight:700; color:#4A90D9;
+                 margin-bottom:0.6rem;">&#128203; Your Prospect</div>
+            <strong>{s['buyer_name']}</strong> &nbsp;&middot;&nbsp; {s['buyer_title']}<br>
+            {s['company']} &nbsp;&middot;&nbsp; {b['location']}<br>
+            <span style="color:#aaa;">{b['size']} &nbsp;&middot;&nbsp; {b['revenue']}</span><br>
+            <span style="color:#aaa;">{b['industry']}</span>
+          </div>
+          <div style="background:#112030; border:1px solid #2E5FA3; border-top:none;
+               border-radius:0 0 8px 8px; padding:1rem 1.2rem;">
+            <div style="font-weight:700; color:#27AE60;
+                 margin-bottom:0.6rem;">&#127919; Your Situation</div>
+            You completed discovery with this buyer last week.<br>
+            You are presenting a proposal today — the buyer has read your one-page summary.<br>
+            <span style="color:#aaa; font-style:italic;">
+              Your job: address their concerns professionally and move toward close.
+            </span><br>
+            <span style="color:#F39C12; font-size:0.85rem;
+                 display:block; margin-top:0.5rem;">
+              Read carefully — this briefing disappears once the meeting starts.
+            </span>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("")
+    ready = bool(student_name.strip())
+    if not ready:
+        st.caption("Enter your name above to enable the Start button.")
+
+    if st.button(
+        "Enter the meeting →",
+        disabled=not ready,
+        type="primary",
+        use_container_width=True,
+    ):
+        opening = SCENARIOS[chosen_key]["opening"]
+        st.session_state["ch9_student_name"] = student_name.strip()
+        st.session_state["ch9_scenario"] = chosen_key
+        st.session_state["ch9_messages"] = [{"role": "assistant", "content": opening}]
+        st.session_state["ch9_student_count"] = 0
+        st.session_state["ch9_phase"] = "chat"
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 2 — Chat
+# ---------------------------------------------------------------------------
+
+def screen_chat() -> None:
+    scenario = st.session_state["ch9_scenario"]
+    s = SCENARIOS[scenario]
+    messages: list = st.session_state["ch9_messages"]
+    student_count: int = st.session_state["ch9_student_count"]
+
+    st.title("Chapter 9 — Objections, Negotiation & Closing")
+    col_left, col_mid, col_right = st.columns([3, 1.2, 0.9])
+    with col_left:
+        st.markdown(
+            f"**Buyer:** {s['buyer_name']}, {s['buyer_title']} &nbsp;·&nbsp; "
+            f"*{s['company']}*",
+            unsafe_allow_html=True,
+        )
+    with col_mid:
+        voice_on = st.toggle(
+            "🔊 Voice",
+            value=st.session_state.get("ch9_voice_enabled", True),
+            key="ch9_voice_toggle",
+        )
+        st.session_state["ch9_voice_enabled"] = voice_on
+    with col_right:
+        st.markdown(
+            f"<div style='text-align:right; color:#aaa;'>Messages: "
+            f"<strong style='color:#FAFAFA;'>{student_count}/{MAX_STUDENT_MSGS}</strong></div>",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+
+    for msg in messages:
+        if msg["role"] == "assistant":
+            with st.chat_message("assistant", avatar="👔"):
+                st.markdown(msg["content"])
+        else:
+            with st.chat_message("user", avatar="🎓"):
+                st.markdown(msg["content"])
+
+    tts_bytes = st.session_state.get("ch9_tts_bytes")
+    if tts_bytes:
+        st.audio(tts_bytes, format="audio/mp3", autoplay=True)
+        st.session_state["ch9_tts_bytes"] = None
+
+    if student_count >= 12:
+        st.info(
+            "You've sent 12 messages — you should be working through the final concerns. "
+            "Look for an opportunity to summarize the value and propose a clear next step."
+        )
+
+    audio = mic_recorder(
+        start_prompt="🎤 Click to speak",
+        stop_prompt="⏹ Recording… click to stop",
+        key="ch9_mic",
+    )
+    if audio and audio.get("bytes"):
+        if audio.get("id") != st.session_state.get("ch9_last_audio_id"):
+            st.session_state["ch9_last_audio_id"] = audio["id"]
+            with st.spinner("Transcribing…"):
+                transcribed = call_whisper_api(audio["bytes"])
+            if transcribed:
+                messages.append({"role": "user", "content": transcribed})
+                st.session_state["ch9_student_count"] += 1
+                st.session_state["ch9_messages"] = messages
+                st.session_state["ch9_generating"] = True
+                st.rerun()
+            else:
+                st.warning(
+                    "Could not transcribe the recording — please try again "
+                    "or type your response below."
+                )
+
+    user_input = st.chat_input(
+        "Type your response to the buyer…",
+        disabled=st.session_state.get("ch9_generating", False),
+    )
+
+    if user_input:
+        messages.append({"role": "user", "content": user_input})
+        st.session_state["ch9_student_count"] += 1
+        st.session_state["ch9_messages"] = messages
+        st.session_state["ch9_generating"] = True
+        st.rerun()
+
+    if st.session_state.get("ch9_generating", False):
+        with st.spinner(f"{s['buyer_name']} is thinking…"):
+            reply = call_buyer_api(messages, scenario)
+        messages.append({"role": "assistant", "content": reply})
+        st.session_state["ch9_messages"] = messages
+        if st.session_state.get("ch9_voice_enabled", True):
+            with st.spinner("Generating voice response…"):
+                tts = call_tts_api(reply)
+            if tts:
+                st.session_state["ch9_tts_bytes"] = tts
+            else:
+                st.warning("Voice generation failed — text response shown above.")
+        st.session_state["ch9_generating"] = False
+        st.rerun()
+
+    st.markdown("---")
+
+    can_finish = student_count >= 1
+    if not can_finish:
+        st.caption("Send at least one response before requesting feedback.")
+
+    if st.button(
+        "Finish & get feedback",
+        disabled=not can_finish,
+        type="primary",
+        use_container_width=True,
+    ):
+        with st.spinner("Generating your scorecard — this may take 20–30 seconds…"):
+            data = call_coach_api(
+                messages,
+                st.session_state["ch9_student_name"],
+                scenario,
+            )
+        st.session_state["ch9_scorecard"] = data
+        st.session_state["ch9_phase"] = "scorecard"
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 3 — Scorecard
+# ---------------------------------------------------------------------------
+
+def screen_scorecard() -> None:
+    data: dict = st.session_state["ch9_scorecard"]
+    scenario: str = st.session_state["ch9_scenario"]
+    student_name: str = st.session_state["ch9_student_name"]
+    s = SCENARIOS[scenario]
+
+    dimensions: list = data.get("dimensions", [])
+    total: int = sum(d["score"] for d in dimensions)
+    max_total: int = sum(d["max_points"] for d in dimensions) or 100
+
+    if total >= 90:
+        tier, tier_color = "Deal-ready", "#27AE60"
+    elif total >= 75:
+        tier, tier_color = "Strong Foundation", "#2E86AB"
+    elif total >= 60:
+        tier, tier_color = "Developing", "#F39C12"
+    else:
+        tier, tier_color = "Rerun Recommended", "#E74C3C"
+
+    st.title("Scorecard — Objections, Negotiation & Closing")
+    st.markdown("---")
+
+    col_a, col_b, col_c = st.columns(3)
+    with col_a:
+        st.metric("Student", student_name)
+    with col_b:
+        st.metric("Scenario", s["buyer_name"])
+    with col_c:
+        st.metric("Date", str(date.today()))
+
+    st.markdown("")
+
+    # Plain English summary
+    if data.get("plain_english_summary"):
+        st.info(data["plain_english_summary"])
+
+    # Total score banner
+    st.markdown(
+        f"""
+        <div style="background:{tier_color}22; border:2px solid {tier_color};
+             border-radius:12px; padding:1.5rem; text-align:center; margin-bottom:1.5rem;">
+          <div style="font-size:3rem; font-weight:800; color:{tier_color};">
+            {total} / {max_total}
+          </div>
+          <div style="font-size:1.4rem; font-weight:700; color:{tier_color}; margin-top:0.25rem;">
+            {tier}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.expander("Performance tier guide", expanded=False):
+        st.markdown(
+            "| Score | Tier |\n"
+            "|-------|------|\n"
+            "| 90–100 | Deal-ready |\n"
+            "| 75–89 | Strong Foundation |\n"
+            "| 60–74 | Developing |\n"
+            "| Below 60 | Rerun Recommended |"
+        )
+
+    st.markdown("### Dimension Breakdown")
+
+    for dim in dimensions:
+        pct = dim["score"] / dim["max_points"]
+        with st.expander(
+            f"**{dim['name']}** — {dim['score']} / {dim['max_points']} pts",
+            expanded=True,
+        ):
+            st.progress(pct)
+            st.markdown(dim["rationale"])
+            evidence = dim.get("evidence", "")
+            no_evidence = (
+                not evidence
+                or evidence.startswith("Student did not")
+                or evidence.startswith("No close")
+            )
+            if not no_evidence:
+                st.markdown(
+                    f'<div style="background:#1A2332; border-left:3px solid #4A90D9; '
+                    f'padding:0.6rem 1rem; border-radius:4px; font-style:italic; '
+                    f'margin-top:0.5rem; font-size:0.92rem;">'
+                    f'Evidence: &#8220;{evidence}&#8221;</div>',
+                    unsafe_allow_html=True,
+                )
+            elif evidence:
+                st.caption(f"Note: {evidence}")
+
+            if pct < 0.7:
+                if not no_evidence:
+                    st.warning(
+                        f"**Coaching note:** {dim['rationale']}\n\n"
+                        f"*From your session: \"{evidence}\"*"
+                    )
+                else:
+                    st.warning(f"**Coaching note:** {dim['rationale']}")
+
+    # Process insight as 6th expander
+    if data.get("process_insight"):
+        with st.expander("**🔍 Process Insight — what this reveals about your discovery**", expanded=True):
+            st.markdown(data["process_insight"])
+
+    st.markdown("---")
+
+    col_strong, col_gap = st.columns(2)
+    with col_strong:
+        st.success(f"**Strongest moment**\n\n{data.get('strongest_moment', '')}")
+    with col_gap:
+        st.error(f"**Critical gap**\n\n{data.get('critical_gap', '')}")
+
+    st.info(f"**Behavioral recommendation**\n\n{data.get('behavioral_recommendation', '')}")
+
+    st.markdown("---")
+
+    if st.button("↩ Restart with a different scenario", use_container_width=True):
+        _reset_state()
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+def run_chapter9() -> None:
+    _init_state()
+    phase = st.session_state["ch9_phase"]
+    if phase == "setup":
+        screen_setup()
+    elif phase == "chat":
+        screen_chat()
+    elif phase == "scorecard":
+        screen_scorecard()
