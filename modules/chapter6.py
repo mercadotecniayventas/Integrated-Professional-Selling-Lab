@@ -58,6 +58,11 @@ LINKEDIN_CASES = {
             "You found them via LinkedIn search. "
             "They just posted about supply chain challenges."
         ),
+        "research_tip": (
+            "Synthex Manufacturing is fictional. To personalize your message, spend 5 minutes "
+            "researching a real manufacturing or supply chain company. Use what you find to make "
+            "your message specific and credible — generic messages score poorly."
+        ),
     },
     "L2": {
         "prospect_name": "Jennifer Wu",
@@ -70,6 +75,11 @@ LINKEDIN_CASES = {
             "Mutual connection suggested you connect. "
             "She recently liked a post about employee retention."
         ),
+        "research_tip": (
+            "NovaCorp Tech is fictional. To personalize your message, spend 5 minutes "
+            "researching a real mid-size tech company's HR challenges. Use what you find to make "
+            "your message specific and credible — generic messages score poorly."
+        ),
     },
     "L3": {
         "prospect_name": "Robert Chen",
@@ -81,6 +91,11 @@ LINKEDIN_CASES = {
         "context": (
             "No prior contact. "
             "Company recently announced expansion to 3 new cities."
+        ),
+        "research_tip": (
+            "Meridian Healthcare is fictional. To personalize your message, spend 5 minutes "
+            "researching a real healthcare system expanding operations. Use what you find to make "
+            "your message specific and credible — generic messages score poorly."
         ),
     },
 }
@@ -96,6 +111,11 @@ EMAIL_CASES = {
         "context": (
             "Colleague Jake worked with her before and suggested you reach out."
         ),
+        "research_tip": (
+            "Greenfield Energy is fictional. To personalize your message, spend 5 minutes "
+            "researching a real energy company's financial operations. Use what you find to make "
+            "your message specific and credible — generic messages score poorly."
+        ),
     },
     "E2": {
         "prospect_name": "James Kim",
@@ -108,6 +128,11 @@ EMAIL_CASES = {
             "No prior contact. "
             "Company had a data breach reported in the news last month."
         ),
+        "research_tip": (
+            "Apex Healthcare is fictional. To personalize your message, spend 5 minutes "
+            "researching a real healthcare organization's recent cybersecurity news. Use what you find to make "
+            "your message specific and credible — generic messages score poorly."
+        ),
     },
     "E3": {
         "prospect_name": "Patricia Moore",
@@ -119,6 +144,11 @@ EMAIL_CASES = {
         "context": (
             "Met briefly at an industry webinar. "
             "She mentioned pipeline visibility as a challenge."
+        ),
+        "research_tip": (
+            "FastGrow Retail is fictional. To personalize your message, spend 5 minutes "
+            "researching a real retail company's sales pipeline challenges. Use what you find to make "
+            "your message specific and credible — generic messages score poorly."
         ),
     },
 }
@@ -135,6 +165,11 @@ COLDCALL_CASES = {
             "No prior contact. "
             "Company recently won a $50M government contract."
         ),
+        "research_tip": (
+            "BuildRight Construction is fictional. To personalize your message, spend 5 minutes "
+            "researching a real construction company that recently won a large contract. Use what you find to make "
+            "your message specific and credible — generic messages score poorly."
+        ),
     },
     "C2": {
         "prospect_name": "Sarah Mitchell",
@@ -147,6 +182,11 @@ COLDCALL_CASES = {
             "Found via LinkedIn, no connection yet. "
             "Industry facing driver shortage challenges."
         ),
+        "research_tip": (
+            "PrimePack Logistics is fictional. To personalize your message, spend 5 minutes "
+            "researching a real logistics company facing driver or capacity challenges. Use what you find to make "
+            "your message specific and credible — generic messages score poorly."
+        ),
     },
     "C3": {
         "prospect_name": "Michael Torres",
@@ -158,6 +198,11 @@ COLDCALL_CASES = {
         "context": (
             "No prior contact. "
             "Company expanding into renewable energy division."
+        ),
+        "research_tip": (
+            "SunState Energy is fictional. To personalize your message, spend 5 minutes "
+            "researching a real energy company expanding into renewables. Use what you find to make "
+            "your message specific and credible — generic messages score poorly."
         ),
     },
 }
@@ -175,6 +220,11 @@ EVENT_CASES = {
             "He mentioned concerns about ransomware attacks. "
             "Had 5 minutes — no business cards exchanged."
         ),
+        "research_tip": (
+            "Apex Healthcare is fictional. To personalize your message, spend 5 minutes "
+            "researching recent ransomware attacks on healthcare organizations. Use what you find to make "
+            "your message specific and credible — generic messages score poorly."
+        ),
     },
     "EV2": {
         "prospect_name": "Laura Nguyen",
@@ -188,6 +238,11 @@ EVENT_CASES = {
             "She was interested in AI-powered lead scoring. "
             "Had a 10-minute conversation at the networking lunch."
         ),
+        "research_tip": (
+            "TechVentures Inc is fictional. To personalize your message, spend 5 minutes "
+            "researching AI-powered lead scoring trends in B2B marketing. Use what you find to make "
+            "your message specific and credible — generic messages score poorly."
+        ),
     },
     "EV3": {
         "prospect_name": "Daniel Park",
@@ -200,6 +255,11 @@ EVENT_CASES = {
             "Met at Healthcare Operations Conference today. "
             "He mentioned supply chain visibility as a top priority. "
             "Brief conversation — he gave you his card."
+        ),
+        "research_tip": (
+            "MedSupply Corp is fictional. To personalize your message, spend 5 minutes "
+            "researching supply chain challenges in medical device distribution. Use what you find to make "
+            "your message specific and credible — generic messages score poorly."
         ),
     },
 }
@@ -579,6 +639,10 @@ def screen_write() -> None:
             at <strong>{sc['seller_company']}</strong>
           </div>
           <div style="color:#aaa; font-style:italic;">{sc['context']}</div>
+          <div style="margin-top:0.55rem; padding-top:0.5rem; border-top:1px solid #2E5FA3;
+               color:#F39C12; font-size:0.88rem;">
+            &#128269; <strong>Research tip:</strong> {sc['research_tip']}
+          </div>
         </div>
         """,
         unsafe_allow_html=True,
