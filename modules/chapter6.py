@@ -320,24 +320,36 @@ def screen_setup() -> None:
     st.title("Chapter 6 — Prospecting & Outreach Practice")
 
     # Section 1 — How it works
-    st.info(
-        "📋 **How this activity works:**\n\n"
-        "This activity has **4 rounds**. In each round you will be assigned a B2B prospect "
-        "and an outreach channel. Your job is to write the best possible outreach message "
-        "for that specific prospect using that specific channel.\n\n"
-        "**Round 1:** You will write an Email \n"
-        "**Round 2:** You will write a LinkedIn Message \n"
-        "**Round 3:** You will write a Cold Call Script \n"
-        "**Round 4:** You will write an Event Follow-up \n\n"
-        "*(The order changes every time you practice — and the prospect changes too, "
-        "so you can never memorize the right answer.)*\n\n"
-        "After each round you will receive:\n"
-        "✅ A score across 6 dimensions \n"
-        "✅ Specific feedback on what worked \n"
-        "✅ A rewritten example showing what great looks like \n"
-        "✅ One specific thing to improve \n\n"
-        "At the end you will see your overall score across all 4 channels and your "
-        "strongest and weakest channel."
+    st.markdown(
+        """
+        <div style="background:#1A2332; border:1px solid #2E5FA3;
+             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.75rem;">
+          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.6rem;">
+            &#128203; How this activity works
+          </div>
+          <div style="color:#FAFAFA; margin-bottom:0.6rem;">
+            In real B2B selling, outreach typically follows this sequence:
+          </div>
+          <div style="color:#FAFAFA; margin-bottom:0.25rem;">&#128188; <strong>LinkedIn</strong> — connect and establish presence first</div>
+          <div style="color:#FAFAFA; margin-bottom:0.25rem;">&#128231; <strong>Email</strong> — follow up with a specific value message</div>
+          <div style="color:#FAFAFA; margin-bottom:0.25rem;">&#128222; <strong>Cold Call</strong> — reach out by phone if no response</div>
+          <div style="color:#FAFAFA; margin-bottom:0.6rem;">&#129309; <strong>Event Follow-up</strong> — reconnect after meeting in person</div>
+          <div style="color:#ddd; margin-bottom:0.6rem;">
+            In this activity you will practice all 4 channels.
+            Your assigned order for this session will appear below.
+          </div>
+          <div style="color:#ddd; margin-bottom:0.4rem;">After each round you will receive:</div>
+          <div style="color:#FAFAFA; margin-bottom:0.2rem;">&#9989; A score across 6 dimensions</div>
+          <div style="color:#FAFAFA; margin-bottom:0.2rem;">&#9989; Specific feedback on what worked</div>
+          <div style="color:#FAFAFA; margin-bottom:0.2rem;">&#9989; A rewritten example showing what great looks like</div>
+          <div style="color:#FAFAFA; margin-bottom:0.5rem;">&#9989; One specific thing to improve</div>
+          <div style="color:#ddd;">
+            At the end you will see your overall score across all 4 channels
+            and your strongest and weakest channel.
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
     # Section 2 — Channel order preview for this session
