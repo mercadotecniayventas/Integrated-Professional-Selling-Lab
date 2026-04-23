@@ -1,4 +1,5 @@
 import json
+import random
 import re
 import streamlit as st
 from datetime import date
@@ -276,6 +277,14 @@ def call_coach_api(message: str, student_name: str, channel_key: str, scenario_k
 # Session state
 # ---------------------------------------------------------------------------
 
+_CHANNEL_ICONS = {
+    "email": "📧",
+    "linkedin": "💼",
+    "cold_call": "📞",
+    "event_followup": "🤝",
+}
+
+
 def _init_state() -> None:
     defaults = {
         "ch6_phase": "setup",
@@ -284,10 +293,16 @@ def _init_state() -> None:
         "ch6_scenario": "cold",
         "ch6_message": "",
         "ch6_scorecard": None,
+        "ch6_current_round": 0,
     }
     for key, val in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = val
+    # Randomize channel order once per session
+    if "ch6_channel_order" not in st.session_state:
+        order = list(CHANNELS.keys())
+        random.shuffle(order)
+        st.session_state["ch6_channel_order"] = order
 
 
 def _reset_state() -> None:
@@ -302,102 +317,75 @@ def _reset_state() -> None:
 # ---------------------------------------------------------------------------
 
 def screen_setup() -> None:
-    st.title("Chapter 6 — Prospecting & Outreach Evaluator")
-    st.markdown("### Simulation Setup")
-    st.markdown("---")
+    st.title("Chapter 6 — Prospecting & Outreach Practice")
 
-    # 1. Student name
+    # Section 1 — How it works
+    st.info(
+        "📋 **How this activity works:**\n\n"
+        "This activity has **4 rounds**. In each round you will be assigned a B2B prospect "
+        "and an outreach channel. Your job is to write the best possible outreach message "
+        "for that specific prospect using that specific channel.\n\n"
+        "**Round 1:** You will write an Email \n"
+        "**Round 2:** You will write a LinkedIn Message \n"
+        "**Round 3:** You will write a Cold Call Script \n"
+        "**Round 4:** You will write an Event Follow-up \n\n"
+        "*(The order changes every time you practice — and the prospect changes too, "
+        "so you can never memorize the right answer.)*\n\n"
+        "After each round you will receive:\n"
+        "✅ A score across 6 dimensions \n"
+        "✅ Specific feedback on what worked \n"
+        "✅ A rewritten example showing what great looks like \n"
+        "✅ One specific thing to improve \n\n"
+        "At the end you will see your overall score across all 4 channels and your "
+        "strongest and weakest channel."
+    )
+
+    # Section 2 — Channel order preview for this session
+    channel_order = st.session_state["ch6_channel_order"]
+    rows_html = ""
+    for i, ck in enumerate(channel_order):
+        icon = _CHANNEL_ICONS[ck]
+        label = CHANNELS[ck]["label"]
+        rows_html += (
+            f'<div style="padding:0.3rem 0; color:#FAFAFA; font-size:0.93rem;">'
+            f'<span style="color:#4A90D9; font-weight:700;">Round {i + 1}:</span>'
+            f'&nbsp; {icon} {label}</div>'
+        )
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:1px solid #2E5FA3;
+             border-radius:8px; padding:0.9rem 1.1rem; margin:0.5rem 0 1rem 0;">
+          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.5rem;">
+            Your channel order for this session:
+          </div>
+          {rows_html}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Section 3 — Name input
+    st.markdown("**Your full name (appears on your scorecard):**")
     student_name = st.text_input(
         "Your full name",
         value=st.session_state["ch6_student_name"],
         placeholder="e.g. Ana García",
         key="ch6_name_input",
-    )
-
-    # 2. Prospect scenario first
-    st.markdown("#### Select your prospect")
-    scenario_options = list(SCENARIOS.keys())
-    scenario_labels = [SCENARIOS[k]["label"] for k in scenario_options]
-    selected_scenario_label = st.radio(
-        "Prospect scenario",
-        scenario_labels,
-        index=scenario_options.index(st.session_state.get("ch6_scenario", "cold")),
-        key="ch6_scenario_radio",
         label_visibility="collapsed",
     )
-    selected_scenario = scenario_options[scenario_labels.index(selected_scenario_label)]
-    sc = SCENARIOS[selected_scenario]
 
-    # Prospect briefing card — shown immediately on scenario selection
-    st.markdown(
-        f"""
-        <div style="background:#1A2332; border:1px solid #2E5FA3;
-             border-radius:8px; padding:1rem 1.2rem;
-             margin-top:0.5rem; margin-bottom:0.75rem;">
-          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.5rem;">
-            &#128203; Your Prospect
-          </div>
-          <div style="color:#FAFAFA; margin-bottom:0.4rem;">
-            <strong>{sc['prospect_name']}</strong>,
-            {sc['prospect_title']} &mdash;
-            <strong>{sc['company']}</strong> ({sc['company_size']})
-          </div>
-          <div style="color:#ddd; margin-bottom:0.4rem;">
-            You sell: <strong>{sc['seller_product']}</strong>
-            at <strong>{sc['seller_company']}</strong>
-          </div>
-          <div style="color:#aaa; font-style:italic;">{sc['context']}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # 3. Channel selection — framed around the chosen prospect
-    st.markdown(f"#### How will you reach out to {sc['prospect_name']}?")
-    channel_options = list(CHANNELS.keys())
-    channel_labels = [CHANNELS[k]["label"] for k in channel_options]
-    selected_channel_label = st.radio(
-        "Outreach channel",
-        channel_labels,
-        index=channel_options.index(st.session_state.get("ch6_channel", "email")),
-        key="ch6_channel_radio",
-        label_visibility="collapsed",
-    )
-    selected_channel = channel_options[channel_labels.index(selected_channel_label)]
-    ch = CHANNELS[selected_channel]
-
-    # 4. Mission card for the selected channel
-    st.markdown(
-        f"""
-        <div style="background:#1A2332; border:1px solid #4A90D9;
-             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.75rem;">
-          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.4rem;">
-            &#127919; Your Mission &mdash; {ch['label']}
-          </div>
-          <div style="color:#FAFAFA; margin-bottom:0.4rem;">{ch['mission_rule']}</div>
-          <div style="color:#aaa; font-style:italic;">&#128161; {ch['mission_tip']}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # 5. Start button
+    # Section 4 — Start button
     ready = bool(student_name.strip())
     if not ready:
         st.caption("Enter your name above to enable the Start button.")
-    else:
-        st.caption("⚠️ Write your outreach message on the next screen, then get AI evaluation.")
 
     if st.button(
-        "Start Writing →",
+        "Start Round 1 →",
         disabled=not ready,
         type="primary",
         use_container_width=True,
     ):
         st.session_state["ch6_student_name"] = student_name.strip()
-        st.session_state["ch6_channel"] = selected_channel
-        st.session_state["ch6_scenario"] = selected_scenario
-        st.session_state["ch6_message"] = ""
         st.session_state["ch6_phase"] = "write"
         st.rerun()
 
