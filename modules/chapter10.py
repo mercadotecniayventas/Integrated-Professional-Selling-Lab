@@ -1291,7 +1291,17 @@ def screen_scorecard() -> None:
     )
 
     st.title("Scorecard — Sales Technology Stack: CRM Game")
-    st.caption(f"{student_name}  ·  {date.today().strftime('%B %d, %Y')}")
+    st.markdown("---")
+
+    col_a, col_b, col_c = st.columns(3)
+    with col_a:
+        st.metric("Student", student_name)
+    with col_b:
+        st.metric("Score", f"{total} / 100")
+    with col_c:
+        st.metric("Date", str(date.today()))
+
+    st.markdown("")
 
     st.info(
         f"You made **{optimal_count} optimal decisions** out of 10 total. "
