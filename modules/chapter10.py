@@ -867,6 +867,14 @@ def screen_setup() -> None:
         key="ch10_name_input",
     )
 
+    st.radio(
+        "Select your game variant:",
+        ["A", "B", "C"],
+        horizontal=True,
+        key="ch10_variant",
+        index=["A", "B", "C"].index(st.session_state.get("ch10_variant", "A")),
+    )
+
     st.markdown(
         """
         <div style="background:#1A2332; border:1px solid #2E5FA3;
@@ -933,11 +941,29 @@ STAGE_DISCIPLINE_A = {
     "E": {0: 5, 1: 3, 2: 5},   # stage update=5, notes only=3, both=5
 }
 
+STAGE_DISCIPLINE_B = {
+    "A": {0: 3, 1: 5, 2: 5},   # log reply=3, update stage+next=5, both=5
+    "B": {0: 3, 1: 5, 2: 5},   # log concern=3, next step=5, both=5
+    "C": {0: 5, 1: 0, 2: 3},   # pro research=5, personal post (privacy)=0, nothing=3
+    "D": {0: 5, 1: 0, 2: 3},   # log gaps=5, proposal note only=0, premature Convert=3
+    "E": {0: 0, 1: 5, 2: 0},   # risk flag no outreach=0, log outreach+status=5, premature Stall=0
+}
+
+STAGE_DISCIPLINE_C = {
+    "A": {0: 5, 1: 3, 2: 5},   # log legal+evidence=5, fictitious prob=3, log+note=5
+    "B": {0: 3, 1: 3, 2: 5},   # log found number=3, log attempts only=3, both+privacy note=5
+    "C": {0: 3, 1: 3, 2: 5},   # IT only=3, Ops only=3, both+buying center=5
+    "D": {0: 3, 1: 5, 2: 5},   # account only=3, account+contact+research=5, +trigger event=5
+    "E": {0: 3, 1: 3, 2: 5},   # log demo=3, next step only=3, both+stakeholder map=5
+}
+
+_DEALS_MAP = {"A": DEALS_A, "B": DEALS_B, "C": DEALS_C}
+_STAGE_MAP  = {"A": STAGE_DISCIPLINE_A, "B": STAGE_DISCIPLINE_B, "C": STAGE_DISCIPLINE_C}
+
 
 def _compute_scores(answers: dict, variant: str = "A") -> dict:
-    v = VARIANTS[variant]
-    deals = v["deals"]
-    stage_map = v["stage_map"]
+    deals = _DEALS_MAP[variant]
+    stage_map = _STAGE_MAP[variant]
     strategy_pts = sum(
         deals[k]["strategy"]["options"][answers[k]["strategy"]]["points"]
         for k in answers
@@ -1006,6 +1032,8 @@ def _show_result_box(label, choice_text, points, consequence, privacy_violation)
 # ---------------------------------------------------------------------------
 
 def screen_game() -> None:
+    variant = st.session_state.get("ch10_variant", "A")
+    deals = _DEALS_MAP[variant]
     deal_index = st.session_state["ch10_current_deal_index"]
     answers: dict = st.session_state["ch10_answers"]
 
@@ -1015,7 +1043,7 @@ def screen_game() -> None:
         return
 
     current_key = DEAL_ORDER[deal_index]
-    deal = DEALS[current_key]
+    deal = deals[current_key]
     decision_step = st.session_state["ch10_decision_step"]
 
     col_left, col_center, col_right = st.columns([1.5, 4, 1.5])
@@ -1024,7 +1052,7 @@ def screen_game() -> None:
     with col_left:
         st.markdown("**📊 Pipeline**")
         for i, key in enumerate(DEAL_ORDER):
-            d = DEALS[key]
+            d = deals[key]
             is_current = (i == deal_index)
             is_done = key in answers
             sc = STAGE_COLORS.get(d["stage"], "#888")
@@ -1192,8 +1220,8 @@ def screen_game() -> None:
         for key in DEAL_ORDER:
             if key not in answers:
                 continue
-            s_pts = DEALS[key]["strategy"]["options"][answers[key]["strategy"]]["points"]
-            c_pts = DEALS[key]["crm"]["options"][answers[key]["crm"]]["points"]
+            s_pts = deals[key]["strategy"]["options"][answers[key]["strategy"]]["points"]
+            c_pts = deals[key]["crm"]["options"][answers[key]["crm"]]["points"]
             s_icon = "✅" if s_pts == 5 else ("⚠️" if s_pts == 3 else "❌")
             c_icon = "✅" if c_pts == 5 else ("⚠️" if c_pts == 3 else "❌")
             st.markdown(
@@ -1208,8 +1236,8 @@ def screen_game() -> None:
             )
         if answers:
             running = sum(
-                DEALS[k]["strategy"]["options"][answers[k]["strategy"]]["points"] +
-                DEALS[k]["crm"]["options"][answers[k]["crm"]]["points"]
+                deals[k]["strategy"]["options"][answers[k]["strategy"]]["points"] +
+                deals[k]["crm"]["options"][answers[k]["crm"]]["points"]
                 for k in answers
             )
             st.markdown(
@@ -1230,8 +1258,10 @@ def screen_game() -> None:
 # ---------------------------------------------------------------------------
 
 def screen_scorecard() -> None:
+    variant = st.session_state.get("ch10_variant", "A")
+    deals = _DEALS_MAP[variant]
     answers: dict = st.session_state["ch10_answers"]
-    scores = _compute_scores(answers)
+    scores = _compute_scores(answers, variant)
     student_name = st.session_state["ch10_student_name"]
     total = scores["total"]
 
@@ -1255,8 +1285,8 @@ def screen_scorecard() -> None:
     worst_dim = min(dim_scores, key=dim_scores.get)
 
     optimal_count = sum(
-        (1 if DEALS[k]["strategy"]["options"][answers[k]["strategy"]]["points"] == 5 else 0) +
-        (1 if DEALS[k]["crm"]["options"][answers[k]["crm"]]["points"] == 5 else 0)
+        (1 if deals[k]["strategy"]["options"][answers[k]["strategy"]]["points"] == 5 else 0) +
+        (1 if deals[k]["crm"]["options"][answers[k]["crm"]]["points"] == 5 else 0)
         for k in answers
     )
 
@@ -1305,7 +1335,7 @@ def screen_scorecard() -> None:
         "strategy": "All 5 strategy decisions (5 pts each).",
         "crm": "All 5 CRM hygiene decisions (5 pts each).",
         "stage": "CRM choices evaluated for stage accuracy: were stages kept current?",
-        "privacy": "Deal C and Deal E decisions involving personal data (8 + 7 + 10 pts).",
+        "privacy": "Any choice misusing personal data costs −10 pts (starting from 25).",
     }
 
     for key in ["strategy", "crm", "stage", "privacy"]:
@@ -1327,9 +1357,9 @@ def screen_scorecard() -> None:
     )
 
     privacy_violated_deals = [
-        k for k in ["C", "E"] if k in answers and (
-            DEALS[k]["strategy"]["options"][answers[k]["strategy"]]["privacy_violation"] or
-            DEALS[k]["crm"]["options"][answers[k]["crm"]]["privacy_violation"]
+        k for k in DEAL_ORDER if k in answers and (
+            deals[k]["strategy"]["options"][answers[k]["strategy"]].get("privacy_violation", False) or
+            deals[k]["crm"]["options"][answers[k]["crm"]].get("privacy_violation", False)
         )
     ]
     if privacy_violated_deals:
@@ -1348,8 +1378,8 @@ def screen_scorecard() -> None:
     st.markdown("---")
     deal_totals = {
         k: (
-            DEALS[k]["strategy"]["options"][answers[k]["strategy"]]["points"] +
-            DEALS[k]["crm"]["options"][answers[k]["crm"]]["points"]
+            deals[k]["strategy"]["options"][answers[k]["strategy"]]["points"] +
+            deals[k]["crm"]["options"][answers[k]["crm"]]["points"]
         )
         for k in answers
     }
@@ -1358,19 +1388,19 @@ def screen_scorecard() -> None:
 
     col1, col2 = st.columns(2)
     with col1:
-        b_s = DEALS[best_key]["strategy"]["options"][answers[best_key]["strategy"]]
-        b_c = DEALS[best_key]["crm"]["options"][answers[best_key]["crm"]]
+        b_s = deals[best_key]["strategy"]["options"][answers[best_key]["strategy"]]
+        b_c = deals[best_key]["crm"]["options"][answers[best_key]["crm"]]
         st.success(
-            f"**Strongest: {DEALS[best_key]['company']}**\n\n"
+            f"**Strongest: {deals[best_key]['company']}**\n\n"
             f"Strategy: {b_s['text']}\n\n"
             f"CRM: {b_c['text']}"
         )
     with col2:
-        w_s = DEALS[worst_key]["strategy"]["options"][answers[worst_key]["strategy"]]
-        w_c = DEALS[worst_key]["crm"]["options"][answers[worst_key]["crm"]]
+        w_s = deals[worst_key]["strategy"]["options"][answers[worst_key]["strategy"]]
+        w_c = deals[worst_key]["crm"]["options"][answers[worst_key]["crm"]]
         w_note = w_s.get("consequence") or w_c.get("consequence") or "Review both decisions for this deal."
         st.error(
-            f"**Needs Work: {DEALS[worst_key]['company']}**\n\n"
+            f"**Needs Work: {deals[worst_key]['company']}**\n\n"
             f"Strategy: {w_s['text']}\n\n"
             f"Coaching: {w_note}"
         )
