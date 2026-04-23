@@ -531,7 +531,7 @@ def screen_setup() -> None:
             "rep_company": "VisionTrack Solutions",
             "selling": "Real-time supply chain visibility software",
             "context": (
-                "30-minute discovery call. They have carrier visibility issues "
+                "They have carrier visibility issues "
                 "but you don't know the details yet."
             ),
         },
@@ -543,7 +543,7 @@ def screen_setup() -> None:
             "rep_company": "TalentIQ",
             "selling": "HR analytics and workforce planning software",
             "context": (
-                "30-minute discovery call. They are scaling fast and you know "
+                "They are scaling fast and you know "
                 "they recently opened 3 new offices."
             ),
         },
@@ -555,7 +555,7 @@ def screen_setup() -> None:
             "rep_company": "QualityPro",
             "selling": "Quality management and compliance software",
             "context": (
-                "30-minute discovery call. They operate in a highly "
+                "They operate in a highly "
                 "regulated environment."
             ),
         },
