@@ -411,29 +411,57 @@ _CHANNEL_ICONS = {
 
 
 def _init_state() -> None:
+    # Persistent rotation tracker — survives resets
+    if "ch6_last_case_per_channel" not in st.session_state:
+        st.session_state["ch6_last_case_per_channel"] = {
+            "linkedin": None,
+            "email": None,
+            "cold_call": None,
+            "event_followup": None,
+        }
+
+    # Assign one case index (0/1/2) per channel, never the same as last time
+    if "ch6_case_per_channel" not in st.session_state:
+        last = st.session_state["ch6_last_case_per_channel"]
+        assignments = {}
+        for ch_key in CHANNEL_ORDER:
+            available = [i for i in range(3) if i != last[ch_key]]
+            if not available:
+                available = [0, 1, 2]
+            assignments[ch_key] = random.choice(available)
+        st.session_state["ch6_case_per_channel"] = assignments
+        # Record immediately so next session rotates away from these
+        st.session_state["ch6_last_case_per_channel"] = dict(assignments)
+
     defaults = {
         "ch6_phase": "setup",
         "ch6_student_name": "",
-        "ch6_channel": "email",
-        "ch6_scenario": "cold",
+        "ch6_channel_order": list(CHANNEL_ORDER),
+        "ch6_current_round": 0,
+        "ch6_round_scores": [],
         "ch6_message": "",
         "ch6_scorecard": None,
-        "ch6_current_round": 0,
     }
     for key, val in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = val
-    # Randomize channel order once per session
-    if "ch6_channel_order" not in st.session_state:
-        order = list(CHANNELS.keys())
-        random.shuffle(order)
-        st.session_state["ch6_channel_order"] = order
 
 
 def _reset_state() -> None:
-    keys = [k for k in st.session_state if k.startswith("ch6_")]
-    for k in keys:
-        del st.session_state[k]
+    # Preserve rotation data before clearing
+    last_cases = st.session_state.get(
+        "ch6_last_case_per_channel",
+        {"linkedin": None, "email": None, "cold_call": None, "event_followup": None},
+    )
+    # Wipe session-specific keys only
+    for key in [
+        "ch6_phase", "ch6_student_name", "ch6_current_round",
+        "ch6_round_scores", "ch6_case_per_channel",
+        "ch6_channel_order", "ch6_message", "ch6_scorecard",
+    ]:
+        st.session_state.pop(key, None)
+    # Restore rotation tracker so _init_state picks different cases
+    st.session_state["ch6_last_case_per_channel"] = last_cases
     _init_state()
 
 
