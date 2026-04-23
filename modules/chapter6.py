@@ -223,9 +223,9 @@ def _word_count(text: str) -> int:
 # Coach prompt + API
 # ---------------------------------------------------------------------------
 
-def get_coach_prompt(message: str, student_name: str, channel_key: str, scenario_key: str) -> str:
+def get_coach_prompt(message: str, student_name: str, channel_key: str, case: dict) -> str:
     ch = CHANNELS[channel_key]
-    sc = SCENARIOS[scenario_key]
+    sc = case
     word_limit = ch["word_limit"]
 
     channel_guidance = {
@@ -368,9 +368,9 @@ Tier thresholds: 90-100 = "Ready to Send", 75-89 = "Strong Draft", 60-74 = "Need
 Return ONLY the JSON object. No markdown, no explanation, no code fences."""
 
 
-def call_coach_api(message: str, student_name: str, channel_key: str, scenario_key: str) -> dict:
+def call_coach_api(message: str, student_name: str, channel_key: str, case: dict) -> dict:
     client = OpenAI(api_key=get_openai_api_key())
-    prompt = get_coach_prompt(message, student_name, channel_key, scenario_key)
+    prompt = get_coach_prompt(message, student_name, channel_key, case)
     response = client.chat.completions.create(
         model=MODEL_COACH,
         messages=[{"role": "user", "content": prompt}],
@@ -639,21 +639,25 @@ def screen_write() -> None:
                 sc,          # case dict — get_coach_prompt updated in step 4
             )
         st.session_state["ch6_scorecard"] = data
+        st.session_state["ch6_current_round"] += 1
         st.session_state["ch6_phase"] = "scorecard"
         st.rerun()
 
 
 # ---------------------------------------------------------------------------
-# Screen 3 — Scorecard
+# Screen 3 — Per-round scorecard
 # ---------------------------------------------------------------------------
 
-def screen_scorecard() -> None:
+def screen_round_scorecard() -> None:
     data: dict = st.session_state["ch6_scorecard"]
     student_name: str = st.session_state["ch6_student_name"]
-    channel_key = st.session_state["ch6_channel"]
-    scenario_key = st.session_state["ch6_scenario"]
+    current_round: int = st.session_state["ch6_current_round"]   # already incremented
+    channel_key = CHANNEL_ORDER[current_round - 1]
+    case_idx = st.session_state["ch6_case_per_channel"][channel_key]
+    case_key = list(CASES[channel_key].keys())[case_idx]
+    sc = CASES[channel_key][case_key]
     ch = CHANNELS[channel_key]
-    sc = SCENARIOS[scenario_key]
+    icon = _CHANNEL_ICONS[channel_key]
 
     total = data.get("total_score", 0)
     tier = data.get("tier", "")
@@ -666,6 +670,21 @@ def screen_scorecard() -> None:
     else:
         tier_color = "#E74C3C"
 
+    # Accumulate round scores (guard against double-append on rerun)
+    round_scores: list = st.session_state["ch6_round_scores"]
+    if len(round_scores) < current_round:
+        round_scores.append({
+            "round": current_round,
+            "channel": channel_key,
+            "channel_label": ch["label"],
+            "icon": icon,
+            "prospect": sc["prospect_name"],
+            "company": sc["company"],
+            "score": total,
+            "tier": tier,
+        })
+        st.session_state["ch6_round_scores"] = round_scores
+
     st.title("Scorecard — Prospecting & Outreach")
     st.markdown("---")
 
@@ -673,7 +692,10 @@ def screen_scorecard() -> None:
     with col_a:
         st.metric("Student", student_name)
     with col_b:
-        st.metric("Channel · Scenario", f"{ch['label']} · {sc['prospect_name']}")
+        st.metric(
+            f"Round {current_round} of 4",
+            f"{icon} {ch['label']} · {sc['prospect_name']}",
+        )
     with col_c:
         st.metric("Date", str(date.today()))
 
@@ -739,10 +761,113 @@ def screen_scorecard() -> None:
         )
 
     st.markdown("---")
-    if st.button("✍️ Try Again — Same Scenario", use_container_width=True):
+    is_last = (current_round >= len(CHANNEL_ORDER))
+    btn_label = "See Final Results →" if is_last else f"Next Round →"
+    if st.button(btn_label, type="primary", use_container_width=True):
         st.session_state["ch6_message"] = ""
         st.session_state["ch6_scorecard"] = None
-        st.session_state["ch6_phase"] = "write"
+        st.session_state["ch6_phase"] = "final" if is_last else "write"
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 4 — Final scorecard
+# ---------------------------------------------------------------------------
+
+def screen_final_scorecard() -> None:
+    student_name: str = st.session_state["ch6_student_name"]
+    round_scores: list = st.session_state["ch6_round_scores"]
+
+    scores = [r["score"] for r in round_scores]
+    avg = round(sum(scores) / len(scores)) if scores else 0
+
+    if avg >= 90:
+        tier, tier_color = "Ready to Send", "#27AE60"
+    elif avg >= 75:
+        tier, tier_color = "Strong Draft", "#4A90D9"
+    elif avg >= 60:
+        tier, tier_color = "Needs Work", "#F39C12"
+    else:
+        tier, tier_color = "Rewrite Recommended", "#E74C3C"
+
+    best = max(round_scores, key=lambda r: r["score"])
+    worst = min(round_scores, key=lambda r: r["score"])
+
+    st.title("Final Scorecard — Prospecting & Outreach")
+    st.markdown("---")
+
+    col_a, col_b, col_c = st.columns(3)
+    with col_a:
+        st.metric("Student", student_name)
+    with col_b:
+        st.metric("Activity", "4 Channels")
+    with col_c:
+        st.metric("Date", str(date.today()))
+
+    st.markdown("")
+
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:2px solid {tier_color};
+             border-radius:12px; padding:1.5rem; text-align:center;
+             margin:0.75rem 0 1rem 0;">
+          <div style="font-size:2.4rem; font-weight:800; color:{tier_color};">
+            {avg} / 100
+          </div>
+          <div style="font-size:1.05rem; color:#FAFAFA; font-weight:600;">
+            Overall Average &mdash; {tier}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
+    st.markdown("### Round Summary")
+
+    header_html = (
+        '<div style="display:grid; grid-template-columns:1fr 2fr 2fr 1fr;'
+        ' gap:0.5rem; padding:0.4rem 0.6rem; font-weight:700;'
+        ' color:#4A90D9; font-size:0.85rem; border-bottom:1px solid #2E5FA3;">'
+        "<div>Round</div><div>Channel</div><div>Prospect</div><div>Score</div></div>"
+    )
+    rows_html = ""
+    for r in round_scores:
+        s = r["score"]
+        sc_color = "#27AE60" if s >= 75 else ("#F39C12" if s >= 60 else "#E74C3C")
+        rows_html += (
+            f'<div style="display:grid; grid-template-columns:1fr 2fr 2fr 1fr;'
+            f' gap:0.5rem; padding:0.35rem 0.6rem; font-size:0.88rem;'
+            f' border-bottom:1px solid #1A2332; color:#ddd;">'
+            f'<div style="color:#FAFAFA;">{r["round"]}</div>'
+            f'<div>{r["icon"]} {r["channel_label"]}</div>'
+            f'<div>{r["prospect"]}</div>'
+            f'<div style="color:{sc_color}; font-weight:700;">{s}</div></div>'
+        )
+    st.markdown(
+        f'<div style="background:#112030; border:1px solid #2E5FA3;'
+        f' border-radius:8px; margin-bottom:1rem; overflow:hidden;">'
+        f"{header_html}{rows_html}</div>",
+        unsafe_allow_html=True,
+    )
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.success(
+            f"**Strongest: {best['icon']} {best['channel_label']}**\n\n"
+            f"Score: {best['score']} / 100 — {best['tier']}\n\n"
+            f"Prospect: {best['prospect']} at {best['company']}"
+        )
+    with col2:
+        st.error(
+            f"**Needs Work: {worst['icon']} {worst['channel_label']}**\n\n"
+            f"Score: {worst['score']} / 100 — {worst['tier']}\n\n"
+            f"Prospect: {worst['prospect']} at {worst['company']}"
+        )
+
+    st.markdown("---")
+    if st.button("🔄 Practice Again", type="primary", use_container_width=True):
+        _reset_state()
         st.rerun()
 
 
@@ -757,5 +882,7 @@ def run_chapter6() -> None:
         screen_setup()
     elif phase == "write":
         screen_write()
+    elif phase == "scorecard":
+        screen_round_scorecard()
     else:
-        screen_scorecard()
+        screen_final_scorecard()
