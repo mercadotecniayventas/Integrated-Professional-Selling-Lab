@@ -20,7 +20,7 @@ CHAPTERS = {
     3: {"title": "Active Listening Roleplay", "active": True},
     4: {"title": "Prospecting", "active": False},
     5: {"title": "Pre-Approach & Planning", "active": False},
-    6: {"title": "Approach & Opening", "active": False},
+    6: {"title": "Prospecting & Outreach", "active": True},
     7: {"title": "Discovery & SPIN Questioning", "active": True},
     8: {"title": "Presentation & Demonstration", "active": False},
     9: {"title": "Objections, Negotiation & Closing", "active": True},

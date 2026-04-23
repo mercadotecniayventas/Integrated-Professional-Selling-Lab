@@ -102,6 +102,7 @@ def render_home():
         st.info(
             "**Active now**\n\n"
             "✅ Ch. 5 — TAM/SAM/SOM Agent ↗\n\n"
+            "✅ Ch. 6 — Prospecting & Outreach\n\n"
             "✅ Ch. 7 — Discovery & SPIN Questioning\n\n"
             "✅ Ch. 11 — Personal Branding Agent ↗"
         )
@@ -116,6 +117,9 @@ def main():
 
     if selected is None:
         render_home()
+    elif selected == 6:
+        from modules.chapter6 import run_chapter6
+        run_chapter6()
     elif selected == 3:
         from modules.chapter3 import run_chapter3
         run_chapter3()
