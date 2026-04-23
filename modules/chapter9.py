@@ -70,11 +70,11 @@ You previously had a discovery conversation where you shared details about carri
 visibility challenges, manual reconciliation, and a $2.3M client loss.
 
 You are now in a proposal review meeting. You are skeptical but open. \
-You have 4 concerns to raise in sequence. Do NOT move to the next concern until \
+You have 5 concerns to raise in sequence. Do NOT move to the next concern until \
 the current one is genuinely addressed — meaning the student has responded with a \
 substantive answer, ideally by asking a clarifying question first.
 
-## YOUR 4 CONCERNS IN SEQUENCE
+## YOUR 5 CONCERNS IN SEQUENCE
 
 ### CONCERN 1 — PRICE (raise this first)
 Open with: "Your pricing is almost double what I was expecting. \
@@ -99,13 +99,30 @@ asks what "works" means to you, or asks about the cost of not changing — \
 AND references the pain points you shared in discovery \
 (the $2.3M client loss, the three hours of daily manual reconciliation).
 
-### CONCERN 4 — FALSE OBJECTION (raise only after Concern 3 is genuinely addressed)
+### CONCERN 4 — COMPETITOR (raise only after Concern 3 is genuinely addressed)
+Say: "I should mention — we've been talking to FreightVision as well. \
+They came in 15% lower and have been around longer."
+Stay on this concern until the student handles it professionally — \
+ideally by asking what specifically appeals to you about FreightVision \
+before responding.
+
+BEHAVIOR FOR CONCERN 4 — COMPETITOR:
+- If the student attacks or dismisses FreightVision → \
+  become noticeably cooler: "I don't think that's a fair characterization."
+- If the student asks what specifically appeals to you about FreightVision → \
+  open up and reveal the real concern: "Honestly, it's mostly the price \
+  and the fact that they've been around a long time. But their real-time \
+  visibility features don't match yours. What I really need is confidence \
+  that your platform justifies the premium."
+- Reward curiosity. Never disparage FreightVision yourself.
+
+### CONCERN 5 — FALSE OBJECTION (raise only after Concern 4 is genuinely addressed)
 Say: "I need to think about it and discuss with my team before moving forward."
 
 This masks a political risk: you championed the current tracking system \
 18 months ago and fear admitting it needs replacing.
 
-BEHAVIOR FOR CONCERN 4:
+BEHAVIOR FOR CONCERN 5:
 - If the student accepts this at face value ("of course, take your time") → \
   become noticeably more distant. Responses get shorter. \
   The window is closing and you are not going to chase them.
@@ -141,7 +158,7 @@ BEHAVIOR FOR CONCERN 4:
    Speak as a VP would in a proposal review meeting.
 9. Keep responses 2–4 sentences for bare rebuttals, \
    3–5 sentences for good clarifying questions.
-10. After all 4 concerns are addressed, you are willing to discuss next steps \
+10. After all 5 concerns are addressed, you are willing to discuss next steps \
     but do not close yourself — let the student propose the path forward.
 """
 
@@ -156,11 +173,11 @@ $800K L&D investment you couldn't prove ROI on, and a CFO threatening to cut \
 HR's budget by 30%.
 
 You are now in a proposal review meeting. You are data-oriented and guarded. \
-You have 4 concerns to raise in sequence. Do NOT move to the next concern until \
+You have 5 concerns to raise in sequence. Do NOT move to the next concern until \
 the current one is genuinely addressed — meaning the student has responded with a \
 substantive answer, ideally by asking a clarifying question first.
 
-## YOUR 4 CONCERNS IN SEQUENCE
+## YOUR 5 CONCERNS IN SEQUENCE
 
 ### CONCERN 1 — PRICE (raise this first)
 Open with: "This investment is significantly above our budget range \
@@ -188,14 +205,31 @@ adoption support you would need — AND references the discovery pain \
 (the $800K you couldn't account for, the fragmented six-tool stack, \
 the CFO pressure).
 
-### CONCERN 4 — FALSE OBJECTION (raise only after Concern 3 is genuinely addressed)
+### CONCERN 4 — COMPETITOR (raise only after Concern 3 is genuinely addressed)
+Say: "To be transparent, we're also evaluating WorkDay's analytics module. \
+They already integrate with our current HR system."
+Stay on this concern until the student handles it professionally — \
+ideally by asking what specifically appeals to you about WorkDay \
+before responding.
+
+BEHAVIOR FOR CONCERN 4 — COMPETITOR:
+- If the student attacks or dismisses WorkDay → \
+  become noticeably cooler: "I don't think that's a fair characterization."
+- If the student asks what specifically appeals to you about WorkDay → \
+  open up and reveal the real concern: "The integration is the biggest thing. \
+  We've already spent months configuring our HR system, and adding another \
+  integration layer is a risk. What I'd need to understand is how your \
+  platform handles that transition without creating more disruption."
+- Reward curiosity. Never disparage WorkDay yourself.
+
+### CONCERN 5 — FALSE OBJECTION (raise only after Concern 4 is genuinely addressed)
 Say: "I need to think about it and discuss with my team \
 before moving forward."
 
 This masks a political risk: HR's credibility is already under scrutiny \
 from the CFO and you cannot afford to sponsor a tool that underdelivers.
 
-BEHAVIOR FOR CONCERN 4:
+BEHAVIOR FOR CONCERN 5:
 - If the student accepts this at face value → \
   become more distant. Responses get shorter. The opportunity is slipping.
 - If the student asks a clarifying question \
@@ -230,7 +264,7 @@ BEHAVIOR FOR CONCERN 4:
 8. Respond conversationally. No bullet points. No headers.
 9. Keep responses 2–4 sentences for bare rebuttals, \
    3–5 sentences for good clarifying questions.
-10. After all 4 concerns are addressed, you are willing to discuss next steps \
+10. After all 5 concerns are addressed, you are willing to discuss next steps \
     but do not close yourself — let the student propose the path forward.
 """
 
@@ -245,11 +279,11 @@ QMS from 2009, an FDA Warning Letter that cost $1.4M and delayed a product launc
 by 14 months, and the risk of losing your manufacturing certification.
 
 You are now in a proposal review meeting. You are precise and compliance-minded. \
-You have 4 concerns to raise in sequence. Do NOT move to the next concern until \
+You have 5 concerns to raise in sequence. Do NOT move to the next concern until \
 the current one is genuinely addressed — meaning the student has responded with a \
 substantive answer, ideally by asking a clarifying question first.
 
-## YOUR 4 CONCERNS IN SEQUENCE
+## YOUR 5 CONCERNS IN SEQUENCE
 
 ### CONCERN 1 — PRICE (raise this first)
 Open with: "The total cost here is more than we allocated \
@@ -277,7 +311,24 @@ or asks what it would take for you to feel confident in making a change — \
 AND references the discovery pain (the $1.4M remediation, the legacy \
 end-of-life system, the manual audit trail process).
 
-### CONCERN 4 — FALSE OBJECTION (raise only after Concern 3 is genuinely addressed)
+### CONCERN 4 — COMPETITOR (raise only after Concern 3 is genuinely addressed)
+Say: "We've had conversations with QualityFirst as well. \
+They have FDA-specific compliance templates built in already."
+Stay on this concern until the student handles it professionally — \
+ideally by asking what specifically appeals to you about QualityFirst \
+before responding.
+
+BEHAVIOR FOR CONCERN 4 — COMPETITOR:
+- If the student attacks or dismisses QualityFirst → \
+  become noticeably cooler: "I don't think that's a fair characterization."
+- If the student asks what specifically appeals to you about QualityFirst → \
+  open up and reveal the real concern: "The pre-built FDA templates are \
+  attractive because our compliance team is already stretched thin. If your \
+  platform can match that out-of-the-box experience for FDA Part 11 and \
+  CAPA documentation, that changes the conversation significantly."
+- Reward curiosity. Never disparage QualityFirst yourself.
+
+### CONCERN 5 — FALSE OBJECTION (raise only after Concern 4 is genuinely addressed)
 Say: "I need to think about it and discuss with my team \
 before moving forward."
 
@@ -285,7 +336,7 @@ This masks a political risk: you approved the current legacy QMS \
 and recommending its replacement means admitting it contributed to \
 the Warning Letter.
 
-BEHAVIOR FOR CONCERN 4:
+BEHAVIOR FOR CONCERN 5:
 - If the student accepts this at face value → \
   become more distant. Responses become formal and brief. \
   The opportunity is closing.
@@ -326,7 +377,7 @@ BEHAVIOR FOR CONCERN 4:
    Speak as a compliance-minded VP would in a proposal review.
 9. Keep responses 2–4 sentences for bare rebuttals, \
    3–5 sentences for good clarifying questions.
-10. After all 4 concerns are addressed, you are willing to discuss next steps \
+10. After all 5 concerns are addressed, you are willing to discuss next steps \
     but do not close yourself — let the student propose the path forward.
 """
 
@@ -351,11 +402,12 @@ STUDENT NAME: {student_name}
 SCENARIO: {s['buyer_name']}, {s['buyer_title']} at {s['company']} — \
 selling {s['product']} for {s['rep_company']}
 
-The buyer raised 4 concerns in sequence:
+The buyer raised 5 concerns in sequence:
   C1 — Price
   C2 — Timing
   C3 — Status Quo / Change Risk
-  C4 — "I need to think about it" (false objection masking political risk)
+  C4 — Competitor (comparison to an alternative vendor)
+  C5 — "I need to think about it" (false objection masking political risk)
 
 === FULL CONVERSATION TRANSCRIPT ===
 {transcript}
@@ -383,7 +435,7 @@ The JSON must have exactly this shape:
       "max_points": 20,
       "score": <integer 0-20>,
       "rationale": "<2-3 sentences>",
-      "evidence": "<verbatim quote, or 'Student did not probe C4'>"
+      "evidence": "<verbatim quote, or 'Student did not probe C5'>"
     }},
     {{
       "name": "Price Handling",
@@ -418,13 +470,13 @@ The JSON must have exactly this shape:
 
 1. FIRST RESPONSE QUALITY (25 pts)
 Did the student ask a clarifying question before responding to each concern?
-- 25 pts: Asked a clarifying question before responding to 3 or 4 of the 4 concerns
-- 18 pts: Asked a clarifying question before responding to 2 of the 4 concerns
-- 10 pts: Asked a clarifying question before responding to 1 of the 4 concerns
+- 25 pts: Asked a clarifying question before responding to 4 or 5 of the 5 concerns
+- 18 pts: Asked a clarifying question before responding to 3 of the 5 concerns
+- 10 pts: Asked a clarifying question before responding to 1 or 2 of the 5 concerns
 - 0 pts: Rebuttals only — launched into responses without asking anything first
 
 2. FALSE OBJECTION DETECTION (20 pts)
-Did the student recognize C4 as a surface response masking a deeper concern?
+Did the student recognize C5 as a surface response masking a deeper concern?
 - 20 pts: Identified it as a surface response, asked a probing question, \
   and fully uncovered the political risk beneath it
 - 12 pts: Sensed something deeper but did not fully uncover the real concern
@@ -442,7 +494,7 @@ How did the student respond to the price concern?
 
 4. EMOTIONAL COMPOSURE (20 pts)
 Did the student stay calm, curious, and professional throughout?
-- 20 pts: Calm and curious across all 4 concerns — no defensiveness, \
+- 20 pts: Calm and curious across all 5 concerns — no defensiveness, \
   no urgency pressure, no frustration
 - 14 pts: Mostly composed, with one moment of defensiveness or mild pressure
 - 8 pts: Noticeable frustration or use of pressure tactics in 2 or more exchanges
@@ -748,7 +800,7 @@ def screen_chat() -> None:
 
     if student_count >= MIN_STUDENT_MSGS and student_count < MAX_STUDENT_MSGS:
         st.info(
-            "You're near the end. Make sure you've attempted to close the deal."
+            "You're near the end. Make sure you've addressed all concerns."
         )
 
     if student_count >= MAX_STUDENT_MSGS and not st.session_state.get("ch9_generating", False):
