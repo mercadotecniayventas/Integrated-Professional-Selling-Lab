@@ -472,7 +472,6 @@ def _reset_state() -> None:
 def screen_setup() -> None:
     st.title("Chapter 6 — Prospecting & Outreach Practice")
 
-    # Section 1 — How it works
     st.markdown(
         """
         <div style="background:#1A2332; border:1px solid #2E5FA3;
@@ -480,18 +479,19 @@ def screen_setup() -> None:
           <div style="font-weight:700; color:#4A90D9; margin-bottom:0.6rem;">
             &#128203; How this activity works
           </div>
-          <div style="color:#FAFAFA; margin-bottom:0.6rem;">
-            In real B2B selling, outreach typically follows this sequence:
+          <div style="color:#FAFAFA; margin-bottom:0.5rem;">
+            In professional B2B selling, outreach follows a natural sequence:
           </div>
-          <div style="color:#FAFAFA; margin-bottom:0.25rem;">&#128188; <strong>LinkedIn</strong> — connect and establish presence first</div>
-          <div style="color:#FAFAFA; margin-bottom:0.25rem;">&#128231; <strong>Email</strong> — follow up with a specific value message</div>
-          <div style="color:#FAFAFA; margin-bottom:0.25rem;">&#128222; <strong>Cold Call</strong> — reach out by phone if no response</div>
-          <div style="color:#FAFAFA; margin-bottom:0.6rem;">&#129309; <strong>Event Follow-up</strong> — reconnect after meeting in person</div>
+          <div style="color:#FAFAFA; margin-bottom:0.2rem;">&#128188; <strong>Round 1 &mdash; LinkedIn:</strong> establish presence first</div>
+          <div style="color:#FAFAFA; margin-bottom:0.2rem;">&#128231; <strong>Round 2 &mdash; Email:</strong> follow up with specific value</div>
+          <div style="color:#FAFAFA; margin-bottom:0.2rem;">&#128222; <strong>Round 3 &mdash; Cold Call:</strong> reach out by phone</div>
+          <div style="color:#FAFAFA; margin-bottom:0.6rem;">&#129309; <strong>Round 4 &mdash; Event Follow-up:</strong> reconnect after meeting</div>
           <div style="color:#ddd; margin-bottom:0.6rem;">
-            In this activity you will practice all 4 channels.
-            Your assigned order for this session will appear below.
+            You will practice all 4 channels in this order.
+            Each time you practice, you will face different prospects
+            &mdash; so you can never memorize the answers.
           </div>
-          <div style="color:#ddd; margin-bottom:0.4rem;">After each round you will receive:</div>
+          <div style="color:#ddd; margin-bottom:0.35rem;">After each round you will receive:</div>
           <div style="color:#FAFAFA; margin-bottom:0.2rem;">&#9989; A score across 6 dimensions</div>
           <div style="color:#FAFAFA; margin-bottom:0.2rem;">&#9989; Specific feedback on what worked</div>
           <div style="color:#FAFAFA; margin-bottom:0.2rem;">&#9989; A rewritten example showing what great looks like</div>
@@ -505,31 +505,6 @@ def screen_setup() -> None:
         unsafe_allow_html=True,
     )
 
-    # Section 2 — Channel order preview for this session
-    channel_order = st.session_state["ch6_channel_order"]
-    rows_html = ""
-    for i, ck in enumerate(channel_order):
-        icon = _CHANNEL_ICONS[ck]
-        label = CHANNELS[ck]["label"]
-        rows_html += (
-            f'<div style="padding:0.3rem 0; color:#FAFAFA; font-size:0.93rem;">'
-            f'<span style="color:#4A90D9; font-weight:700;">Round {i + 1}:</span>'
-            f'&nbsp; {icon} {label}</div>'
-        )
-    st.markdown(
-        f"""
-        <div style="background:#1A2332; border:1px solid #2E5FA3;
-             border-radius:8px; padding:0.9rem 1.1rem; margin:0.5rem 0 1rem 0;">
-          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.5rem;">
-            Your channel order for this session:
-          </div>
-          {rows_html}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # Section 3 — Name input
     st.markdown("**Your full name (appears on your scorecard):**")
     student_name = st.text_input(
         "Your full name",
@@ -539,7 +514,6 @@ def screen_setup() -> None:
         label_visibility="collapsed",
     )
 
-    # Section 4 — Start button
     ready = bool(student_name.strip())
     if not ready:
         st.caption("Enter your name above to enable the Start button.")
@@ -560,24 +534,67 @@ def screen_setup() -> None:
 # ---------------------------------------------------------------------------
 
 def screen_write() -> None:
-    channel_key = st.session_state["ch6_channel"]
-    scenario_key = st.session_state["ch6_scenario"]
+    current_round = st.session_state["ch6_current_round"]
+    channel_key = CHANNEL_ORDER[current_round]
+    case_idx = st.session_state["ch6_case_per_channel"][channel_key]
+    case_key = list(CASES[channel_key].keys())[case_idx]
+    sc = CASES[channel_key][case_key]
     ch = CHANNELS[channel_key]
-    sc = SCENARIOS[scenario_key]
     word_limit = ch["word_limit"]
+    icon = _CHANNEL_ICONS[channel_key]
 
-    st.title("Chapter 6 — Prospecting & Outreach Evaluator")
+    st.title("Chapter 6 — Prospecting & Outreach Practice")
 
+    # Round header
     st.markdown(
         f"""
         <div style="background:#1A2332; border:1px solid #2E5FA3;
-             border-radius:6px; padding:0.5rem 0.8rem; margin-bottom:0.75rem;
-             font-size:0.88rem; color:#ddd;">
-          <strong style="color:#FAFAFA;">{ch['label']}</strong>
-          &nbsp;&middot;&nbsp;
-          {sc['prospect_name']}, {sc['prospect_title']} at {sc['company']}
-          &nbsp;&middot;&nbsp;
-          <span style="color:#aaa;">Limit: {word_limit} words</span>
+             border-radius:6px; padding:0.45rem 0.8rem; margin-bottom:0.65rem;
+             font-size:0.92rem;">
+          <span style="color:#4A90D9; font-weight:700;">
+            Round {current_round + 1} of 4 &mdash; {icon} {ch['label']}
+          </span>
+          <span style="color:#aaa; font-size:0.82rem;">
+            &nbsp;&middot;&nbsp; {word_limit}-word limit
+          </span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Prospect briefing card
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:1px solid #2E5FA3;
+             border-radius:8px; padding:0.9rem 1.1rem; margin-bottom:0.5rem;">
+          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.4rem;">
+            &#128203; Your Prospect
+          </div>
+          <div style="color:#FAFAFA; margin-bottom:0.3rem;">
+            <strong>{sc['prospect_name']}</strong>,
+            {sc['prospect_title']} &mdash;
+            <strong>{sc['company']}</strong> ({sc['company_size']})
+          </div>
+          <div style="color:#ddd; margin-bottom:0.3rem;">
+            You sell: <strong>{sc['seller_product']}</strong>
+            at <strong>{sc['seller_company']}</strong>
+          </div>
+          <div style="color:#aaa; font-style:italic;">{sc['context']}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Mission card
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:1px solid #4A90D9;
+             border-radius:8px; padding:0.8rem 1rem; margin-bottom:0.75rem;">
+          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.3rem;">
+            &#127919; Your Mission
+          </div>
+          <div style="color:#FAFAFA; margin-bottom:0.25rem;">{ch['mission_rule']}</div>
+          <div style="color:#aaa; font-style:italic;">&#128161; {ch['mission_tip']}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -586,7 +603,7 @@ def screen_write() -> None:
     message = st.text_area(
         ch["textarea_label"],
         value=st.session_state.get("ch6_message", ""),
-        height=260,
+        height=240,
         placeholder=f"Write your {ch['label'].lower()} here…",
         key="ch6_message_input",
     )
@@ -619,7 +636,7 @@ def screen_write() -> None:
                 message,
                 st.session_state["ch6_student_name"],
                 channel_key,
-                scenario_key,
+                sc,          # case dict — get_coach_prompt updated in step 4
             )
         st.session_state["ch6_scorecard"] = data
         st.session_state["ch6_phase"] = "scorecard"
