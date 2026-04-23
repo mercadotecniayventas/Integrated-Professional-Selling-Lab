@@ -1,3 +1,4 @@
+import random
 import streamlit as st
 
 # ---------------------------------------------------------------------------
@@ -839,16 +840,22 @@ def _init_state() -> None:
     defaults = {
         "ch10_phase": "setup",
         "ch10_student_name": "",
-        "ch10_variant": "A",
         "ch10_current_deal_index": 0,
-        "ch10_decision_step": "strategy",   # "strategy" | "crm" | "result"
-        "ch10_strategy_choice": None,        # index of chosen strategy option
-        "ch10_crm_choice": None,             # index of chosen crm option
-        "ch10_answers": {},                  # {"A": {"strategy": idx, "crm": idx}, ...}
+        "ch10_decision_step": "strategy",
+        "ch10_strategy_choice": None,
+        "ch10_crm_choice": None,
+        "ch10_answers": {},
     }
     for key, val in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = val
+    # Auto-assign variant on first play; never repeat the same one consecutively.
+    if "ch10_variant" not in st.session_state:
+        last = st.session_state.get("ch10_last_variant", None)
+        options = [v for v in ["A", "B", "C"] if v != last]
+        variant = random.choice(options)
+        st.session_state["ch10_variant"] = variant
+        st.session_state["ch10_last_variant"] = variant
 
 
 # ---------------------------------------------------------------------------
@@ -867,14 +874,6 @@ def screen_setup() -> None:
         key="ch10_name_input",
     )
 
-    st.radio(
-        "Select your game variant:",
-        ["A", "B", "C"],
-        horizontal=True,
-        key="ch10_variant",
-        index=["A", "B", "C"].index(st.session_state.get("ch10_variant", "A")),
-    )
-
     st.markdown(
         """
         <div style="background:#1A2332; border:1px solid #2E5FA3;
@@ -885,6 +884,7 @@ def screen_setup() -> None:
           make two decisions — one on <strong>deal strategy</strong> and one on
           <strong>CRM hygiene</strong>. Both matter equally. Your decisions have
           real consequences, which are revealed after each deal.
+          Each time you play, you'll face a different set of deals.
         </div>
         """,
         unsafe_allow_html=True,
