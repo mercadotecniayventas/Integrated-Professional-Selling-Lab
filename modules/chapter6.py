@@ -306,6 +306,7 @@ def screen_setup() -> None:
     st.markdown("### Simulation Setup")
     st.markdown("---")
 
+    # 1. Student name
     student_name = st.text_input(
         "Your full name",
         value=st.session_state["ch6_student_name"],
@@ -313,19 +314,8 @@ def screen_setup() -> None:
         key="ch6_name_input",
     )
 
-    st.markdown("#### Select outreach channel")
-    channel_options = list(CHANNELS.keys())
-    channel_labels = [CHANNELS[k]["label"] for k in channel_options]
-    selected_channel_label = st.radio(
-        "Outreach channel",
-        channel_labels,
-        index=channel_options.index(st.session_state.get("ch6_channel", "email")),
-        key="ch6_channel_radio",
-        label_visibility="collapsed",
-    )
-    selected_channel = channel_options[channel_labels.index(selected_channel_label)]
-
-    st.markdown("#### Select prospect scenario")
+    # 2. Prospect scenario first
+    st.markdown("#### Select your prospect")
     scenario_options = list(SCENARIOS.keys())
     scenario_labels = [SCENARIOS[k]["label"] for k in scenario_options]
     selected_scenario_label = st.radio(
@@ -336,15 +326,14 @@ def screen_setup() -> None:
         label_visibility="collapsed",
     )
     selected_scenario = scenario_options[scenario_labels.index(selected_scenario_label)]
-
-    ch = CHANNELS[selected_channel]
     sc = SCENARIOS[selected_scenario]
 
+    # Prospect briefing card — shown immediately on scenario selection
     st.markdown(
         f"""
         <div style="background:#1A2332; border:1px solid #2E5FA3;
              border-radius:8px; padding:1rem 1.2rem;
-             margin-top:0.75rem; margin-bottom:0.5rem;">
+             margin-top:0.5rem; margin-bottom:0.75rem;">
           <div style="font-weight:700; color:#4A90D9; margin-bottom:0.5rem;">
             &#128203; Your Prospect
           </div>
@@ -363,6 +352,21 @@ def screen_setup() -> None:
         unsafe_allow_html=True,
     )
 
+    # 3. Channel selection — framed around the chosen prospect
+    st.markdown(f"#### How will you reach out to {sc['prospect_name']}?")
+    channel_options = list(CHANNELS.keys())
+    channel_labels = [CHANNELS[k]["label"] for k in channel_options]
+    selected_channel_label = st.radio(
+        "Outreach channel",
+        channel_labels,
+        index=channel_options.index(st.session_state.get("ch6_channel", "email")),
+        key="ch6_channel_radio",
+        label_visibility="collapsed",
+    )
+    selected_channel = channel_options[channel_labels.index(selected_channel_label)]
+    ch = CHANNELS[selected_channel]
+
+    # 4. Mission card for the selected channel
     st.markdown(
         f"""
         <div style="background:#1A2332; border:1px solid #4A90D9;
@@ -377,6 +381,7 @@ def screen_setup() -> None:
         unsafe_allow_html=True,
     )
 
+    # 5. Start button
     ready = bool(student_name.strip())
     if not ready:
         st.caption("Enter your name above to enable the Start button.")
