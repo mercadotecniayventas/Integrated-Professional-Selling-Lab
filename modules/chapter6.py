@@ -225,7 +225,6 @@ def _word_count(text: str) -> int:
 
 def get_coach_prompt(message: str, student_name: str, channel_key: str, case: dict) -> str:
     ch = CHANNELS[channel_key]
-    sc = case
     word_limit = ch["word_limit"]
 
     channel_guidance = {
@@ -254,9 +253,9 @@ STUDENT NAME: {student_name}
 CHANNEL: {ch['label']} (word limit: {word_limit} words)
 CHANNEL GUIDANCE: {channel_guidance}
 
-PROSPECT: {sc['prospect_name']}, {sc['prospect_title']} at {sc['company']} ({sc['company_size']})
-SELLER PRODUCT: {sc['seller_product']} (sold by {sc['seller_company']})
-CONTEXT: {sc['context']}
+PROSPECT: {case['prospect_name']}, {case['prospect_title']} at {case['company']} ({case['company_size']})
+SELLER PRODUCT: {case['seller_product']} (sold by {case['seller_company']})
+CONTEXT: {case['context']}
 
 STUDENT MESSAGE:
 \"\"\"
