@@ -44,22 +44,49 @@ CHANNELS = {
     },
 }
 
-SCENARIOS = {
-    "cold": {
-        "label": "Scenario 1 — Cold Outreach",
+CHANNEL_ORDER = ["linkedin", "email", "cold_call", "event_followup"]
+
+LINKEDIN_CASES = {
+    "L1": {
         "prospect_name": "David Park",
         "prospect_title": "VP Operations",
         "company": "Synthex Manufacturing",
         "company_size": "500 employees",
-        "seller_product": "supply chain analytics software",
+        "seller_product": "supply chain analytics",
         "seller_company": "DataFlow Solutions",
         "context": (
-            "No prior contact. Found them via LinkedIn. "
-            "They recently opened a new distribution center in Texas."
+            "You found them via LinkedIn search. "
+            "They just posted about supply chain challenges."
         ),
     },
-    "warm": {
-        "label": "Scenario 2 — Warm Outreach (Mutual Connection)",
+    "L2": {
+        "prospect_name": "Jennifer Wu",
+        "prospect_title": "Director of HR",
+        "company": "NovaCorp Tech",
+        "company_size": "300 employees",
+        "seller_product": "HR analytics",
+        "seller_company": "TalentIQ",
+        "context": (
+            "Mutual connection suggested you connect. "
+            "She recently liked a post about employee retention."
+        ),
+    },
+    "L3": {
+        "prospect_name": "Robert Chen",
+        "prospect_title": "CFO",
+        "company": "Meridian Healthcare",
+        "company_size": "600 employees",
+        "seller_product": "financial planning software",
+        "seller_company": "ClearView Analytics",
+        "context": (
+            "No prior contact. "
+            "Company recently announced expansion to 3 new cities."
+        ),
+    },
+}
+
+EMAIL_CASES = {
+    "E1": {
         "prospect_name": "Maria Santos",
         "prospect_title": "CFO",
         "company": "Greenfield Energy",
@@ -67,12 +94,10 @@ SCENARIOS = {
         "seller_product": "financial planning software",
         "seller_company": "ClearView Analytics",
         "context": (
-            "Your colleague Jake worked with Maria 2 years ago and suggested you reach out. "
-            "She values relationships before business."
+            "Colleague Jake worked with her before and suggested you reach out."
         ),
     },
-    "event": {
-        "label": "Scenario 3 — Event Follow-up",
+    "E2": {
         "prospect_name": "James Kim",
         "prospect_title": "Director of IT",
         "company": "Apex Healthcare",
@@ -80,10 +105,110 @@ SCENARIOS = {
         "seller_product": "cybersecurity software",
         "seller_company": "ShieldTech Solutions",
         "context": (
-            "You met briefly at a conference yesterday. "
-            "He mentioned data security concerns but you only had 5 minutes."
+            "No prior contact. "
+            "Company had a data breach reported in the news last month."
         ),
     },
+    "E3": {
+        "prospect_name": "Patricia Moore",
+        "prospect_title": "VP Sales",
+        "company": "FastGrow Retail",
+        "company_size": "450 employees",
+        "seller_product": "CRM analytics",
+        "seller_company": "DataFlow Solutions",
+        "context": (
+            "Met briefly at an industry webinar. "
+            "She mentioned pipeline visibility as a challenge."
+        ),
+    },
+}
+
+COLDCALL_CASES = {
+    "C1": {
+        "prospect_name": "Thomas Rivera",
+        "prospect_title": "COO",
+        "company": "BuildRight Construction",
+        "company_size": "700 employees",
+        "seller_product": "project management software",
+        "seller_company": "BuildRight Solutions",
+        "context": (
+            "No prior contact. "
+            "Company recently won a $50M government contract."
+        ),
+    },
+    "C2": {
+        "prospect_name": "Sarah Mitchell",
+        "prospect_title": "VP Operations",
+        "company": "PrimePack Logistics",
+        "company_size": "400 employees",
+        "seller_product": "route optimization software",
+        "seller_company": "FleetIQ",
+        "context": (
+            "Found via LinkedIn, no connection yet. "
+            "Industry facing driver shortage challenges."
+        ),
+    },
+    "C3": {
+        "prospect_name": "Michael Torres",
+        "prospect_title": "Director of Finance",
+        "company": "SunState Energy",
+        "company_size": "550 employees",
+        "seller_product": "financial analytics",
+        "seller_company": "ClearView Analytics",
+        "context": (
+            "No prior contact. "
+            "Company expanding into renewable energy division."
+        ),
+    },
+}
+
+EVENT_CASES = {
+    "EV1": {
+        "prospect_name": "James Kim",
+        "prospect_title": "Director of IT",
+        "company": "Apex Healthcare",
+        "company_size": "800 employees",
+        "seller_product": "cybersecurity software",
+        "seller_company": "ShieldTech Solutions",
+        "context": (
+            "Met at CyberSec Conference yesterday. "
+            "He mentioned concerns about ransomware attacks. "
+            "Had 5 minutes — no business cards exchanged."
+        ),
+    },
+    "EV2": {
+        "prospect_name": "Laura Nguyen",
+        "prospect_title": "VP Marketing",
+        "company": "TechVentures Inc",
+        "company_size": "250 employees",
+        "seller_product": "sales intelligence software",
+        "seller_company": "LeadGenius",
+        "context": (
+            "Met at B2B Sales Summit this morning. "
+            "She was interested in AI-powered lead scoring. "
+            "Had a 10-minute conversation at the networking lunch."
+        ),
+    },
+    "EV3": {
+        "prospect_name": "Daniel Park",
+        "prospect_title": "COO",
+        "company": "MedSupply Corp",
+        "company_size": "480 employees",
+        "seller_product": "supply chain software",
+        "seller_company": "DataFlow Solutions",
+        "context": (
+            "Met at Healthcare Operations Conference today. "
+            "He mentioned supply chain visibility as a top priority. "
+            "Brief conversation — he gave you his card."
+        ),
+    },
+}
+
+CASES = {
+    "linkedin":       LINKEDIN_CASES,
+    "email":          EMAIL_CASES,
+    "cold_call":      COLDCALL_CASES,
+    "event_followup": EVENT_CASES,
 }
 
 # ---------------------------------------------------------------------------
