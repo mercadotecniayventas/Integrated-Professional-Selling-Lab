@@ -559,6 +559,21 @@ def screen_setup() -> None:
             At the end you will see your overall score across all 4 channels
             and your strongest and weakest channel.
           </div>
+          <div style="margin-top:0.75rem; padding-top:0.65rem; border-top:1px solid #2E5FA3;">
+            <div style="font-weight:700; color:#4A90D9; margin-bottom:0.4rem;">
+              &#129504; Can I use AI?
+            </div>
+            <div style="color:#FAFAFA; margin-bottom:0.5rem;">
+              Yes &mdash; for all 4 channels. But AI alone scores poorly. The evaluator checks
+              for genuine personalization and authentic voice.
+            </div>
+            <div style="color:#ddd; margin-bottom:0.25rem; font-weight:600;">Best approach:</div>
+            <div style="color:#FAFAFA; margin-bottom:0.15rem;">1. Research a real company in that industry first</div>
+            <div style="color:#FAFAFA; margin-bottom:0.15rem;">2. Use AI to draft a starting point</div>
+            <div style="color:#FAFAFA; margin-bottom:0.15rem;">3. Edit with what YOU found</div>
+            <div style="color:#FAFAFA; margin-bottom:0.4rem;">4. Make it sound like you, not a template</div>
+            <div style="color:#aaa; font-style:italic;">AI suggests. You decide.</div>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,
