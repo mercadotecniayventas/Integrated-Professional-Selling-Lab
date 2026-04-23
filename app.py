@@ -65,7 +65,7 @@ def render_sidebar() -> int | None:
                 if st.button(label, key=f"ch_{num}", use_container_width=True):
                     st.session_state["selected_chapter"] = num
                     for key in list(st.session_state.keys()):
-                        if key.startswith("ch7_"):
+                        if key[:2] == "ch" and key[2:3].isdigit():
                             del st.session_state[key]
                     st.rerun()
             else:
@@ -125,6 +125,9 @@ def main():
     elif selected == 9:
         from modules.chapter9 import run_chapter9
         run_chapter9()
+    elif selected == 10:
+        from modules.chapter10 import run_chapter10
+        run_chapter10()
     else:
         info = CHAPTERS[selected]
         st.title(f"Chapter {selected} — {info['title']}")

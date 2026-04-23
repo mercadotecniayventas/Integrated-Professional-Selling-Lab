@@ -24,7 +24,7 @@ CHAPTERS = {
     7: {"title": "Discovery & SPIN Questioning", "active": True},
     8: {"title": "Presentation & Demonstration", "active": False},
     9: {"title": "Objections, Negotiation & Closing", "active": True},
-    10: {"title": "Closing the Sale", "active": False},
+    10: {"title": "Sales Technology Stack", "active": True},
     11: {"title": "Follow-up & Relationship Management", "active": False},
 }
 

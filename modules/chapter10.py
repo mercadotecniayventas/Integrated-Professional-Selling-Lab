@@ -477,5 +477,468 @@ def screen_setup() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Parts 2 and 3 appended below
+# Part 2 — Score helpers + game screen
 # ---------------------------------------------------------------------------
+
+from datetime import date
+
+# Pipeline Stage Discipline: maps (deal, crm_choice_index) → pts
+# Measures whether the CRM choice kept the stage accurate and current.
+STAGE_DISCIPLINE_MAP = {
+    "A": {0: 3, 1: 5, 2: 0},   # log activity=3, update Stalled=5, leave=0
+    "B": {0: 3, 1: 5, 2: 5},   # notes only=3, next step=5, both=5
+    "C": {0: 5, 1: 0, 2: 3},   # pro log=5, personal log=0, nothing=3
+    "D": {0: 3, 1: 5, 2: 5},   # log discount=3, champion=5, both=5
+    "E": {0: 5, 1: 3, 2: 5},   # stage update=5, notes only=3, both=5
+}
+
+
+def _compute_scores(answers: dict) -> dict:
+    strategy_pts = sum(
+        DEALS[k]["strategy"]["options"][answers[k]["strategy"]]["points"]
+        for k in answers
+    )
+    crm_pts = sum(
+        DEALS[k]["crm"]["options"][answers[k]["crm"]]["points"]
+        for k in answers
+    )
+    stage_pts = sum(
+        STAGE_DISCIPLINE_MAP[k][answers[k]["crm"]]
+        for k in answers
+    )
+    # Data Privacy: 8 pts (C strategy) + 7 pts (C crm) + 10 pts (E strategy) = 25
+    privacy_pts = 0
+    if "C" in answers:
+        if not DEALS["C"]["strategy"]["options"][answers["C"]["strategy"]]["privacy_violation"]:
+            privacy_pts += 8
+        if not DEALS["C"]["crm"]["options"][answers["C"]["crm"]]["privacy_violation"]:
+            privacy_pts += 7
+    if "E" in answers:
+        if not DEALS["E"]["strategy"]["options"][answers["E"]["strategy"]]["privacy_violation"]:
+            privacy_pts += 10
+    return {
+        "strategy": strategy_pts,
+        "crm": crm_pts,
+        "stage": stage_pts,
+        "privacy": privacy_pts,
+        "total": strategy_pts + crm_pts + stage_pts + privacy_pts,
+    }
+
+
+def _show_result_box(label, choice_text, points, consequence, privacy_violation):
+    if points == 5:
+        border, icon, tier = "#27AE60", "✅", "Optimal choice"
+    elif points == 3:
+        border, icon, tier = "#F39C12", "⚠️", "Acceptable choice"
+    else:
+        border, icon, tier = "#E74C3C", "❌", "Poor choice"
+
+    consequence_html = ""
+    if consequence:
+        bg = "#3D0000" if privacy_violation else "#1A2332"
+        lb = "#E74C3C" if privacy_violation else "#555"
+        consequence_html = (
+            f'<div style="background:{bg}; border-left:3px solid {lb};'
+            f' padding:0.45rem 0.7rem; margin-top:0.4rem; border-radius:4px;'
+            f' font-size:0.84rem; color:#ddd;">{consequence}</div>'
+        )
+
+    st.markdown(
+        f"""
+        <div style="border:1px solid {border}; border-radius:8px;
+             padding:0.7rem 1rem; margin-bottom:0.65rem;">
+          <div style="font-weight:700; color:#FAFAFA; margin-bottom:0.2rem;">{label}</div>
+          <div style="font-size:0.88rem; color:#ddd; margin-bottom:0.25rem;">{choice_text}</div>
+          <div style="font-size:0.84rem;">
+            <span style="color:{border};">{icon} {tier}</span>
+            &nbsp;&nbsp;<strong style="color:{border};">+{points} pts</strong>
+          </div>
+          {consequence_html}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Screen 2 — CRM Game Interface
+# ---------------------------------------------------------------------------
+
+def screen_game() -> None:
+    deal_index = st.session_state["ch10_current_deal_index"]
+    answers: dict = st.session_state["ch10_answers"]
+
+    if deal_index >= len(DEAL_ORDER):
+        st.session_state["ch10_phase"] = "scorecard"
+        st.rerun()
+        return
+
+    current_key = DEAL_ORDER[deal_index]
+    deal = DEALS[current_key]
+    decision_step = st.session_state["ch10_decision_step"]
+
+    col_left, col_center, col_right = st.columns([1.5, 4, 1.5])
+
+    # ── LEFT — Pipeline sidebar ───────────────────────────────────────────────
+    with col_left:
+        st.markdown("**📊 Pipeline**")
+        for i, key in enumerate(DEAL_ORDER):
+            d = DEALS[key]
+            is_current = (i == deal_index)
+            is_done = key in answers
+            sc = STAGE_COLORS.get(d["stage"], "#888")
+            val_k = f"${d['value'] // 1_000}k"
+            prefix = "✅ " if is_done else ("▶ " if is_current else "")
+            bg = "#1B3A6B" if is_current else "#1A2332"
+            bdr = "#4A90D9" if is_current else "#2E5FA3"
+            wt = "700" if is_current else "400"
+            st.markdown(
+                f"""
+                <div style="background:{bg}; border:1px solid {bdr};
+                     border-radius:6px; padding:0.4rem 0.6rem; margin-bottom:0.3rem;">
+                  <div style="font-weight:{wt}; font-size:0.8rem; color:#FAFAFA;">
+                    {prefix}{d['company']}
+                  </div>
+                  <div style="font-size:0.74rem; color:#aaa;">{val_k}</div>
+                  <span style="background:{sc}; color:white; border-radius:10px;
+                       padding:1px 6px; font-size:0.67rem;">{d['stage']}</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    # ── CENTER — Deal workspace ───────────────────────────────────────────────
+    with col_center:
+        sc = STAGE_COLORS.get(deal["stage"], "#888")
+        val_k = f"${deal['value'] // 1_000}k"
+        st.markdown(
+            f"""
+            <div style="margin-bottom:0.65rem;">
+              <span style="font-size:1.1rem; font-weight:700;">{deal['company']}</span>
+              &nbsp;<span style="color:#aaa;">{val_k}</span>&nbsp;
+              <span style="background:{sc}; color:white; border-radius:10px;
+                   padding:2px 8px; font-size:0.77rem;">{deal['stage']}</span>
+              &nbsp;&nbsp;
+              <span style="color:#888; font-size:0.83rem;">
+                Deal {deal_index + 1} of {len(DEAL_ORDER)}
+              </span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.info(
+            f"**Situation:** {deal['situation']}\n\n"
+            f"**CRM status:** *{deal['crm_status']}*"
+        )
+        st.markdown("---")
+
+        # Step 1 — Strategy
+        if decision_step == "strategy":
+            st.markdown("#### 📋 Decision 1 — Deal Strategy")
+            opts = [o["text"] for o in deal["strategy"]["options"]]
+            st.radio(
+                deal["strategy"]["question"],
+                options=range(len(opts)),
+                format_func=lambda i: opts[i],
+                key=f"ch10_s_{current_key}",
+                index=0,
+            )
+            if st.button("Confirm Decision", type="primary",
+                         use_container_width=True, key="ch10_btn_s"):
+                st.session_state["ch10_strategy_choice"] = (
+                    st.session_state.get(f"ch10_s_{current_key}", 0)
+                )
+                st.session_state["ch10_decision_step"] = "crm"
+                st.rerun()
+
+        # Step 2 — CRM
+        elif decision_step == "crm":
+            s_idx = st.session_state["ch10_strategy_choice"]
+            s_text = deal["strategy"]["options"][s_idx]["text"]
+            st.markdown(
+                f"""
+                <div style="background:#112030; border:1px solid #2E5FA3;
+                     border-radius:6px; padding:0.5rem 0.8rem; margin-bottom:0.65rem;
+                     color:#aaa; font-size:0.87rem;">
+                  <strong style="color:#FAFAFA;">
+                    📋 Decision 1 — Deal Strategy (locked)
+                  </strong><br>{s_text}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.markdown("#### 💾 Decision 2 — CRM Hygiene")
+            opts = [o["text"] for o in deal["crm"]["options"]]
+            st.radio(
+                deal["crm"]["question"],
+                options=range(len(opts)),
+                format_func=lambda i: opts[i],
+                key=f"ch10_c_{current_key}",
+                index=0,
+            )
+            if st.button("Confirm Decision", type="primary",
+                         use_container_width=True, key="ch10_btn_c"):
+                c_idx = st.session_state.get(f"ch10_c_{current_key}", 0)
+                answers[current_key] = {
+                    "strategy": st.session_state["ch10_strategy_choice"],
+                    "crm": c_idx,
+                }
+                st.session_state["ch10_answers"] = answers
+                st.session_state["ch10_decision_step"] = "result"
+                st.rerun()
+
+        # Step 3 — Result
+        elif decision_step == "result":
+            s_idx = answers[current_key]["strategy"]
+            c_idx = answers[current_key]["crm"]
+            s_opt = deal["strategy"]["options"][s_idx]
+            c_opt = deal["crm"]["options"][c_idx]
+            deal_pts = s_opt["points"] + c_opt["points"]
+
+            _show_result_box(
+                "📋 Decision 1 — Deal Strategy",
+                s_opt["text"], s_opt["points"],
+                s_opt["consequence"], s_opt["privacy_violation"],
+            )
+            _show_result_box(
+                "💾 Decision 2 — CRM Hygiene",
+                c_opt["text"], c_opt["points"],
+                c_opt["consequence"], c_opt["privacy_violation"],
+            )
+            st.markdown(
+                f"""
+                <div style="text-align:center; padding:0.55rem; background:#112030;
+                     border-radius:8px; margin:0.4rem 0 0.65rem 0;">
+                  <span style="font-size:0.97rem; font-weight:700; color:#FAFAFA;">
+                    Points this deal: <span style="color:#4A90D9;">{deal_pts}</span> / 10
+                  </span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            is_last = (deal_index == len(DEAL_ORDER) - 1)
+            btn_label = "See Results →" if is_last else "Next Deal →"
+            if st.button(btn_label, type="primary",
+                         use_container_width=True, key="ch10_btn_next"):
+                if is_last:
+                    st.session_state["ch10_phase"] = "scorecard"
+                else:
+                    st.session_state["ch10_current_deal_index"] = deal_index + 1
+                    st.session_state["ch10_decision_step"] = "strategy"
+                    st.session_state["ch10_strategy_choice"] = None
+                    st.session_state["ch10_crm_choice"] = None
+                st.rerun()
+
+    # ── RIGHT — Activity log ──────────────────────────────────────────────────
+    with col_right:
+        st.markdown("**📝 Activity Log**")
+        if not answers:
+            st.caption("Decisions appear here.")
+        for key in DEAL_ORDER:
+            if key not in answers:
+                continue
+            s_pts = DEALS[key]["strategy"]["options"][answers[key]["strategy"]]["points"]
+            c_pts = DEALS[key]["crm"]["options"][answers[key]["crm"]]["points"]
+            s_icon = "✅" if s_pts == 5 else ("⚠️" if s_pts == 3 else "❌")
+            c_icon = "✅" if c_pts == 5 else ("⚠️" if c_pts == 3 else "❌")
+            st.markdown(
+                f"""
+                <div style="font-size:0.78rem; padding:0.28rem 0;
+                     border-bottom:1px solid #2E5FA3; color:#ddd;">
+                  <strong>Deal {key}</strong><br>
+                  Strategy {s_icon} &nbsp;|&nbsp; CRM {c_icon}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        if answers:
+            running = sum(
+                DEALS[k]["strategy"]["options"][answers[k]["strategy"]]["points"] +
+                DEALS[k]["crm"]["options"][answers[k]["crm"]]["points"]
+                for k in answers
+            )
+            st.markdown(
+                f"""
+                <div style="margin-top:0.55rem; text-align:center;
+                     background:#1A2332; border-radius:6px; padding:0.35rem;">
+                  <span style="font-size:0.8rem; color:#4A90D9; font-weight:700;">
+                    {running} pts so far
+                  </span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+
+# ---------------------------------------------------------------------------
+# Screen 3 — Scorecard
+# ---------------------------------------------------------------------------
+
+def screen_scorecard() -> None:
+    answers: dict = st.session_state["ch10_answers"]
+    scores = _compute_scores(answers)
+    student_name = st.session_state["ch10_student_name"]
+    total = scores["total"]
+
+    if total >= 90:
+        tier, tier_color = "Pipeline Pro", "#27AE60"
+    elif total >= 75:
+        tier, tier_color = "Developing Professional", "#4A90D9"
+    elif total >= 60:
+        tier, tier_color = "Needs Practice", "#F39C12"
+    else:
+        tier, tier_color = "Rerun Recommended", "#E74C3C"
+
+    DIM_NAMES = {
+        "strategy": "Deal Strategy",
+        "crm": "CRM Hygiene",
+        "stage": "Pipeline Stage Discipline",
+        "privacy": "Data Privacy",
+    }
+    dim_scores = {k: scores[k] for k in DIM_NAMES}
+    best_dim = max(dim_scores, key=dim_scores.get)
+    worst_dim = min(dim_scores, key=dim_scores.get)
+
+    optimal_count = sum(
+        (1 if DEALS[k]["strategy"]["options"][answers[k]["strategy"]]["points"] == 5 else 0) +
+        (1 if DEALS[k]["crm"]["options"][answers[k]["crm"]]["points"] == 5 else 0)
+        for k in answers
+    )
+
+    st.title("Scorecard — Sales Technology Stack: CRM Game")
+    st.caption(f"{student_name}  ·  {date.today().strftime('%B %d, %Y')}")
+
+    st.info(
+        f"You made **{optimal_count} optimal decisions** out of 10 total. "
+        f"Your strongest area was **{DIM_NAMES[best_dim]}** and your main gap was "
+        f"**{DIM_NAMES[worst_dim]}**."
+    )
+
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:2px solid {tier_color};
+             border-radius:12px; padding:1.5rem; text-align:center; margin:0.75rem 0 1rem 0;">
+          <div style="font-size:2.4rem; font-weight:800; color:{tier_color};">{total} / 100</div>
+          <div style="font-size:1.05rem; color:#FAFAFA; font-weight:600;">{tier}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
+    st.markdown("### Dimension Breakdown")
+
+    COACHING = {
+        "strategy": (
+            "Focus on asking a clarifying question before acting. "
+            "The best sales moves almost always start with understanding, not response."
+        ),
+        "crm": (
+            "CRM is your organizational memory. Every logged interaction is insurance "
+            "against losing context when it matters most."
+        ),
+        "stage": (
+            "Keeping pipeline stages current is how managers assess deal health — "
+            "and how you catch risk before it becomes loss."
+        ),
+        "privacy": (
+            "Data privacy is not just policy — it's trust. Using personal data without "
+            "consent damages relationships and can expose the company to legal risk."
+        ),
+    }
+    DIM_CONTRIB = {
+        "strategy": "All 5 strategy decisions (5 pts each).",
+        "crm": "All 5 CRM hygiene decisions (5 pts each).",
+        "stage": "CRM choices evaluated for stage accuracy: were stages kept current?",
+        "privacy": "Deal C and Deal E decisions involving personal data (8 + 7 + 10 pts).",
+    }
+
+    for key in ["strategy", "crm", "stage", "privacy"]:
+        s = scores[key]
+        pct = s / 25
+        with st.expander(f"{DIM_NAMES[key]} — {s} / 25 pts", expanded=True):
+            st.progress(pct)
+            st.caption(DIM_CONTRIB[key])
+            if pct < 0.70:
+                st.warning(f"**Coaching note:** {COACHING[key]}")
+
+    st.markdown("---")
+    st.markdown("### 🔒 On Data Privacy")
+    st.info(
+        "**What the data says:** 77% of B2B professionals report avoiding AI or personal data "
+        "when handling confidential information — yet data privacy consistently ranks last in "
+        "university curriculum priorities. The decisions in this simulation mirror real situations "
+        "SDRs face weekly. Now you know why it matters."
+    )
+
+    privacy_violated_deals = [
+        k for k in ["C", "E"] if k in answers and (
+            DEALS[k]["strategy"]["options"][answers[k]["strategy"]]["privacy_violation"] or
+            DEALS[k]["crm"]["options"][answers[k]["crm"]]["privacy_violation"]
+        )
+    ]
+    if privacy_violated_deals:
+        refs = " and ".join(f"Deal {k}" for k in privacy_violated_deals)
+        st.error(
+            f"**You committed a data privacy violation in {refs}.** "
+            "In a professional context, these choices could trigger an HR review, "
+            "damage the company's reputation, or result in a formal complaint."
+        )
+    else:
+        st.success(
+            "**No data privacy violations.** "
+            "You handled personal data professionally across all decisions."
+        )
+
+    st.markdown("---")
+    deal_totals = {
+        k: (
+            DEALS[k]["strategy"]["options"][answers[k]["strategy"]]["points"] +
+            DEALS[k]["crm"]["options"][answers[k]["crm"]]["points"]
+        )
+        for k in answers
+    }
+    best_key = max(deal_totals, key=deal_totals.get)
+    worst_key = min(deal_totals, key=deal_totals.get)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        b_s = DEALS[best_key]["strategy"]["options"][answers[best_key]["strategy"]]
+        b_c = DEALS[best_key]["crm"]["options"][answers[best_key]["crm"]]
+        st.success(
+            f"**Strongest: {DEALS[best_key]['company']}**\n\n"
+            f"Strategy: {b_s['text']}\n\n"
+            f"CRM: {b_c['text']}"
+        )
+    with col2:
+        w_s = DEALS[worst_key]["strategy"]["options"][answers[worst_key]["strategy"]]
+        w_c = DEALS[worst_key]["crm"]["options"][answers[worst_key]["crm"]]
+        w_note = w_s.get("consequence") or w_c.get("consequence") or "Review both decisions for this deal."
+        st.error(
+            f"**Needs Work: {DEALS[worst_key]['company']}**\n\n"
+            f"Strategy: {w_s['text']}\n\n"
+            f"Coaching: {w_note}"
+        )
+
+    st.markdown("---")
+    if st.button("🔄 Restart Simulation", use_container_width=True):
+        for k in list(st.session_state.keys()):
+            if k.startswith("ch10_"):
+                del st.session_state[k]
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+def run_chapter10() -> None:
+    _init_state()
+    phase = st.session_state["ch10_phase"]
+    if phase == "setup":
+        screen_setup()
+    elif phase == "game":
+        screen_game()
+    else:
+        screen_scorecard()
+
