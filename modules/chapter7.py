@@ -11,7 +11,8 @@ MODEL_BUYER = "gpt-4.1-mini"
 MODEL_COACH = "gpt-4.1-mini"
 TEMP_BUYER = 0.7
 TEMP_COACH = 0.3
-MAX_STUDENT_MSGS = 14
+MIN_STUDENT_MSGS = 8
+MAX_STUDENT_MSGS = 10
 
 SCENARIOS = {
     "logistics": {
@@ -496,11 +497,6 @@ def _reset_state() -> None:
 def screen_setup() -> None:
     st.title("Chapter 7 — Discovery & SPIN Questioning")
     st.markdown("### Simulation Setup")
-    st.markdown(
-        "Configure your simulation below. Your name will appear on the scorecard. "
-        "Read the scenario description carefully before entering the meeting."
-    )
-
     st.markdown("---")
 
     student_name = st.text_input(
@@ -523,7 +519,6 @@ def screen_setup() -> None:
         label_visibility="collapsed",
     )
 
-    # Two-section briefing card
     chosen_key = scenario_options[chosen_index]
     s = SCENARIOS[chosen_key]
 
@@ -569,37 +564,65 @@ def screen_setup() -> None:
     b = _BRIEFINGS[chosen_key]
     st.markdown(
         f"""
-        <div style="margin-top:0.75rem;">
-          <div style="background:#1A2332; border:1px solid #2E5FA3;
-               border-radius:8px 8px 0 0; padding:1rem 1.2rem;">
-            <div style="font-weight:700; color:#4A90D9;
-                 margin-bottom:0.6rem;">&#128203; Your Prospect</div>
-            <strong>{s['buyer_name']}</strong> &nbsp;&middot;&nbsp; {s['buyer_title']}<br>
-            {s['company']} &nbsp;&middot;&nbsp; {b['location']}<br>
-            <span style="color:#aaa;">{b['size']} &nbsp;&middot;&nbsp; {b['revenue']}</span><br>
-            <span style="color:#aaa;">{b['industry']}</span>
-          </div>
-          <div style="background:#112030; border:1px solid #2E5FA3; border-top:none;
-               border-radius:0 0 8px 8px; padding:1rem 1.2rem;">
-            <div style="font-weight:700; color:#27AE60;
-                 margin-bottom:0.6rem;">&#127919; Your Role</div>
-            <strong>{b['rep_company']}</strong><br>
-            Selling: {b['selling']}<br>
-            <span style="color:#aaa; font-style:italic;">{b['context']}</span><br>
-            <span style="color:#F39C12; font-size:0.85rem;
-                 display:block; margin-top:0.5rem;">
-              Read carefully — this briefing disappears once the meeting starts.
-            </span>
-          </div>
+        <div style="margin-top:0.75rem; background:#1A2332; border:1px solid #2E5FA3;
+             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.5rem;">
+          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.6rem;">&#128203; Buyer Profile</div>
+          <strong>{s['buyer_name']}</strong> &nbsp;&middot;&nbsp; {s['buyer_title']}<br>
+          {s['company']} &nbsp;&middot;&nbsp; {b['location']}<br>
+          <span style="color:#aaa;">{b['size']} &nbsp;&middot;&nbsp; {b['revenue']}</span><br>
+          <span style="color:#aaa;">{b['industry']}</span>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    st.markdown("")
+    st.markdown(
+        f"""
+        <div style="background:#112030; border:1px solid #2E5FA3;
+             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.5rem;">
+          <div style="font-weight:700; color:#27AE60; margin-bottom:0.4rem;">&#128203; Your Role</div>
+          You represent <strong>{b['rep_company']}</strong> selling {b['selling']}.<br>
+          <span style="color:#aaa; font-style:italic;">{b['context']}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <div style="background:#112030; border:1px solid #F39C12;
+             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.5rem;">
+          <div style="font-weight:700; color:#F39C12; margin-bottom:0.4rem;">&#127919; Your Mission</div>
+          Your job is to run a discovery call using <strong>SPIN questioning</strong>. Ask Situation,
+          Problem, Implication, and Need-Payoff questions to uncover the buyer's real challenges.
+          Do not pitch your product until the buyer articulates the value themselves.
+          <em>Minimum 8 questions required.</em>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <div style="background:#1A2332; border:1px solid #4A90D9;
+             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.75rem;">
+          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.4rem;">&#128202; How you'll be scored</div>
+          <span style="color:#ddd;">SPIN Coverage</span> <strong style="color:#FAFAFA;">(20)</strong> &nbsp;&middot;&nbsp;
+          <span style="color:#ddd;">Implication Quality</span> <strong style="color:#FAFAFA;">(25)</strong> &nbsp;&middot;&nbsp;
+          <span style="color:#ddd;">Depth of Questioning</span> <strong style="color:#FAFAFA;">(20)</strong> &nbsp;&middot;&nbsp;
+          <span style="color:#ddd;">Preparation Signals</span> <strong style="color:#FAFAFA;">(10)</strong> &nbsp;&middot;&nbsp;
+          <span style="color:#ddd;">Listening &amp; Adaptive Behavior</span> <strong style="color:#FAFAFA;">(15)</strong> &nbsp;&middot;&nbsp;
+          <span style="color:#ddd;">Need-Payoff</span> <strong style="color:#FAFAFA;">(10)</strong>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     ready = bool(student_name.strip())
     if not ready:
         st.caption("Enter your name above to enable the Start button.")
+    else:
+        st.caption("⚠️ Once you start, the briefing disappears.")
 
     if st.button(
         "Enter the meeting →",
@@ -643,9 +666,10 @@ def screen_chat() -> None:
         )
         st.session_state["ch7_voice_enabled"] = voice_on
     with col_right:
+        _prog_color = "#27AE60" if student_count >= MIN_STUDENT_MSGS else "#888"
         st.markdown(
-            f"<div style='text-align:right; color:#aaa;'>Messages: "
-            f"<strong style='color:#FAFAFA;'>{student_count}/{MAX_STUDENT_MSGS}</strong></div>",
+            f"<div style='text-align:right; color:{_prog_color};'>"
+            f"Exchange {student_count} of {MIN_STUDENT_MSGS}–{MAX_STUDENT_MSGS}</div>",
             unsafe_allow_html=True,
         )
 
@@ -666,13 +690,22 @@ def screen_chat() -> None:
         st.audio(tts_bytes, format="audio/mp3", autoplay=True)
         st.session_state["ch7_tts_bytes"] = None
 
-    # Gentle nudge after MAX_STUDENT_MSGS
-    if student_count >= MAX_STUDENT_MSGS:
+    if student_count >= MIN_STUDENT_MSGS and student_count < MAX_STUDENT_MSGS:
         st.info(
-            "You've sent 14 messages — that's a solid discovery session. "
-            "Consider asking a Need-Payoff question to close the discovery loop, "
-            "then click **Finish & get feedback** below."
+            "You're approaching the end. Consider asking a Need-Payoff question to wrap up."
         )
+
+    if student_count >= MAX_STUDENT_MSGS and not st.session_state.get("ch7_generating", False):
+        st.markdown("---")
+        st.info("Maximum exchanges reached. Generating your scorecard…")
+        with st.spinner("Generating your scorecard — this may take 20–30 seconds…"):
+            data = call_coach_api(
+                messages, st.session_state["ch7_student_name"], scenario
+            )
+        st.session_state["ch7_scorecard"] = data
+        st.session_state["ch7_phase"] = "scorecard"
+        st.rerun()
+        return
 
     # Microphone input (always available regardless of voice toggle)
     audio = mic_recorder(
@@ -729,10 +762,9 @@ def screen_chat() -> None:
 
     st.markdown("---")
 
-    # Finish button — available after at least one student exchange
-    can_finish = student_count >= 1
+    can_finish = student_count >= MIN_STUDENT_MSGS
     if not can_finish:
-        st.caption("Ask at least one question before requesting feedback.")
+        st.caption(f"Complete at least {MIN_STUDENT_MSGS} exchanges to unlock feedback.")
 
     if st.button(
         "Finish & get feedback",

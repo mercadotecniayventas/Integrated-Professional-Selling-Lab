@@ -11,7 +11,8 @@ MODEL_BUYER = "gpt-4.1-mini"
 MODEL_COACH = "gpt-4.1-mini"
 TEMP_BUYER = 0.75
 TEMP_COACH = 0.3
-MAX_STUDENT_MSGS = 14
+MIN_STUDENT_MSGS = 6
+MAX_STUDENT_MSGS = 8
 
 SCENARIOS = {
     "health": {
@@ -580,10 +581,6 @@ def _reset_state() -> None:
 def screen_setup() -> None:
     st.title("Chapter 3 — Active Listening Roleplay")
     st.markdown("### Simulation Setup")
-    st.markdown(
-        "Configure your simulation below. "
-        "Your name will appear on the scorecard."
-    )
     st.markdown("---")
 
     student_name = st.text_input(
@@ -611,45 +608,63 @@ def screen_setup() -> None:
 
     st.markdown(
         f"""
-        <div style="margin-top:0.75rem;">
-          <div style="background:#1A2332; border:1px solid #2E5FA3;
-               border-radius:8px 8px 0 0; padding:1rem 1.2rem;">
-            <div style="font-weight:700; color:#4A90D9;
-                 margin-bottom:0.6rem;">&#128203; Your Prospect</div>
-            <strong>{s['buyer_name']}</strong> &nbsp;&middot;&nbsp; {s['buyer_title']}<br>
-            {s['company']} &nbsp;&middot;&nbsp; {s['location']}<br>
-            <span style="color:#aaa;">{s['size']} &nbsp;&middot;&nbsp; {s['revenue']}</span><br>
-            <span style="color:#aaa;">{s['industry']}</span><br>
-            <span style="color:#aaa; font-size:0.9rem; margin-top:0.4rem; display:block;">
-              You work at <strong style="color:#FAFAFA;">{s['rep_company']}</strong>, \
-selling {s['product']}.
-            </span>
-          </div>
-          <div style="background:#112030; border:1px solid #2E5FA3; border-top:none;
-               border-radius:0 0 8px 8px; padding:1rem 1.2rem;">
-            <div style="font-weight:700; color:#27AE60;
-                 margin-bottom:0.6rem;">&#127919; Your Mission</div>
-            This is <strong>not</strong> a pitch meeting.<br>
-            Your only job: <strong>listen</strong>, ask genuine follow-up questions, \
-and demonstrate you understand their situation.<br>
-            <span style="color:#aaa;">Do not mention your product unless the buyer \
-asks directly.</span><br>
-            <span style="color:#aaa;">The deeper you listen, the more they will \
-share.</span><br>
-            <span style="color:#F39C12; font-size:0.85rem;
-                 display:block; margin-top:0.5rem;">
-              Read carefully — this briefing disappears once the meeting starts.
-            </span>
-          </div>
+        <div style="margin-top:0.75rem; background:#1A2332; border:1px solid #2E5FA3;
+             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.5rem;">
+          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.6rem;">&#128203; Buyer Profile</div>
+          <strong>{s['buyer_name']}</strong> &nbsp;&middot;&nbsp; {s['buyer_title']}<br>
+          {s['company']} &nbsp;&middot;&nbsp; {s['location']}<br>
+          <span style="color:#aaa;">{s['size']} &nbsp;&middot;&nbsp; {s['revenue']}</span><br>
+          <span style="color:#aaa;">{s['industry']}</span>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    st.markdown("")
+    st.markdown(
+        f"""
+        <div style="background:#112030; border:1px solid #2E5FA3;
+             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.5rem;">
+          <div style="font-weight:700; color:#27AE60; margin-bottom:0.4rem;">&#128203; Your Role</div>
+          You represent <strong>{s['rep_company']}</strong> selling {s['product']}.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <div style="background:#112030; border:1px solid #F39C12;
+             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.5rem;">
+          <div style="font-weight:700; color:#F39C12; margin-bottom:0.4rem;">&#127919; Your Mission</div>
+          Your only job in this conversation is to <strong>LISTEN</strong>. Do not pitch your product.
+          Do not talk about features or benefits. Ask follow-up questions based exactly on what
+          the buyer says. The more genuinely you listen, the more they will share.
+          <em>Minimum 6 exchanges required.</em>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <div style="background:#1A2332; border:1px solid #4A90D9;
+             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.75rem;">
+          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.4rem;">&#128202; How you'll be scored</div>
+          <span style="color:#ddd;">Listening Responses</span> <strong style="color:#FAFAFA;">(25)</strong> &nbsp;&middot;&nbsp;
+          <span style="color:#ddd;">Silence Tolerance</span> <strong style="color:#FAFAFA;">(20)</strong> &nbsp;&middot;&nbsp;
+          <span style="color:#ddd;">Question Depth</span> <strong style="color:#FAFAFA;">(20)</strong> &nbsp;&middot;&nbsp;
+          <span style="color:#ddd;">Agenda Control</span> <strong style="color:#FAFAFA;">(20)</strong> &nbsp;&middot;&nbsp;
+          <span style="color:#ddd;">Summary Quality</span> <strong style="color:#FAFAFA;">(15)</strong>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     ready = bool(student_name.strip())
     if not ready:
         st.caption("Enter your name above to enable the Start button.")
+    else:
+        st.caption("⚠️ Once you start, the briefing disappears.")
 
     if st.button(
         "Enter the meeting →",
@@ -692,9 +707,10 @@ def screen_chat() -> None:
         )
         st.session_state["ch3_voice_enabled"] = voice_on
     with col_right:
+        _prog_color = "#27AE60" if student_count >= MIN_STUDENT_MSGS else "#888"
         st.markdown(
-            f"<div style='text-align:right; color:#aaa;'>Messages: "
-            f"<strong style='color:#FAFAFA;'>{student_count}/{MAX_STUDENT_MSGS}</strong></div>",
+            f"<div style='text-align:right; color:{_prog_color};'>"
+            f"Exchange {student_count} of {MIN_STUDENT_MSGS}–{MAX_STUDENT_MSGS}</div>",
             unsafe_allow_html=True,
         )
 
@@ -713,11 +729,23 @@ def screen_chat() -> None:
         st.audio(tts_bytes, format="audio/mp3", autoplay=True)
         st.session_state["ch3_tts_bytes"] = None
 
-    if student_count >= 12:
+    if student_count >= MIN_STUDENT_MSGS and student_count < MAX_STUDENT_MSGS:
         st.info(
-            "You've sent 12 messages. Look for a moment to offer a genuine summary "
-            "of what you've heard — that's the highest-value listening move left available to you."
+            "You've had a good conversation. Consider offering a summary of what "
+            "you've heard before wrapping up."
         )
+
+    if student_count >= MAX_STUDENT_MSGS and not st.session_state.get("ch3_generating", False):
+        st.markdown("---")
+        st.info("Maximum exchanges reached. Generating your scorecard…")
+        with st.spinner("Generating your scorecard — this may take 20–30 seconds…"):
+            data = call_coach_api(
+                messages, st.session_state["ch3_student_name"], scenario
+            )
+        st.session_state["ch3_scorecard"] = data
+        st.session_state["ch3_phase"] = "scorecard"
+        st.rerun()
+        return
 
     audio = mic_recorder(
         start_prompt="🎤 Click to speak",
@@ -770,9 +798,9 @@ def screen_chat() -> None:
 
     st.markdown("---")
 
-    can_finish = student_count >= 1
+    can_finish = student_count >= MIN_STUDENT_MSGS
     if not can_finish:
-        st.caption("Send at least one response before requesting feedback.")
+        st.caption(f"Complete at least {MIN_STUDENT_MSGS} exchanges to unlock feedback.")
 
     if st.button(
         "Finish & get feedback",
