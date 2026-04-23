@@ -20,7 +20,7 @@ DEAL_ORDER = ["A", "B", "C", "D", "E"]
 # privacy_violation (bool)
 # ---------------------------------------------------------------------------
 
-DEALS = {
+DEALS_A = {
     "A": {
         "label": "Deal A — Nexbridge Logistics",
         "company": "Nexbridge Logistics",
@@ -390,6 +390,446 @@ DEALS = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# Variant B — same companies, different situations & correct answers
+# ---------------------------------------------------------------------------
+
+DEALS_B = {
+    "A": {
+        "label": "Deal A — Nexbridge Logistics",
+        "company": "Nexbridge Logistics",
+        "value": 110_000,
+        "stage": "Engage",
+        "situation": (
+            "After 3 weeks of silence, your contact replied and wants to schedule a demo. "
+            "You haven't confirmed budget authority yet."
+        ),
+        "crm_status": "Stage shows Engage. No discovery notes. Budget field blank.",
+        "strategy": {
+            "question": "What do you do?",
+            "options": [
+                {"text": "A) Send a demo invite immediately — strike while it's hot",
+                 "points": 0,
+                 "consequence": "Jumping to demo without confirming budget authority risks wasting both parties' time if the contact can't approve a purchase.",
+                 "privacy_violation": False},
+                {"text": "B) Qualify budget and authority before scheduling the demo",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "C) Reply to thank them and wait for them to propose a time",
+                 "points": 3,
+                 "consequence": "Being responsive is good, but leaving scheduling to them risks another silence.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 1,
+        },
+        "crm": {
+            "question": "What do you log in the CRM?",
+            "options": [
+                {"text": "A) Log the reply and add a note about demo interest",
+                 "points": 3,
+                 "consequence": "Logging the reply is important, but without a stage update the pipeline still shows stale activity.",
+                 "privacy_violation": False},
+                {"text": "B) Update the stage to Qualify and set a next step",
+                 "points": 3,
+                 "consequence": "Stage update is needed, but without logging the reply context you lose deal history.",
+                 "privacy_violation": False},
+                {"text": "C) Both — log the reply AND update the stage with a next step",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+            ],
+            "best_index": 2,
+        },
+    },
+    "B": {
+        "label": "Deal B — CoreBridge Solutions",
+        "company": "CoreBridge Solutions",
+        "value": 195_000,
+        "stage": "Qualify",
+        "situation": (
+            "Your champion Tom is supportive, but the VP of Operations is skeptical. "
+            "You've only met Tom — no relationship with the VP."
+        ),
+        "crm_status": "One contact logged. No stakeholder map. VP not in CRM.",
+        "strategy": {
+            "question": "What do you do?",
+            "options": [
+                {"text": "A) Schedule a full buying team meeting immediately",
+                 "points": 3,
+                 "consequence": "Moving to a full team meeting without a plan for the VP's skepticism risks the meeting becoming adversarial.",
+                 "privacy_violation": False},
+                {"text": "B) Ask Tom to arrange a direct introduction to the VP",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "C) Send the VP a cold introduction email directly",
+                 "points": 0,
+                 "consequence": "Bypassing your champion to cold-contact the VP risks undermining Tom's credibility.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 1,
+        },
+        "crm": {
+            "question": "What do you log in the CRM?",
+            "options": [
+                {"text": "A) Log Tom's concern about VP skepticism",
+                 "points": 3,
+                 "consequence": "Logging the concern is valuable, but without a next step the deal has no forward momentum.",
+                 "privacy_violation": False},
+                {"text": "B) Add a next step: request VP introduction",
+                 "points": 3,
+                 "consequence": "A clear next step is essential, but without logging the VP concern you'll lack context when prepping.",
+                 "privacy_violation": False},
+                {"text": "C) Both — log the VP skepticism AND set next step for introduction",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+            ],
+            "best_index": 2,
+        },
+    },
+    "C": {
+        "label": "Deal C — MedVantex",
+        "company": "MedVantex",
+        "value": 52_000,
+        "stage": "Target",
+        "situation": (
+            "You found the prospect on LinkedIn. Their public profile shows "
+            "work history, company role, and recent industry posts."
+        ),
+        "crm_status": "No contact created yet. No research logged.",
+        "strategy": {
+            "question": "How do you approach outreach?",
+            "options": [
+                {"text": "A) Comment on one of their industry posts to start a conversation",
+                 "points": 3,
+                 "consequence": "Engaging with public industry content is acceptable, but commenting can feel transactional without a stronger value signal.",
+                 "privacy_violation": False},
+                {"text": "B) Research the company first, then craft a message based on business fit",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "C) Send a generic connection request without a personalized message",
+                 "points": 0,
+                 "consequence": "Generic outreach signals low effort. Personalization based on professional context dramatically improves response rates.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 1,
+        },
+        "crm": {
+            "question": "What do you log in the CRM?",
+            "options": [
+                {"text": "A) Create a contact with professional research — role, company, industry context",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "B) Log their recent post content and personal professional opinions",
+                 "points": 0,
+                 "consequence": "⚠️ DATA PRIVACY: Logging personal opinions and post content from social media crosses into personal data territory. CRM records should contain business-relevant professional information only.",
+                 "privacy_violation": True},
+                {"text": "C) Don't create a contact yet — wait until they respond",
+                 "points": 3,
+                 "consequence": "Waiting to log until they respond means losing the research context you already have.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 0,
+        },
+    },
+    "D": {
+        "label": "Deal D — Pinnacle Retail Group",
+        "company": "Pinnacle Retail Group",
+        "value": 165_000,
+        "stage": "Qualify",
+        "situation": (
+            "The prospect asked for a proposal by Friday after a 20-minute discovery call. "
+            "You still have major gaps in understanding their needs and decision process."
+        ),
+        "crm_status": "Discovery call logged. Key fields blank: budget, authority, timeline.",
+        "strategy": {
+            "question": "What do you do?",
+            "options": [
+                {"text": "A) Send the proposal by Friday as requested",
+                 "points": 0,
+                 "consequence": "Sending a proposal with major discovery gaps means guessing at their needs. A weak proposal is worse than a delayed one.",
+                 "privacy_violation": False},
+                {"text": "B) Ask for another discovery session before sending a quality proposal",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "C) Send a generic proposal with standard pricing as a starting point",
+                 "points": 3,
+                 "consequence": "A generic proposal shows responsiveness but signals you don't understand their specific situation.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 1,
+        },
+        "crm": {
+            "question": "What do you log in the CRM?",
+            "options": [
+                {"text": "A) Log the discovery gaps before sending any proposal",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "B) Log 'Proposal requested — Friday deadline'",
+                 "points": 3,
+                 "consequence": "Capturing the deadline is useful, but without noting the discovery gaps you'll lose track of what's unresolved.",
+                 "privacy_violation": False},
+                {"text": "C) Update the stage to Convert since they asked for a proposal",
+                 "points": 0,
+                 "consequence": "Advancing to Convert based on a proposal request — without confirmed budget or authority — overstates deal health.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 0,
+        },
+    },
+    "E": {
+        "label": "Deal E — Westlake University",
+        "company": "Westlake University",
+        "value": 38_000,
+        "stage": "Convert",
+        "situation": (
+            "You sent the contract 2 weeks ago. No response. "
+            "The AI deal score dropped from 82 to 61 overnight."
+        ),
+        "crm_status": "Contract sent. No follow-up logged. AI risk score: High.",
+        "strategy": {
+            "question": "What do you do?",
+            "options": [
+                {"text": "A) Resend the contract with a new signature deadline",
+                 "points": 0,
+                 "consequence": "Resending without understanding why they went quiet adds pressure without addressing the real issue.",
+                 "privacy_violation": False},
+                {"text": "B) Call to understand what has changed since they went quiet",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "C) Drop the price 10% to re-engage them",
+                 "points": 3,
+                 "consequence": "Discounting without knowing the reason for silence may not address the real issue and surrenders margin unnecessarily.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 1,
+        },
+        "crm": {
+            "question": "What do you log in the CRM?",
+            "options": [
+                {"text": "A) Log that the AI score dropped and add a risk flag",
+                 "points": 3,
+                 "consequence": "Flagging the risk is important, but without logging a specific outreach attempt the next step is unclear.",
+                 "privacy_violation": False},
+                {"text": "B) Log the outreach attempt and note that internal status is unknown",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "C) Update the stage to Stalled and deprioritize",
+                 "points": 3,
+                 "consequence": "Updating the stage may be accurate, but without logging your outreach attempt you lose key deal context.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 1,
+        },
+    },
+}
+
+# ---------------------------------------------------------------------------
+# Variant C — same companies, different situations & correct answers
+# ---------------------------------------------------------------------------
+
+DEALS_C = {
+    "A": {
+        "label": "Deal A — Nexbridge Logistics",
+        "company": "Nexbridge Logistics",
+        "value": 88_000,
+        "stage": "Convert",
+        "situation": (
+            "The deal is in legal review — 3 weeks now. "
+            "Your manager wants it on the Q3 forecast at 80% probability."
+        ),
+        "crm_status": "Stage: Convert. Probability: blank. No legal contact logged.",
+        "strategy": {
+            "question": "What do you do?",
+            "options": [
+                {"text": "A) Tell your manager the deal is at 80% probability as requested",
+                 "points": 0,
+                 "consequence": "Reporting a probability with no supporting evidence distorts the forecast. Without talking to legal, 80% is a guess.",
+                 "privacy_violation": False},
+                {"text": "B) Call the legal contact to get a realistic timeline before forecasting",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "C) Set a follow-up reminder for next week and wait",
+                 "points": 3,
+                 "consequence": "3 weeks of legal silence may mean the deal stalled internally. A proactive call surfaces that risk earlier.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 1,
+        },
+        "crm": {
+            "question": "What do you log in the CRM?",
+            "options": [
+                {"text": "A) Log the legal review status and update the probability with evidence",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "B) Set the probability to 80% to keep it on the forecast",
+                 "points": 0,
+                 "consequence": "Entering a forecast probability without evidence distorts the pipeline. CRM data should reflect reality, not wishful thinking.",
+                 "privacy_violation": False},
+                {"text": "C) Log the legal status and note that probability should be updated once timeline is confirmed",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+            ],
+            "best_index": 0,
+        },
+    },
+    "B": {
+        "label": "Deal B — CoreBridge Solutions",
+        "company": "CoreBridge Solutions",
+        "value": 220_000,
+        "stage": "Engage",
+        "situation": (
+            "You've sent 3 emails with no response. "
+            "You found a personal cell phone number for the contact online."
+        ),
+        "crm_status": "3 email attempts logged. No phone number on file.",
+        "strategy": {
+            "question": "What do you do?",
+            "options": [
+                {"text": "A) Call the personal cell phone number",
+                 "points": 0,
+                 "consequence": "⚠️ DATA PRIVACY: Calling a personal cell found online — without the contact's consent — violates data privacy policy and is likely to create a hostile first impression.",
+                 "privacy_violation": True},
+                {"text": "B) Connect on LinkedIn with a professional, value-focused message",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "C) Ask your manager to reach out to the contact's manager",
+                 "points": 3,
+                 "consequence": "Escalating to the manager level can work but risks feeling aggressive before all direct channels are exhausted.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 1,
+        },
+        "crm": {
+            "question": "What do you log in the CRM?",
+            "options": [
+                {"text": "A) Log that you found a personal number but chose not to use it",
+                 "points": 3,
+                 "consequence": "Noting your decision is professional, but without logging the LinkedIn outreach the next step isn't captured.",
+                 "privacy_violation": False},
+                {"text": "B) Log the outreach attempts with no mention of the personal number",
+                 "points": 3,
+                 "consequence": "Logging the attempts is important, but omitting the privacy context means a future rep might find the number and not know your decision.",
+                 "privacy_violation": False},
+                {"text": "C) Both — log all outreach attempts AND note your decision on the personal cell number",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+            ],
+            "best_index": 2,
+        },
+    },
+    "C": {
+        "label": "Deal C — MedVantex",
+        "company": "MedVantex",
+        "value": 41_000,
+        "stage": "Qualify",
+        "situation": (
+            "IT and Operations both attended the demo — and they want different things. "
+            "IT wants API flexibility. Ops wants simplicity. The deal is stalling."
+        ),
+        "crm_status": "One contact logged. No stakeholder map. Competing priorities not noted.",
+        "strategy": {
+            "question": "What do you do?",
+            "options": [
+                {"text": "A) Focus all communication on the IT stakeholder — they'll likely own the decision",
+                 "points": 0,
+                 "consequence": "Choosing one stakeholder without a clear reason risks alienating Ops — who may have equal or greater influence on final approval.",
+                 "privacy_violation": False},
+                {"text": "B) Map both stakeholders and tailor your messaging to each",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "C) Defer to whoever responds first",
+                 "points": 3,
+                 "consequence": "Reactive selling loses deals at the multi-stakeholder stage. You need a deliberate engagement plan for both parties.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 1,
+        },
+        "crm": {
+            "question": "What do you log in the CRM?",
+            "options": [
+                {"text": "A) Log IT's priorities and technical objections",
+                 "points": 3,
+                 "consequence": "Logging IT's side is a good start, but without Ops' perspective you have an incomplete picture.",
+                 "privacy_violation": False},
+                {"text": "B) Log Ops' priorities and simplicity concerns",
+                 "points": 3,
+                 "consequence": "Logging Ops' concerns is valuable, but without IT's technical requirements you're missing half the buying picture.",
+                 "privacy_violation": False},
+                {"text": "C) Both — log both stakeholders' priorities AND begin a buying center map",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+            ],
+            "best_index": 2,
+        },
+    },
+    "D": {
+        "label": "Deal D — Pinnacle Retail Group",
+        "company": "Pinnacle Retail Group",
+        "value": 175_000,
+        "stage": "Target",
+        "situation": (
+            "The CEO just posted on LinkedIn about supply chain modernization. "
+            "You have no contact at Pinnacle and no account in your CRM."
+        ),
+        "crm_status": "No account in CRM. No contact. Opportunity not created.",
+        "strategy": {
+            "question": "What do you do?",
+            "options": [
+                {"text": "A) Comment on the CEO's LinkedIn post to get noticed",
+                 "points": 3,
+                 "consequence": "Engaging with public content is visible, but commenting on a CEO's post without a warm introduction rarely converts to a real conversation.",
+                 "privacy_violation": False},
+                {"text": "B) Research Pinnacle first and find the right contact before reaching out",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "C) Send the CEO a cold direct message on LinkedIn",
+                 "points": 0,
+                 "consequence": "Cold CEO outreach without research or a warm connection rarely works and risks being ignored or flagged as spam.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 1,
+        },
+        "crm": {
+            "question": "What do you log in the CRM?",
+            "options": [
+                {"text": "A) Create an account record only — no contact identified yet",
+                 "points": 3,
+                 "consequence": "Creating the account is a good first step, but without logging the LinkedIn signal and research notes you lose the context that triggered outreach.",
+                 "privacy_violation": False},
+                {"text": "B) Create account and contact records with research notes",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "C) Create account + contact + log the LinkedIn post as a trigger event",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+            ],
+            "best_index": 1,
+        },
+    },
+    "E": {
+        "label": "Deal E — Westlake University",
+        "company": "Westlake University",
+        "value": 55_000,
+        "stage": "Qualify",
+        "situation": (
+            "The demo went great. The contact said, 'I need to run this by my team.' "
+            "You don't know who else is involved or what they need to approve."
+        ),
+        "crm_status": "Demo logged. No stakeholder map. Decision process unknown.",
+        "strategy": {
+            "question": "What do you do?",
+            "options": [
+                {"text": "A) Send a follow-up email summarizing the demo and wait",
+                 "points": 3,
+                 "consequence": "Sending a recap is professional, but without knowing who else is involved you have no way to influence the team decision.",
+                 "privacy_violation": False},
+                {"text": "B) Ask directly who is on the team and what they'll need to approve",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+                {"text": "C) Ask for a firm commitment before the team review happens",
+                 "points": 0,
+                 "consequence": "Asking for commitment before the contact has consulted their team creates pressure that typically backfires.",
+                 "privacy_violation": False},
+            ],
+            "best_index": 1,
+        },
+        "crm": {
+            "question": "What do you log in the CRM?",
+            "options": [
+                {"text": "A) Log the demo outcome as positive",
+                 "points": 3,
+                 "consequence": "Noting the demo went well is a start, but without logging a next step or stakeholder info you have no clear path forward.",
+                 "privacy_violation": False},
+                {"text": "B) Log next step: team review — stakeholders TBD",
+                 "points": 3,
+                 "consequence": "Logging the next step is good, but without capturing the demo outcome and stakeholder mapping you lose context for the follow-up.",
+                 "privacy_violation": False},
+                {"text": "C) Both — log the demo outcome AND begin a stakeholder map for the decision team",
+                 "points": 5, "consequence": None, "privacy_violation": False},
+            ],
+            "best_index": 2,
+        },
+    },
+}
+
 
 # ---------------------------------------------------------------------------
 # Session state initializer
@@ -399,6 +839,7 @@ def _init_state() -> None:
     defaults = {
         "ch10_phase": "setup",
         "ch10_student_name": "",
+        "ch10_variant": "A",
         "ch10_current_deal_index": 0,
         "ch10_decision_step": "strategy",   # "strategy" | "crm" | "result"
         "ch10_strategy_choice": None,        # index of chosen strategy option
@@ -484,7 +925,7 @@ from datetime import date
 
 # Pipeline Stage Discipline: maps (deal, crm_choice_index) → pts
 # Measures whether the CRM choice kept the stage accurate and current.
-STAGE_DISCIPLINE_MAP = {
+STAGE_DISCIPLINE_A = {
     "A": {0: 3, 1: 5, 2: 0},   # log activity=3, update Stalled=5, leave=0
     "B": {0: 3, 1: 5, 2: 5},   # notes only=3, next step=5, both=5
     "C": {0: 5, 1: 0, 2: 3},   # pro log=5, personal log=0, nothing=3
@@ -493,29 +934,29 @@ STAGE_DISCIPLINE_MAP = {
 }
 
 
-def _compute_scores(answers: dict) -> dict:
+def _compute_scores(answers: dict, variant: str = "A") -> dict:
+    v = VARIANTS[variant]
+    deals = v["deals"]
+    stage_map = v["stage_map"]
     strategy_pts = sum(
-        DEALS[k]["strategy"]["options"][answers[k]["strategy"]]["points"]
+        deals[k]["strategy"]["options"][answers[k]["strategy"]]["points"]
         for k in answers
     )
     crm_pts = sum(
-        DEALS[k]["crm"]["options"][answers[k]["crm"]]["points"]
+        deals[k]["crm"]["options"][answers[k]["crm"]]["points"]
         for k in answers
     )
     stage_pts = sum(
-        STAGE_DISCIPLINE_MAP[k][answers[k]["crm"]]
+        stage_map[k][answers[k]["crm"]]
         for k in answers
     )
-    # Data Privacy: 8 pts (C strategy) + 7 pts (C crm) + 10 pts (E strategy) = 25
-    privacy_pts = 0
-    if "C" in answers:
-        if not DEALS["C"]["strategy"]["options"][answers["C"]["strategy"]]["privacy_violation"]:
-            privacy_pts += 8
-        if not DEALS["C"]["crm"]["options"][answers["C"]["crm"]]["privacy_violation"]:
-            privacy_pts += 7
-    if "E" in answers:
-        if not DEALS["E"]["strategy"]["options"][answers["E"]["strategy"]]["privacy_violation"]:
-            privacy_pts += 10
+    # Data Privacy: 25 base, -10 per privacy_violation committed (floor 0)
+    privacy_pts = 25
+    for deal_key in answers:
+        for dt in ("strategy", "crm"):
+            idx = answers[deal_key][dt]
+            if deals[deal_key][dt]["options"][idx].get("privacy_violation", False):
+                privacy_pts = max(0, privacy_pts - 10)
     return {
         "strategy": strategy_pts,
         "crm": crm_pts,
@@ -626,9 +1067,23 @@ def screen_game() -> None:
             """,
             unsafe_allow_html=True,
         )
-        st.info(
-            f"**Situation:** {deal['situation']}\n\n"
-            f"**CRM status:** *{deal['crm_status']}*"
+        st.markdown(
+            f"""
+            <div style="background:#1A2332; border:1px solid #2E5FA3;
+                 border-radius:8px; padding:0.8rem 1rem; margin-bottom:0.65rem;">
+              <div style="color:#4A90D9; font-weight:700; margin-bottom:0.3rem;">
+                Situation
+              </div>
+              <div style="color:#FAFAFA; margin-bottom:0.5rem;">
+                {deal['situation']}
+              </div>
+              <div style="color:#4A90D9; font-weight:700; margin-bottom:0.25rem;">
+                CRM Status
+              </div>
+              <div style="color:#aaa; font-style:italic;">{deal['crm_status']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
         st.markdown("---")
 
