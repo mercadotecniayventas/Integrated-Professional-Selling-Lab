@@ -299,3 +299,97 @@ def _reset_state():
     for k in keys:
         del st.session_state[k]
     _init_state()
+
+
+# ---------------------------------------------------------------------------
+# Screen 1 — Setup
+# ---------------------------------------------------------------------------
+
+def screen_setup():
+    st.title("Chapter 4 — AI Competencies")
+
+    st.markdown(
+        """
+        <div style="background:#1A2332; border:1px solid #2E5FA3; border-radius:10px;
+             padding:1.1rem 1.3rem; margin-bottom:1.2rem; color:#FAFAFA; font-size:0.95rem;
+             line-height:1.75;">
+          <div style="font-size:1.05rem; font-weight:700; color:#4A90D9;
+               margin-bottom:0.6rem;">🤖 AI Prompt Challenge — 4 Rounds</div>
+          <div style="margin-bottom:0.4rem;">
+            <strong>Round 1:</strong> Write a prompt from scratch
+          </div>
+          <div style="margin-bottom:0.4rem;">
+            <strong>Round 2:</strong> Fix a broken prompt
+          </div>
+          <div style="margin-bottom:0.4rem;">
+            <strong>Round 3:</strong> Explain why a prompt failed
+          </div>
+          <div style="margin-bottom:0.8rem;">
+            <strong>Round 4:</strong> Write a prompt with missing context
+          </div>
+          <div style="border-top:1px solid #2E5FA3; padding-top:0.7rem; color:#ddd;
+               font-size:0.9rem;">
+            After each round you will see the <strong style="color:#FAFAFA;">actual AI output
+            your prompt generates</strong> — and how it compares to what an expert prompt
+            produces.
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.expander("📊 How you'll be scored (100 pts per round)"):
+        st.markdown(
+            """
+            <div style="color:#ddd; font-size:0.9rem; line-height:1.7;">
+              <div style="font-weight:700; color:#4A90D9; margin-bottom:0.5rem;">
+                100 pts per round
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Prompt Specificity</strong>
+                <span style="color:#4A90D9;"> — 30 pts</span><br>
+                Is your prompt specific to this exact situation, or generic?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Context Provided</strong>
+                <span style="color:#4A90D9;"> — 25 pts</span><br>
+                Did you give AI the right information to work with?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">AI Limitations Awareness</strong>
+                <span style="color:#4A90D9;"> — 25 pts</span><br>
+                Do you understand what AI can and cannot do well?
+              </div>
+              <div>
+                <strong style="color:#FAFAFA;">Output Quality</strong>
+                <span style="color:#4A90D9;"> — 20 pts</span><br>
+                How useful was the actual AI output your prompt generated?
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("**Your full name (appears on your scorecard):**")
+    student_name = st.text_input(
+        "Your full name",
+        value=st.session_state["ch4_student_name"],
+        placeholder="e.g. Ana García",
+        key="ch4_name_input",
+        label_visibility="collapsed",
+    )
+
+    ready = bool(student_name.strip())
+    if not ready:
+        st.caption("Enter your name above to enable the Start button.")
+
+    if st.button(
+        "Begin Challenge →",
+        disabled=not ready,
+        type="primary",
+        use_container_width=True,
+    ):
+        st.session_state["ch4_student_name"] = student_name.strip()
+        st.session_state["ch4_phase"] = "round"
+        st.session_state["ch4_current_round"] = 0
+        st.rerun()
