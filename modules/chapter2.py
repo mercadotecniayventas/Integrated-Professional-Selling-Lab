@@ -295,3 +295,234 @@ def _reset_state() -> None:
     if last is not None:
         st.session_state["ch2_last_variant"] = last
     _init_state()
+
+
+# ---------------------------------------------------------------------------
+# Screen 1 — Setup
+# ---------------------------------------------------------------------------
+
+def screen_setup() -> None:
+    _init_state()
+    st.title("Chapter 2 — The B2B Sales Process")
+
+    st.markdown(
+        """
+        <div style="background:#1A2332; border:1px solid #2E5FA3; border-radius:10px;
+             padding:1.1rem 1.3rem; margin-bottom:1.2rem; color:#FAFAFA;
+             font-size:0.93rem; line-height:1.75;">
+          <div style="font-size:1rem; font-weight:700; color:#4A90D9; margin-bottom:0.6rem;">
+            🏢 Stakeholder Navigation Game
+          </div>
+          <div style="margin-bottom:0.6rem;">
+            You are an SDR at <strong>DataFlow Solutions</strong> managing a
+            <strong>$180K software deal</strong> at <strong>Meridian Manufacturing</strong>.
+          </div>
+          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.35rem; font-size:0.88rem;
+               text-transform:uppercase; letter-spacing:0.04em;">
+            The Buying Center
+          </div>
+          <div style="margin-bottom:0.7rem;">
+            👤 <strong>Tom Chen</strong> — IT Manager <span style="color:#aaa;">(your contact)</span><br>
+            💰 <strong>Sarah Walsh</strong> — CFO <span style="color:#aaa;">(economic buyer)</span><br>
+            🏭 <strong>Linda Park</strong> — VP Operations <span style="color:#aaa;">(end user, skeptical)</span><br>
+            📋 <strong>Marcus Webb</strong> — Procurement <span style="color:#aaa;">(contracts &amp; vendor qualification)</span><br>
+            🎯 <strong>James Ortiz</strong> — CEO <span style="color:#aaa;">(appears if deal progresses well)</span>
+          </div>
+          <div style="border-top:1px solid #2E5FA3; padding-top:0.7rem; color:#ddd; font-size:0.88rem;">
+            You will make <strong style="color:#FAFAFA;">5 sequential decisions</strong>.
+            Each decision affects the next. Think carefully —
+            in real B2B sales, process discipline determines outcomes.
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.expander("📊 How you'll be scored"):
+        st.markdown(
+            """
+            <div style="color:#ddd; font-size:0.9rem; line-height:1.7;">
+              <div style="font-weight:700; color:#4A90D9; margin-bottom:0.5rem;">100 pts total</div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Pipeline Stage Discipline</strong>
+                <span style="color:#4A90D9;"> — 25 pts</span><br>
+                Did you avoid forecasting based on hope?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Stakeholder Strategy</strong>
+                <span style="color:#4A90D9;"> — 30 pts</span><br>
+                Did you navigate champion, blocker, and economic buyer correctly?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Deal Strategy</strong>
+                <span style="color:#4A90D9;"> — 25 pts</span><br>
+                Did you handle objections and negotiations with process discipline?
+              </div>
+              <div>
+                <strong style="color:#FAFAFA;">Relationship Quality</strong>
+                <span style="color:#4A90D9;"> — 20 pts</span><br>
+                Did you invest in relationships beyond the immediate transaction?
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("**Your full name (appears on your scorecard):**")
+    student_name = st.text_input(
+        "Your full name",
+        value=st.session_state["ch2_student_name"],
+        placeholder="e.g. Ana García",
+        key="ch2_name_input",
+        label_visibility="collapsed",
+    )
+
+    ready = bool(student_name.strip())
+    if not ready:
+        st.caption("Enter your name above to enable the Start button.")
+
+    if st.button(
+        "Start Simulation →",
+        disabled=not ready,
+        type="primary",
+        use_container_width=True,
+    ):
+        st.session_state["ch2_student_name"] = student_name.strip()
+        st.session_state["ch2_phase"] = "game"
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 2 — Game
+# ---------------------------------------------------------------------------
+
+def screen_game() -> None:
+    _init_state()
+    variant = st.session_state["ch2_variant"]
+    decisions = VARIANTS[variant]["decisions"]
+    idx = st.session_state["ch2_current_decision"]
+    confirmed = st.session_state["ch2_confirmed"]
+    choices = st.session_state["ch2_choices"]
+    dec = decisions[idx]
+
+    # Deal header
+    st.markdown(
+        """
+        <div style="display:flex; justify-content:space-between; align-items:center;
+             background:#1A2332; border:1px solid #2E5FA3; border-radius:8px;
+             padding:0.55rem 1rem; margin-bottom:0.8rem;">
+          <span style="color:#4A90D9; font-weight:700; font-size:0.88rem;">
+            Meridian Manufacturing
+          </span>
+          <span style="color:#FAFAFA; font-weight:700;">$180K</span>
+          <span style="color:#aaa; font-size:0.85rem;">DataFlow Solutions</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Progress bar
+    pct = int((idx / 5) * 100)
+    bar_segs = "".join(
+        f'<div style="flex:1; height:6px; border-radius:3px; margin-right:3px; '
+        f'background:{"#4A90D9" if i <= idx else "#2E3A50"};"></div>'
+        for i in range(5)
+    )
+    st.markdown(
+        f'<div style="margin-bottom:0.25rem;">'
+        f'<div style="font-size:0.82rem; color:#aaa; margin-bottom:4px;">'
+        f'Decision {idx + 1} of 5</div>'
+        f'<div style="display:flex; gap:3px;">{bar_segs}</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    # Situation card
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:1px solid #2E5FA3; border-radius:10px;
+             padding:0.9rem 1.1rem; margin-bottom:0.9rem; color:#FAFAFA;
+             font-size:0.92rem; line-height:1.65;">
+          <div style="font-size:0.75rem; font-weight:700; color:#4A90D9;
+               text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">
+            Situation
+          </div>
+          {_html.escape(dec['situation'])}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(f"**{dec['question']}**")
+
+    if not confirmed:
+        option_texts = [f"{chr(65+i)}) {o['text']}" for i, o in enumerate(dec["options"])]
+        selection = st.radio(
+            "Your choice:",
+            options=option_texts,
+            index=None,
+            key=f"ch2_radio_{idx}",
+            label_visibility="collapsed",
+        )
+        can_confirm = selection is not None
+        if not can_confirm:
+            st.caption("Select an option above to confirm.")
+        if st.button(
+            "Confirm Decision →",
+            disabled=not can_confirm,
+            type="primary",
+            use_container_width=True,
+        ):
+            opt_idx = option_texts.index(selection)
+            opt = dec["options"][opt_idx]
+            updated = dict(choices)
+            updated[idx] = {
+                "option_idx": opt_idx,
+                "points": opt["points"],
+                "text": opt["text"],
+                "consequence": opt["consequence"],
+            }
+            st.session_state["ch2_choices"] = updated
+            st.session_state["ch2_confirmed"] = True
+            st.rerun()
+
+    else:
+        # Show selected choice
+        chosen = choices[idx]
+        opt_letter = chr(65 + chosen["option_idx"])
+        st.markdown(
+            f'<div style="color:#aaa; font-size:0.88rem; margin-bottom:0.6rem;">'
+            f'You chose: <strong style="color:#FAFAFA;">{opt_letter}) {_html.escape(chosen["text"])}</strong></div>',
+            unsafe_allow_html=True,
+        )
+
+        # Consequence box
+        pts = chosen["points"]
+        if pts >= 8:
+            bg, border, label, label_color = "#0D1F14", "#27AE60", "✅ Best choice", "#27AE60"
+        elif pts >= 4:
+            bg, border, label, label_color = "#1A1A0D", "#F39C12", "⚠️ Acceptable choice", "#F39C12"
+        else:
+            bg, border, label, label_color = "#1A0F0F", "#E74C3C", "❌ Poor choice", "#E74C3C"
+
+        st.markdown(
+            f'<div style="background:{bg}; border:1px solid {border}; border-radius:8px;'
+            f' padding:0.8rem 1rem; margin-bottom:1rem;">'
+            f'<div style="font-weight:700; color:{label_color}; font-size:0.88rem;'
+            f' margin-bottom:0.35rem;">{label} — {pts} pts</div>'
+            f'<div style="color:#ddd; font-size:0.9rem;">{_html.escape(chosen["consequence"])}</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+        if idx < 4:
+            if st.button("Next Decision →", type="primary", use_container_width=True):
+                st.session_state["ch2_current_decision"] = idx + 1
+                st.session_state["ch2_confirmed"] = False
+                st.rerun()
+        else:
+            if st.button("View Results →", type="primary", use_container_width=True):
+                with st.spinner("Generating your process insight…"):
+                    insight = call_coach_api(st.session_state["ch2_choices"], variant)
+                st.session_state["ch2_insight"] = insight
+                st.session_state["ch2_phase"] = "scorecard"
+                st.rerun()
