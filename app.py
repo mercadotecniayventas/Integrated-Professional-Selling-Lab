@@ -98,6 +98,13 @@ def render_home():
             "external": False,
         },
         {
+            "num": 2,
+            "title": "The B2B Sales Process",
+            "desc": "Navigate a buying center — 5 decisions, $180K deal",
+            "badge": "🎮 Game",
+            "external": False,
+        },
+        {
             "num": 3,
             "title": "Human Competencies",
             "desc": "Active listening roleplay with a B2B buyer",
@@ -223,6 +230,9 @@ def main():
     elif selected == 1:
         from modules.chapter1 import run_chapter1
         run_chapter1()
+    elif selected == 2:
+        from modules.chapter2 import run_chapter2
+        run_chapter2()
     elif selected == 4:
         from modules.chapter4 import run_chapter4
         run_chapter4()

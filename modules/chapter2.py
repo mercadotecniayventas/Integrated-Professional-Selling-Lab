@@ -526,3 +526,184 @@ def screen_game() -> None:
                 st.session_state["ch2_insight"] = insight
                 st.session_state["ch2_phase"] = "scorecard"
                 st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 3 — Scorecard
+# ---------------------------------------------------------------------------
+
+def screen_scorecard() -> None:
+    _init_state()
+    student_name = st.session_state.get("ch2_student_name", "Student")
+    variant = st.session_state["ch2_variant"]
+    choices = st.session_state["ch2_choices"]
+    insight = st.session_state.get("ch2_insight", "")
+    decisions = VARIANTS[variant]["decisions"]
+
+    raw_total, scaled_total, dim_results = compute_scores(choices)
+
+    # Deal outcome
+    if raw_total >= 40:
+        outcome, outcome_color = "Deal Closed ✅", "#27AE60"
+    elif raw_total >= 25:
+        outcome, outcome_color = "Deal Stalled ⚠️", "#F39C12"
+    else:
+        outcome, outcome_color = "Deal Lost ❌", "#E74C3C"
+
+    # Tier
+    if scaled_total >= 90:
+        tier, tier_color = "Deal Architect", "#27AE60"
+    elif scaled_total >= 75:
+        tier, tier_color = "Strong Process", "#4A90D9"
+    elif scaled_total >= 60:
+        tier, tier_color = "Developing", "#F39C12"
+    else:
+        tier, tier_color = "Rerun Recommended", "#E74C3C"
+
+    # --- Header ---
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Student", student_name)
+    with col2:
+        st.metric("Scenario", "Meridian Deal")
+    with col3:
+        st.metric("Date", date.today().strftime("%B %d, %Y"))
+
+    st.markdown("---")
+    st.markdown("## Chapter 2 — Stakeholder Navigation Scorecard")
+
+    # Deal outcome banner
+    st.markdown(
+        f'<div style="background:#1A2332; border:2px solid {outcome_color}; border-radius:10px;'
+        f' padding:0.8rem 1.2rem; margin-bottom:1rem; display:flex; justify-content:space-between;'
+        f' align-items:center;">'
+        f'<div style="font-size:1.1rem; font-weight:700; color:{outcome_color};">{outcome}</div>'
+        f'<div style="color:#aaa; font-size:0.88rem;">Raw score: {raw_total}/50</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+    # Score + tier banner
+    st.markdown(
+        f'<div style="background:#1A2332; border:2px solid {tier_color}; border-radius:10px;'
+        f' padding:1rem 1.2rem; text-align:center; margin-bottom:1.2rem;">'
+        f'<div style="font-size:2rem; font-weight:700; color:{tier_color};">{scaled_total}/100</div>'
+        f'<div style="font-size:1.1rem; font-weight:700; color:#FAFAFA; margin-top:0.2rem;">{tier}</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+    # --- Dimension breakdown ---
+    st.markdown("### Dimension Breakdown")
+    for dim in dim_results:
+        pct = int(dim["scaled"] / dim["max_pts"] * 100) if dim["max_pts"] else 0
+        bar_c = "#27AE60" if pct >= 70 else ("#F39C12" if pct >= 40 else "#E74C3C")
+        st.markdown(
+            f'<div style="margin-bottom:0.7rem;">'
+            f'<div style="display:flex; justify-content:space-between; font-size:0.88rem;'
+            f' color:#FAFAFA; margin-bottom:3px;">'
+            f'<span style="font-weight:600;">{dim["name"]}</span>'
+            f'<span style="color:#4A90D9;">{dim["scaled"]}/{dim["max_pts"]}</span></div>'
+            f'<div style="background:#0E1117; border-radius:4px; height:8px;">'
+            f'<div style="background:{bar_c}; width:{pct}%; height:8px; border-radius:4px;"></div>'
+            f'</div>'
+            f'<div style="font-size:0.8rem; color:#aaa; margin-top:2px;">{dim["description"]}</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+    # --- Decision review ---
+    st.markdown("---")
+    st.markdown("### Decision Review")
+    all_pts = [choices.get(i, {}).get("points", 0) for i in range(5)]
+    best_idx = all_pts.index(max(all_pts))
+    worst_idx = all_pts.index(min(all_pts))
+
+    for i, dec in enumerate(decisions):
+        c = choices.get(i, {})
+        pts = c.get("points", 0)
+        opt_letter = chr(65 + c.get("option_idx", 0))
+        if pts >= 8:
+            pt_color, badge = "#27AE60", "✅"
+        elif pts >= 4:
+            pt_color, badge = "#F39C12", "⚠️"
+        else:
+            pt_color, badge = "#E74C3C", "❌"
+        highlight = " border:1px solid #4A90D9;" if i in (best_idx, worst_idx) else ""
+        st.markdown(
+            f'<div style="background:#1A2332;{highlight} border-radius:8px;'
+            f' padding:0.55rem 0.9rem; margin-bottom:0.4rem; display:flex;'
+            f' justify-content:space-between; align-items:flex-start;">'
+            f'<div style="flex:1;">'
+            f'<span style="color:#4A90D9; font-weight:700; font-size:0.82rem;">Decision {i+1}</span>'
+            f'<span style="color:#FAFAFA; font-size:0.88rem; margin-left:0.5rem;">'
+            f'{badge} {opt_letter}) {_html.escape(c.get("text", ""))}</span>'
+            f'</div>'
+            f'<div style="color:{pt_color}; font-weight:700; font-size:0.88rem;'
+            f' white-space:nowrap; margin-left:0.5rem;">{pts} pts</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+    # Best / worst callouts
+    st.markdown("<div style='height:0.4rem;'></div>", unsafe_allow_html=True)
+    bc1, bc2 = st.columns(2)
+    with bc1:
+        best_c = choices.get(best_idx, {})
+        st.markdown(
+            f'<div style="background:#0D1F14; border:1px solid #27AE60; border-radius:8px;'
+            f' padding:0.7rem 0.9rem;">'
+            f'<div style="font-size:0.78rem; font-weight:700; color:#27AE60;'
+            f' text-transform:uppercase; margin-bottom:0.25rem;">⭐ Best Decision</div>'
+            f'<div style="color:#FAFAFA; font-size:0.87rem; font-weight:600;">Decision {best_idx+1} — {best_c.get("points",0)} pts</div>'
+            f'<div style="color:#ddd; font-size:0.83rem; margin-top:0.2rem;">'
+            f'{_html.escape(best_c.get("consequence",""))}</div></div>',
+            unsafe_allow_html=True,
+        )
+    with bc2:
+        worst_c = choices.get(worst_idx, {})
+        st.markdown(
+            f'<div style="background:#1A0F0F; border:1px solid #E74C3C; border-radius:8px;'
+            f' padding:0.7rem 0.9rem;">'
+            f'<div style="font-size:0.78rem; font-weight:700; color:#E74C3C;'
+            f' text-transform:uppercase; margin-bottom:0.25rem;">📌 Weakest Decision</div>'
+            f'<div style="color:#FAFAFA; font-size:0.87rem; font-weight:600;">Decision {worst_idx+1} — {worst_c.get("points",0)} pts</div>'
+            f'<div style="color:#ddd; font-size:0.83rem; margin-top:0.2rem;">'
+            f'{_html.escape(worst_c.get("consequence",""))}</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    # --- Process insight ---
+    if insight:
+        st.markdown("---")
+        st.markdown(
+            f'<div style="background:#0D1B2E; border-left:4px solid #4A90D9;'
+            f' padding:0.9rem 1.1rem; border-radius:0 8px 8px 0;">'
+            f'<div style="font-weight:700; color:#4A90D9; margin-bottom:0.4rem; font-size:0.95rem;">'
+            f'💡 What your decisions reveal about your B2B process understanding</div>'
+            f'<div style="color:#ddd; font-size:0.92rem; line-height:1.65;">'
+            f'{_html.escape(insight)}</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+    if st.button("Try Again →", use_container_width=True):
+        _reset_state()
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+def run_chapter2() -> None:
+    _init_state()
+    phase = st.session_state["ch2_phase"]
+    if phase == "setup":
+        screen_setup()
+    elif phase == "game":
+        screen_game()
+    elif phase == "scorecard":
+        screen_scorecard()
+    else:
+        screen_setup()
