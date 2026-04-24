@@ -105,6 +105,13 @@ def render_home():
             "external": False,
         },
         {
+            "num": 4,
+            "title": "AI Competencies",
+            "desc": "Write and fix AI prompts across 4 sales scenarios",
+            "badge": "💬 Text",
+            "external": False,
+        },
+        {
             "num": 5,
             "title": "Know Your Market",
             "desc": "Calculate TAM/SAM/SOM for a B2B company",
@@ -209,6 +216,9 @@ def main():
     elif selected == 1:
         from modules.chapter1 import run_chapter1
         run_chapter1()
+    elif selected == 4:
+        from modules.chapter4 import run_chapter4
+        run_chapter4()
     elif selected == 6:
         from modules.chapter6 import run_chapter6
         run_chapter6()

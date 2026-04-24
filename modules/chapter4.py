@@ -1,3 +1,4 @@
+import html as _html
 import json
 import re
 import streamlit as st
@@ -393,3 +394,410 @@ def screen_setup():
         st.session_state["ch4_phase"] = "round"
         st.session_state["ch4_current_round"] = 0
         st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 2 — Round interface
+# ---------------------------------------------------------------------------
+
+_ROUND_LABELS = [
+    "Write your AI prompt:",
+    "Write your improved prompt:",
+    "Explain why it failed:",
+    "Write your constrained prompt:",
+]
+
+
+def screen_round():
+    _init_state()
+
+    idx = st.session_state["ch4_current_round"]  # 0-3
+    r = ROUNDS[idx]
+    round_num = r["number"]  # 1-4
+
+    # --- Generating block (runs before any UI is drawn) ---
+    if st.session_state.get("ch4_generating", False):
+        student_prompt = st.session_state["ch4_prompts"].get(round_num, "")
+        with st.spinner(f"Running your prompt through AI… Round {round_num} of 4"):
+            student_output = call_prompt_api(student_prompt)
+            expert_output = call_expert_api(round_num)
+            coach_eval = call_coach_api(
+                student_prompt,
+                student_output,
+                round_num,
+                st.session_state["ch4_student_name"],
+            )
+        outputs = dict(st.session_state["ch4_outputs"])
+        outputs[round_num] = {"student": student_output, "expert": expert_output}
+        st.session_state["ch4_outputs"] = outputs
+        rd = list(st.session_state["ch4_round_data"])
+        rd.append(coach_eval)
+        st.session_state["ch4_round_data"] = rd
+        st.session_state["ch4_generating"] = False
+        st.session_state["ch4_submitted"] = True
+        st.rerun()
+
+    # --- Header ---
+    st.markdown(f"### Round {round_num} of 4 — {r['title']}")
+
+    # --- Situation card ---
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:1px solid #2E5FA3; border-radius:10px;
+             padding:1rem 1.2rem; margin-bottom:1rem; color:#FAFAFA; font-size:0.92rem;
+             line-height:1.65;">
+          <div style="font-size:0.78rem; font-weight:700; color:#4A90D9;
+               text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.4rem;">
+            Situation
+          </div>
+          {_html.escape(r['situation'])}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # --- Broken prompt box (Round 2 only) ---
+    if r.get("bad_prompt"):
+        st.markdown(
+            f"""
+            <div style="background:#1A0F0F; border:1px solid #E74C3C; border-radius:8px;
+                 padding:0.8rem 1rem; margin-bottom:1rem; color:#FAFAFA; font-size:0.92rem;">
+              <div style="font-weight:700; color:#E74C3C; margin-bottom:0.4rem;">
+                ❌ The broken prompt:
+              </div>
+              <div style="color:#ddd; font-style:italic;">"{_html.escape(r['bad_prompt'])}"</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown(f"**{r['task']}**")
+
+    with st.expander("💡 Hint (open if stuck)"):
+        st.markdown(
+            f"<div style='color:#F39C12; font-size:0.9rem;'>{_html.escape(r['hint'])}</div>",
+            unsafe_allow_html=True,
+        )
+
+    submitted = st.session_state.get("ch4_submitted", False)
+
+    # --- Input area (before submission) ---
+    if not submitted:
+        text_key = f"ch4_text_{round_num}"
+        prompt_text = st.text_area(
+            _ROUND_LABELS[idx],
+            value=st.session_state.get(text_key, ""),
+            height=160,
+            key=text_key,
+            placeholder="Write your prompt here…",
+        )
+        word_count = len(prompt_text.split()) if prompt_text.strip() else 0
+        limit = r["word_limit"]
+        wc_color = (
+            "#E74C3C" if word_count > limit
+            else ("#27AE60" if word_count >= 15 else "#888")
+        )
+        st.markdown(
+            f"<div style='font-size:0.82rem; color:{wc_color}; text-align:right;'>"
+            f"{word_count} / {limit} words</div>",
+            unsafe_allow_html=True,
+        )
+        can_submit = word_count >= 15
+        if not can_submit:
+            st.caption("Write at least 15 words to run your prompt.")
+        if st.button(
+            "Run my prompt →",
+            disabled=not can_submit,
+            type="primary",
+            use_container_width=True,
+        ):
+            prompts = dict(st.session_state["ch4_prompts"])
+            prompts[round_num] = prompt_text.strip()
+            st.session_state["ch4_prompts"] = prompts
+            st.session_state["ch4_generating"] = True
+            st.rerun()
+
+    # --- Results (after submission) ---
+    else:
+        outs = st.session_state["ch4_outputs"].get(round_num, {})
+        student_out = _html.escape(outs.get("student", ""))
+        expert_out = _html.escape(outs.get("expert", ""))
+        rd_list = st.session_state["ch4_round_data"]
+        eval_data = rd_list[idx] if idx < len(rd_list) else {}
+
+        # Box 1 — student output
+        st.markdown(
+            f"""
+            <div style="background:#0D1B2E; border:1px solid #2E5FA3; border-radius:8px;
+                 padding:0.9rem 1rem; margin-bottom:0.8rem;">
+              <div style="font-weight:700; color:#4A90D9; margin-bottom:0.5rem; font-size:0.9rem;">
+                🤖 What YOUR prompt produced:
+              </div>
+              <div style="color:#ddd; font-size:0.9rem; white-space:pre-wrap;">{student_out}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Box 2 — expert output
+        st.markdown(
+            f"""
+            <div style="background:#0D1F14; border:1px solid #27AE60; border-radius:8px;
+                 padding:0.9rem 1rem; margin-bottom:0.8rem;">
+              <div style="font-weight:700; color:#27AE60; margin-bottom:0.5rem; font-size:0.9rem;">
+                ✅ What an expert prompt produced:
+              </div>
+              <div style="color:#ddd; font-size:0.9rem; white-space:pre-wrap;">{expert_out}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Box 3 — coach evaluation (built as a single HTML string)
+        if eval_data and not eval_data.get("_error"):
+            total = eval_data.get("total_score", 0)
+            tier = _html.escape(eval_data.get("tier", ""))
+            summary = _html.escape(eval_data.get("plain_english_summary", ""))
+            key_learning = _html.escape(eval_data.get("key_learning", ""))
+
+            eval_html = (
+                f'<div style="background:#1A2332; border:1px solid #2E5FA3; border-radius:8px;'
+                f' padding:0.9rem 1rem; margin-bottom:0.8rem;">'
+                f'<div style="font-weight:700; color:#4A90D9; font-size:0.9rem; margin-bottom:0.6rem;">'
+                f'📊 Round {round_num} Evaluation — {total}/100 · {tier}</div>'
+                f'<div style="color:#ddd; font-size:0.88rem; margin-bottom:0.7rem;">{summary}</div>'
+            )
+            for dim in eval_data.get("dimensions", []):
+                pct = int(dim["score"] / dim["max"] * 100) if dim["max"] else 0
+                bar_c = "#27AE60" if pct >= 70 else ("#F39C12" if pct >= 40 else "#E74C3C")
+                eval_html += (
+                    f'<div style="margin-bottom:0.5rem;">'
+                    f'<div style="display:flex; justify-content:space-between;'
+                    f' font-size:0.84rem; color:#FAFAFA; margin-bottom:2px;">'
+                    f'<span>{_html.escape(dim["name"])}</span>'
+                    f'<span style="color:#4A90D9;">{dim["score"]}/{dim["max"]}</span></div>'
+                    f'<div style="background:#0E1117; border-radius:4px; height:6px;">'
+                    f'<div style="background:{bar_c}; width:{pct}%; height:6px; border-radius:4px;"></div></div>'
+                    f'<div style="font-size:0.8rem; color:#aaa; margin-top:2px;">'
+                    f'{_html.escape(dim.get("feedback", ""))}</div></div>'
+                )
+            if key_learning:
+                eval_html += (
+                    f'<div style="background:#0D1B2E; border-left:3px solid #4A90D9;'
+                    f' padding:0.6rem 0.9rem; margin-top:0.6rem; border-radius:0 6px 6px 0;">'
+                    f'<div style="font-size:0.82rem; font-weight:700; color:#4A90D9;'
+                    f' margin-bottom:0.2rem;">💡 Key Learning</div>'
+                    f'<div style="color:#ddd; font-size:0.88rem;">{key_learning}</div></div>'
+                )
+            eval_html += "</div>"
+            st.markdown(eval_html, unsafe_allow_html=True)
+        elif eval_data.get("_error"):
+            st.error("Coach evaluation could not be generated for this round.")
+
+        st.markdown("---")
+        if round_num < 4:
+            if st.button("Next Round →", type="primary", use_container_width=True):
+                st.session_state["ch4_current_round"] = idx + 1
+                st.session_state["ch4_submitted"] = False
+                st.rerun()
+        else:
+            if st.button("See Final Score →", type="primary", use_container_width=True):
+                st.session_state["ch4_phase"] = "scorecard"
+                st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 3 — Final scorecard
+# ---------------------------------------------------------------------------
+
+_DIM_NAMES = ["Prompt Specificity", "Context Provided", "AI Limitations Awareness", "Output Quality"]
+_DIM_MAXES = [30, 25, 25, 20]
+_ROUND_SHORT = ["Write from scratch", "Fix broken prompt", "Explain failure", "Write with constraint"]
+
+
+def screen_scorecard():
+    _init_state()
+
+    student_name = st.session_state.get("ch4_student_name", "Student")
+    rd_list = st.session_state.get("ch4_round_data", [])
+
+    if len(rd_list) < 4:
+        st.title("Chapter 4 — AI Competencies")
+        st.error("Scorecard data is incomplete. Please restart the challenge.")
+        if st.button("Try Again →", use_container_width=True):
+            _reset_state()
+            st.rerun()
+        return
+
+    scores = [
+        0 if rd.get("_error") else rd.get("total_score", 0)
+        for rd in rd_list
+    ]
+    avg_score = round(sum(scores) / 4)
+
+    if avg_score >= 90:
+        overall_tier, tier_color = "AI Power User", "#27AE60"
+    elif avg_score >= 75:
+        overall_tier, tier_color = "Strategic User", "#4A90D9"
+    elif avg_score >= 60:
+        overall_tier, tier_color = "Developing", "#F39C12"
+    else:
+        overall_tier, tier_color = "Rerun Recommended", "#E74C3C"
+
+    # --- 3-col header ---
+    h1, h2, h3 = st.columns(3)
+    with h1:
+        st.markdown(
+            f"<div style='color:#FAFAFA; font-weight:700;'>{_html.escape(student_name)}</div>",
+            unsafe_allow_html=True,
+        )
+    with h2:
+        st.markdown(
+            "<div style='color:#4A90D9; font-weight:700; text-align:center;'>AI Prompt Challenge</div>",
+            unsafe_allow_html=True,
+        )
+    with h3:
+        st.markdown(
+            f"<div style='color:#aaa; text-align:right;'>{date.today().strftime('%B %d, %Y')}</div>",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+    st.markdown("## Chapter 4 — AI Competencies Scorecard")
+
+    # --- Round summary ---
+    st.markdown("### Round Summary")
+    for i, (rd, short) in enumerate(zip(rd_list, _ROUND_SHORT)):
+        sc = scores[i]
+        sc_color = "#27AE60" if sc >= 75 else ("#F39C12" if sc >= 60 else "#E74C3C")
+        label = (
+            "Excellent" if sc >= 90
+            else ("Strong" if sc >= 75 else ("Developing" if sc >= 60 else "Needs Work"))
+        )
+        st.markdown(
+            f'<div style="display:flex; justify-content:space-between; align-items:center;'
+            f' background:#1A2332; border:1px solid #2E5FA3; border-radius:8px;'
+            f' padding:0.6rem 1rem; margin-bottom:0.4rem;">'
+            f'<div><span style="color:#4A90D9; font-weight:700; font-size:0.85rem;">Round {i+1}</span>'
+            f'<span style="color:#FAFAFA; margin-left:0.6rem; font-size:0.9rem;">{short}</span></div>'
+            f'<div style="color:{sc_color}; font-weight:700;">{sc}/100 — {label}</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+
+    # --- Overall tier banner ---
+    st.markdown(
+        f'<div style="background:#1A2332; border:2px solid {tier_color}; border-radius:10px;'
+        f' padding:1rem 1.2rem; text-align:center; margin-bottom:1.2rem;">'
+        f'<div style="font-size:2rem; font-weight:700; color:{tier_color};">{avg_score}/100</div>'
+        f'<div style="font-size:1.1rem; font-weight:700; color:#FAFAFA; margin-top:0.2rem;">'
+        f'{overall_tier}</div>'
+        f'<div style="color:#aaa; font-size:0.85rem; margin-top:0.3rem;">Overall Average</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    # --- Dimension breakdown (average across all 4 rounds) ---
+    st.markdown("### Dimension Breakdown (Average Across All Rounds)")
+    for d_idx, (d_name, d_max) in enumerate(zip(_DIM_NAMES, _DIM_MAXES)):
+        d_scores = []
+        for rd in rd_list:
+            dims = rd.get("dimensions", [])
+            d_scores.append(dims[d_idx]["score"] if d_idx < len(dims) else 0)
+        d_avg = round(sum(d_scores) / 4)
+        pct = int(d_avg / d_max * 100) if d_max else 0
+        bar_c = "#27AE60" if pct >= 70 else ("#F39C12" if pct >= 40 else "#E74C3C")
+        st.markdown(
+            f'<div style="margin-bottom:0.7rem;">'
+            f'<div style="display:flex; justify-content:space-between;'
+            f' font-size:0.88rem; color:#FAFAFA; margin-bottom:3px;">'
+            f'<span style="font-weight:600;">{d_name}</span>'
+            f'<span style="color:#4A90D9;">{d_avg}/{d_max} avg</span></div>'
+            f'<div style="background:#0E1117; border-radius:4px; height:8px;">'
+            f'<div style="background:{bar_c}; width:{pct}%; height:8px; border-radius:4px;"></div>'
+            f'</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    # --- Key learning from weakest round ---
+    weakest_idx = scores.index(min(scores))
+    strongest_idx = scores.index(max(scores))
+    key_learning = _html.escape(rd_list[weakest_idx].get("key_learning", ""))
+
+    if key_learning:
+        st.markdown("---")
+        st.markdown(
+            f'<div style="background:#0D1B2E; border-left:4px solid #4A90D9;'
+            f' padding:0.9rem 1.1rem; border-radius:0 8px 8px 0; margin-bottom:1rem;">'
+            f'<div style="font-weight:700; color:#4A90D9; margin-bottom:0.4rem; font-size:0.95rem;">'
+            f'💡 Key Learning</div>'
+            f'<div style="color:#FAFAFA; font-size:0.95rem; line-height:1.6;">{key_learning}</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+    # --- Strongest / Weakest round cards ---
+    st.markdown("### Highlights")
+    sc1, sc2 = st.columns(2)
+    with sc1:
+        strongest_rd = rd_list[strongest_idx]
+        st.markdown(
+            f'<div style="background:#0D1F14; border:1px solid #27AE60; border-radius:8px;'
+            f' padding:0.8rem 1rem;">'
+            f'<div style="font-size:0.8rem; font-weight:700; color:#27AE60;'
+            f' text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.3rem;">'
+            f'⭐ Strongest Round</div>'
+            f'<div style="color:#FAFAFA; font-weight:700; margin-bottom:0.3rem;">'
+            f'Round {strongest_idx+1} — {_ROUND_SHORT[strongest_idx]} ({scores[strongest_idx]}/100)</div>'
+            f'<div style="color:#ddd; font-size:0.88rem;">'
+            f'{_html.escape(strongest_rd.get("strongest_moment", ""))}</div></div>',
+            unsafe_allow_html=True,
+        )
+    with sc2:
+        weakest_rd = rd_list[weakest_idx]
+        st.markdown(
+            f'<div style="background:#1A0F0F; border:1px solid #E74C3C; border-radius:8px;'
+            f' padding:0.8rem 1rem;">'
+            f'<div style="font-size:0.8rem; font-weight:700; color:#E74C3C;'
+            f' text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.3rem;">'
+            f'📌 Weakest Round</div>'
+            f'<div style="color:#FAFAFA; font-weight:700; margin-bottom:0.3rem;">'
+            f'Round {weakest_idx+1} — {_ROUND_SHORT[weakest_idx]} ({scores[weakest_idx]}/100)</div>'
+            f'<div style="color:#ddd; font-size:0.88rem;">'
+            f'{_html.escape(weakest_rd.get("critical_gap", ""))}</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    # --- Behavioral recommendation ---
+    rec = _html.escape(rd_list[weakest_idx].get("behavioral_recommendation", ""))
+    if rec:
+        st.markdown("---")
+        st.markdown(
+            f'<div style="background:#1A2332; border:1px solid #F39C12; border-radius:8px;'
+            f' padding:0.8rem 1rem; margin-bottom:1rem;">'
+            f'<div style="font-weight:700; color:#F39C12; margin-bottom:0.3rem; font-size:0.9rem;">'
+            f'🎯 Behavioral Recommendation</div>'
+            f'<div style="color:#ddd; font-size:0.9rem;">{rec}</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    if st.button("Try Again →", use_container_width=True):
+        _reset_state()
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+def run_chapter4():
+    _init_state()
+    phase = st.session_state["ch4_phase"]
+    if phase == "setup":
+        screen_setup()
+    elif phase == "round":
+        screen_round()
+    elif phase == "scorecard":
+        screen_scorecard()
+    else:
+        screen_setup()

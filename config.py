@@ -18,7 +18,7 @@ CHAPTERS = {
     1: {"title": "The Selling Profession", "active": True},
     2: {"title": "Ethics in Sales", "active": False},
     3: {"title": "Active Listening Roleplay", "active": True},
-    4: {"title": "Prospecting", "active": False},
+    4: {"title": "AI Competencies", "active": True},
     5: {"title": "Pre-Approach & Planning", "active": False},
     6: {"title": "Prospecting & Outreach", "active": True},
     7: {"title": "Discovery & SPIN Questioning", "active": True},
