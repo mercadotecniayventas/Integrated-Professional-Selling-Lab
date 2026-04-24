@@ -11,6 +11,89 @@ MODEL = "gpt-4.1-mini"
 TEMP_COACH = 0.3
 
 # ---------------------------------------------------------------------------
+# Example scenario (shown on Screen 1 — different industry from practice)
+# ---------------------------------------------------------------------------
+
+EXAMPLE = {
+    "buyer_name": "Tom Rivera",
+    "buyer_title": "COO",
+    "company": "BuildRight Construction",
+    "seller_product": "BuildStack Pro",
+    "seller_product_type": "project documentation platform",
+    "transcript": (
+        "Tom: Project documentation is our biggest challenge. We're managing 12 active sites "
+        "and everything is on paper or email. Nothing is centralized.\n"
+        "Rep: What happens when something falls through the cracks?\n"
+        "Tom: Last month we missed a compliance deadline on a federal project. "
+        "Cost us $180K in penalties and nearly lost us the contract.\n"
+        "Rep: What would centralized documentation change for you?\n"
+        "Tom: We could catch issues before they become penalties. "
+        "And I could actually sleep at night knowing we're covered."
+    ),
+    "proposal_sections": [
+        {
+            "title": "Executive Summary",
+            "text": (
+                "BuildRight Construction is managing 12 active sites with decentralized "
+                "documentation — a gap that cost $180K in penalties last month and put a "
+                "federal contract at risk. BuildStack Pro centralizes all project documentation "
+                "in real time, so compliance issues are caught before they become penalties."
+            ),
+            "annotation": (
+                "Uses buyer's exact numbers ($180K) and mirrors Tom's own words: "
+                "'catch issues before they become penalties' — not generic sales language."
+            ),
+        },
+        {
+            "title": "Proposed Solution",
+            "text": (
+                "BuildStack Pro provides a cloud-based documentation hub where all 12 sites "
+                "submit compliance documents in real time. Automated alerts flag missing or "
+                "expiring documents 72 hours before deadlines — before they become a problem."
+            ),
+            "annotation": (
+                "References the buyer's specific situation (12 sites) and directly addresses "
+                "their exact pain (missing deadlines). '72 hours before deadlines' is a concrete "
+                "detail that makes this feel real, not templated."
+            ),
+        },
+        {
+            "title": "Value Statement",
+            "text": (
+                "One missed deadline cost BuildRight $180K. BuildStack Pro pays for itself "
+                "by preventing a single compliance failure. Beyond cost avoidance, your team "
+                "gets back the hours currently spent chasing documentation across 12 sites."
+            ),
+            "annotation": (
+                "Quantifies value using the buyer's own number — not a generic ROI estimate. "
+                "'Pays for itself by preventing a single compliance failure' is a logic the "
+                "buyer can repeat to their CEO."
+            ),
+        },
+        {
+            "title": "Recommended Next Step",
+            "text": (
+                "Let's schedule a 30-minute technical review with your compliance lead and "
+                "two site managers to map your current documentation workflow — so we can "
+                "show you exactly where BuildStack Pro fits."
+            ),
+            "annotation": (
+                "Specific, low-friction, and involves the right stakeholders. "
+                "'30 minutes' is easy to say yes to. This is not 'let's connect soon.'"
+            ),
+        },
+    ],
+    "score_notes": [
+        ("✅", "Uses buyer's exact words and numbers from the call"),
+        ("✅", "Solution maps directly to the problem discovered (12 sites, missed deadlines)"),
+        ("✅", "Value is quantified in buyer's terms ($180K), not generic ROI"),
+        ("✅", "Next step is specific, low-friction, and involves the right people"),
+        ("⚠️", "Could add a timeline or urgency reference tied to upcoming contracts"),
+    ],
+    "example_score": 92,
+}
+
+# ---------------------------------------------------------------------------
 # Scenario data
 # ---------------------------------------------------------------------------
 
@@ -256,7 +339,7 @@ def _init_state() -> None:
         st.session_state["ch8_last_scenario"] = chosen
 
     defaults = {
-        "ch8_phase": "setup",
+        "ch8_phase": "example",
         "ch8_student_name": "",
         "ch8_sections": {
             "exec_summary": "",
@@ -283,7 +366,95 @@ def _reset_state() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Screen 1 — Setup
+# Screen 1 — Example walkthrough
+# ---------------------------------------------------------------------------
+
+def screen_example() -> None:
+    _init_state()
+    ex = EXAMPLE
+
+    st.title("Chapter 8 — Proposal & Value Framing")
+    st.markdown("### 📋 Before you start — see what great looks like")
+    st.markdown(
+        "<div style='color:#aaa; font-size:0.9rem; margin-bottom:1rem;'>"
+        "Read this example from a different industry. Study the annotations — they show "
+        "exactly what separates a buyer-language proposal from a generic one.</div>",
+        unsafe_allow_html=True,
+    )
+
+    # Transcript card
+    st.markdown("#### Example Discovery Transcript")
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:1px solid #2E5FA3; border-radius:10px;
+             padding:1rem 1.2rem; margin-bottom:1.2rem; color:#FAFAFA; font-size:0.9rem;
+             line-height:1.75;">
+          <div style="font-size:0.78rem; font-weight:700; color:#4A90D9;
+               text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem;">
+            {_html.escape(ex['buyer_name'])}, {_html.escape(ex['buyer_title'])} ·
+            {_html.escape(ex['company'])} · Product: {_html.escape(ex['seller_product'])}
+          </div>
+          <div style="white-space:pre-wrap;">{_html.escape(ex['transcript'])}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Annotated proposal sections
+    st.markdown("#### Example Proposal — with annotations")
+    for sec in ex["proposal_sections"]:
+        st.markdown(
+            f"""
+            <div style="margin-bottom:1rem;">
+              <div style="font-weight:700; color:#FAFAFA; font-size:0.95rem;
+                   margin-bottom:0.35rem;">{_html.escape(sec['title'])}</div>
+              <div style="background:#0D1B2E; border:1px solid #2E5FA3; border-radius:8px;
+                   padding:0.8rem 1rem; color:#ddd; font-size:0.9rem;
+                   line-height:1.7; margin-bottom:0.35rem;">
+                {_html.escape(sec['text'])}
+              </div>
+              <div style="background:#0D1F14; border-left:3px solid #27AE60;
+                   padding:0.5rem 0.85rem; border-radius:0 6px 6px 0;
+                   font-size:0.85rem; color:#27AE60;">
+                ✅ {_html.escape(sec['annotation'])}
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # Scoring summary box
+    st.markdown("---")
+    notes_html = "".join(
+        f'<div style="margin-bottom:0.3rem;">'
+        f'<span style="color:{"#27AE60" if icon == "✅" else "#F39C12"};">{icon}</span>'
+        f' <span style="color:#ddd; font-size:0.88rem;">{_html.escape(note)}</span></div>'
+        for icon, note in ex["score_notes"]
+    )
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:2px solid #27AE60; border-radius:10px;
+             padding:1rem 1.2rem; margin-bottom:1.2rem;">
+          <div style="font-weight:700; color:#27AE60; font-size:0.95rem; margin-bottom:0.6rem;">
+            Why this proposal scores {ex['example_score']}/100
+          </div>
+          {notes_html}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if st.button(
+        "I'm ready to write my own →",
+        type="primary",
+        use_container_width=True,
+    ):
+        st.session_state["ch8_phase"] = "setup"
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 2 — Setup
 # ---------------------------------------------------------------------------
 
 def screen_setup() -> None:
@@ -697,11 +868,13 @@ def screen_scorecard() -> None:
 def run_chapter8() -> None:
     _init_state()
     phase = st.session_state["ch8_phase"]
-    if phase == "setup":
+    if phase == "example":
+        screen_example()
+    elif phase == "setup":
         screen_setup()
     elif phase == "write":
         screen_write()
     elif phase == "scorecard":
         screen_scorecard()
     else:
-        screen_setup()
+        screen_example()
