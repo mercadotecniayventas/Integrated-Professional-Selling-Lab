@@ -417,8 +417,18 @@ def screen_interview() -> None:
 
     # First render: generate recruiter's opening question
     if not messages:
-        with st.spinner("Connecting to your interviewer…"):
-            opening = call_recruiter_api([], rec_key)
+        try:
+            with st.spinner("Connecting to your interviewer…"):
+                opening = call_recruiter_api([], rec_key)
+        except Exception as exc:
+            st.error(
+                f"Could not reach the interviewer ({exc}). "
+                "Please refresh the page or click Try Again."
+            )
+            if st.button("Try Again →", use_container_width=True):
+                _reset_state()
+                st.rerun()
+            return
         st.session_state["ch1_messages"] = [{"role": "assistant", "content": opening}]
         st.rerun()
         return
@@ -456,8 +466,15 @@ def screen_interview() -> None:
         if user_input and user_input.strip():
             updated = list(messages)
             updated.append({"role": "user", "content": user_input.strip()})
-            with st.spinner("Interviewer responding…"):
-                reply = call_recruiter_api(updated, rec_key)
+            try:
+                with st.spinner("Interviewer responding…"):
+                    reply = call_recruiter_api(updated, rec_key)
+            except Exception as exc:
+                st.error(
+                    f"The interviewer couldn't respond ({exc}). "
+                    "Please try submitting your answer again."
+                )
+                st.stop()
             updated.append({"role": "assistant", "content": reply})
             st.session_state["ch1_messages"] = updated
             st.session_state["ch1_question_count"] = question_count + 1
@@ -517,12 +534,24 @@ def screen_reflection() -> None:
             "specificity": specificity,
             "authentic": authentic,
         }
-        with st.spinner("Evaluating your interview — this may take 15–25 seconds…"):
-            scorecard = call_coach_api(
-                st.session_state["ch1_messages"],
-                st.session_state["ch1_student_name"],
-                st.session_state["ch1_recruiter_key"],
-            )
+        try:
+            with st.spinner("Evaluating your interview — this may take 15–25 seconds…"):
+                scorecard = call_coach_api(
+                    st.session_state["ch1_messages"],
+                    st.session_state["ch1_student_name"],
+                    st.session_state["ch1_recruiter_key"],
+                )
+        except Exception:
+            scorecard = {
+                "dimensions": [],
+                "total_score": 0,
+                "tier": "Error",
+                "plain_english_summary": "",
+                "strongest_moment": "",
+                "critical_gap": "",
+                "behavioral_recommendation": "",
+                "_error": True,
+            }
         st.session_state["ch1_scorecard"] = scorecard
         st.session_state["ch1_phase"] = "scorecard"
         st.rerun()
@@ -540,6 +569,18 @@ def screen_scorecard() -> None:
     ref = st.session_state.get(
         "ch1_reflection", {"confidence": 3, "specificity": 3, "authentic": 3}
     )
+
+    # Surface any evaluation failure before rendering the rest
+    if not data or data.get("_error"):
+        st.title("Chapter 1 — Recruiter Scorecard")
+        st.error(
+            "We couldn't generate your scorecard. "
+            "Please click 'Try Again' to restart the interview."
+        )
+        if st.button("Try Again →", use_container_width=True):
+            _reset_state()
+            st.rerun()
+        return
 
     total = data.get("total_score", 0)
     tier = data.get("tier", "")
