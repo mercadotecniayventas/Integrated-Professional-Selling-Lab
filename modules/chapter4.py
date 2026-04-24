@@ -28,7 +28,9 @@ ROUNDS = [
         "task": "Write the AI prompt you would use to draft this outreach email.",
         "hint": (
             "A good prompt gives AI: who you are, who you're writing to, what you know "
-            "about them, the goal, the tone, and the format."
+            "about them, the goal, the tone, and the format.\n\n"
+            "AI Limitations note: AI cannot know what research you've done about this "
+            "prospect. Your prompt must include that research — AI only knows what you tell it."
         ),
         "bad_prompt": None,
         "word_limit": 200,
@@ -47,7 +49,10 @@ ROUNDS = [
         ),
         "hint": (
             "AI fails at Implication questions — they must respond to what the buyer "
-            "actually said, not assumed answers. A good prompt acknowledges this limitation."
+            "actually said, not assumed answers. A good prompt acknowledges this limitation.\n\n"
+            "AI Limitations note: The book says AI fails at Implication questions because "
+            "they must respond to what the BUYER actually said during the call — not assumed "
+            "answers. A strong prompt acknowledges this."
         ),
         "word_limit": 200,
     },
@@ -66,7 +71,10 @@ ROUNDS = [
         ),
         "hint": (
             "AI without buyer context produces generic responses. Price objections require "
-            "knowing WHY the buyer said it — which only comes from good discovery."
+            "knowing WHY the buyer said it — which only comes from good discovery.\n\n"
+            "AI Limitations note: AI without buyer context produces generic responses. It "
+            "cannot know WHY this specific buyer said the price was too high — only you know "
+            "that from discovery."
         ),
         "bad_prompt": None,
         "word_limit": 100,
@@ -86,7 +94,10 @@ ROUNDS = [
         ),
         "hint": (
             "The best AI users know what they know and what they don't. Prompts that assume "
-            "information produce confident but wrong outputs."
+            "information produce confident but wrong outputs.\n\n"
+            "AI Limitations note: AI cannot invent information you don't have. The best "
+            "prompts tell AI what you DON'T know and ask it to help you prepare for that "
+            "uncertainty."
         ),
         "bad_prompt": None,
         "word_limit": 200,
@@ -173,10 +184,10 @@ Dimensions and scoring:
     0 = No context provided
 
 3. AI Limitations Awareness (25 pts)
-   25 = Acknowledged what AI can/cannot do in this context
-   18 = Showed some awareness
-   10 = Treated AI as if it knows everything
-    0 = No awareness of limitations shown
+   25 = Showed any awareness that AI has limits in this context
+   18 = Mostly treated AI as capable but acknowledged one limitation
+   12 = Implicit awareness — didn't over-claim what AI would produce
+    5 = Treated AI as if it knows everything but prompt was still reasonable
 
 4. Output Quality (20 pts — evaluate based on the actual student output above)
    20 = Immediately usable in real B2B work
