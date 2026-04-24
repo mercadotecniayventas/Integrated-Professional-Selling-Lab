@@ -26,6 +26,12 @@ COMPANIES = {
             "DataFlow helps freight brokers get real-time carrier visibility. "
             "Your job: estimate how big this market is."
         ),
+        "market_brief": [
+            "There are approximately 17,000 licensed freight brokers in the US (FMCSA data).",
+            "About 40% operate primarily in the Southeast region.",
+            "Mid-size brokers (our target) represent roughly 25% of the total.",
+            "Enterprise software adoption in logistics: ~35% of mid-size firms have invested in visibility tools.",
+        ],
     },
     "talentiq": {
         "name": "TalentIQ",
@@ -39,6 +45,12 @@ COMPANIES = {
             "TalentIQ helps fast-growing companies make data-driven HR decisions. "
             "Your job: estimate how big this market is."
         ),
+        "market_brief": [
+            "There are approximately 200,000 companies in the US with 200–500 employees (US Census data).",
+            "Fast-growth companies (>20% headcount growth/year) represent roughly 15% of that segment.",
+            "Major metro areas (NYC, SF, Austin, Chicago, Seattle) concentrate about 45% of high-growth firms.",
+            "HR tech adoption in mid-size companies: ~40% use dedicated workforce analytics tools.",
+        ],
     },
     "qualitypro": {
         "name": "QualityPro",
@@ -52,6 +64,12 @@ COMPANIES = {
             "QualityPro helps medical device manufacturers prepare for FDA audits. "
             "Your job: estimate how big this market is."
         ),
+        "market_brief": [
+            "Approximately 6,500 medical device manufacturers are registered with the FDA in the US.",
+            "Firms with 100–500 employees represent about 30% of registered manufacturers.",
+            "FDA 21 CFR Part 820 (Quality System Regulation) applies to virtually all device manufacturers.",
+            "Digital QMS (quality management software) adoption: ~45% of mid-size device makers use dedicated tools.",
+        ],
     },
 }
 
@@ -464,6 +482,14 @@ def screen_calculator() -> None:
             f"**Geography hint:** {c['geo_hint']}  \n\n"
             f"*{c['context']}*"
         )
+
+    with st.expander(f"📋 {c['name']} — Market Brief", expanded=True):
+        st.markdown(
+            "Use these facts — or research your own. "
+            "Your job: decide what % applies to this company and justify your reasoning."
+        )
+        for fact in c["market_brief"]:
+            st.markdown(f"- {fact}")
 
     st.markdown("---")
     st.markdown("#### Geography")
