@@ -19,7 +19,7 @@ CHAPTERS = {
     2: {"title": "The B2B Sales Process", "active": True},
     3: {"title": "Active Listening Roleplay", "active": True},
     4: {"title": "AI Competencies", "active": True},
-    5: {"title": "Pre-Approach & Planning", "active": False},
+    5: {"title": "Know Your Market", "active": True},
     6: {"title": "Prospecting & Outreach", "active": True},
     7: {"title": "Discovery & SPIN Questioning", "active": True},
     8: {"title": "Proposal & Value Framing", "active": True},

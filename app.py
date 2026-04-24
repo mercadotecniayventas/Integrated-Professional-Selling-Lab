@@ -40,7 +40,6 @@ st.markdown(
 
 
 _EXTERNAL_CHAPTERS = {
-    5:  {"label": "Ch. 5 — TAM/SAM/SOM Agent ↗",   "url": "https://tam-agent.streamlit.app"},
     11: {"label": "Ch. 11 — Personal Branding ↗",   "url": "https://personal-branding-chatbot.streamlit.app"},
 }
 
@@ -121,10 +120,9 @@ def render_home():
         {
             "num": 5,
             "title": "Know Your Market",
-            "desc": "Calculate TAM/SAM/SOM for a B2B company",
-            "badge": "💬 Text · ↗ External",
-            "external": True,
-            "url": _EXTERNAL_CHAPTERS[5]["url"],
+            "desc": "Calculate TAM/SAM/SOM for an assigned B2B company",
+            "badge": "💬 Text",
+            "external": False,
         },
         {
             "num": 6,
@@ -236,6 +234,9 @@ def main():
     elif selected == 4:
         from modules.chapter4 import run_chapter4
         run_chapter4()
+    elif selected == 5:
+        from modules.chapter5 import run_chapter5
+        run_chapter5()
     elif selected == 6:
         from modules.chapter6 import run_chapter6
         run_chapter6()
