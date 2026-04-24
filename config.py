@@ -15,7 +15,7 @@ COLOR_DARK = "#0E1117"
 COLOR_CARD_BG = "#1A2332"
 
 CHAPTERS = {
-    1: {"title": "The Selling Profession", "active": False},
+    1: {"title": "The Selling Profession", "active": True},
     2: {"title": "Ethics in Sales", "active": False},
     3: {"title": "Active Listening Roleplay", "active": True},
     4: {"title": "Prospecting", "active": False},

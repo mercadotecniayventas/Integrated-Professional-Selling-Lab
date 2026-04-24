@@ -330,3 +330,363 @@ def _reset_state() -> None:
         st.session_state.pop(k, None)
     st.session_state["ch1_last_recruiter"] = last
     _init_state()
+
+
+# ---------------------------------------------------------------------------
+# Screen 1 — Setup
+# ---------------------------------------------------------------------------
+
+def screen_setup() -> None:
+    rec_key = st.session_state["ch1_recruiter_key"]
+    rec = RECRUITERS[rec_key]
+
+    st.title("Chapter 1 — The Selling Profession")
+
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:1px solid #2E5FA3;
+             border-radius:8px; padding:0.9rem 1.1rem; margin-bottom:0.75rem;">
+          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.4rem;">
+            &#128188; Your Interviewer
+          </div>
+          <div style="color:#FAFAFA; font-size:1.05rem; margin-bottom:0.15rem;">
+            <strong>{_html.escape(rec['name'])}</strong>
+            &mdash; {_html.escape(rec['company'])}
+          </div>
+          <div style="color:#aaa;">
+            Role you are interviewing for:
+            <strong>{_html.escape(rec['role'])}</strong>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <div style="background:#1A2332; border:1px solid #2E5FA3;
+             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.75rem;">
+          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.5rem;">
+            &#128188; What to expect
+          </div>
+          <div style="color:#FAFAFA; margin-bottom:0.5rem;">
+            6 questions. Answer specifically &mdash; generic answers score poorly.
+          </div>
+          <div style="color:#FAFAFA; margin-bottom:0.2rem;">&#9989; Give real examples</div>
+          <div style="color:#FAFAFA; margin-bottom:0.2rem;">&#9989; Show you understand B2B sales</div>
+          <div style="color:#FAFAFA; margin-bottom:0.2rem;">&#9989; Sound like yourself, not a textbook</div>
+          <div style="color:#FAFAFA;">&#9989; Demonstrate self-awareness</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("**Your full name (appears on your scorecard):**")
+    student_name = st.text_input(
+        "Your full name",
+        value=st.session_state["ch1_student_name"],
+        placeholder="e.g. Ana García",
+        key="ch1_name_input",
+        label_visibility="collapsed",
+    )
+
+    ready = bool(student_name.strip())
+    if not ready:
+        st.caption("Enter your name above to enable the Start button.")
+
+    if st.button(
+        "Begin Interview →",
+        disabled=not ready,
+        type="primary",
+        use_container_width=True,
+    ):
+        st.session_state["ch1_student_name"] = student_name.strip()
+        st.session_state["ch1_phase"] = "interview"
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 2 — Interview
+# ---------------------------------------------------------------------------
+
+def screen_interview() -> None:
+    rec_key = st.session_state["ch1_recruiter_key"]
+    rec = RECRUITERS[rec_key]
+    messages = st.session_state["ch1_messages"]
+    question_count = st.session_state["ch1_question_count"]
+
+    # First render: generate recruiter's opening question
+    if not messages:
+        with st.spinner("Connecting to your interviewer…"):
+            opening = call_recruiter_api([], rec_key)
+        st.session_state["ch1_messages"] = [{"role": "assistant", "content": opening}]
+        st.rerun()
+        return
+
+    st.title("Chapter 1 — The Selling Profession")
+
+    progress_label = (
+        f"Question {question_count + 1} of 6" if question_count < 6 else "Interview complete"
+    )
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:1px solid #2E5FA3;
+             border-radius:6px; padding:0.45rem 0.8rem; margin-bottom:0.65rem;
+             font-size:0.92rem;">
+          <span style="color:#4A90D9; font-weight:700;">&#127919; {progress_label}</span>
+          <span style="color:#aaa; font-size:0.82rem;">
+            &nbsp;&middot;&nbsp; {_html.escape(rec['name'])}
+            &mdash; {_html.escape(rec['company'])}
+          </span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    for msg in messages:
+        if msg["role"] == "assistant":
+            with st.chat_message("assistant", avatar="👔"):
+                st.write(msg["content"])
+        else:
+            with st.chat_message("user", avatar="🎓"):
+                st.write(msg["content"])
+
+    if question_count < 6:
+        user_input = st.chat_input("Type your answer…")
+        if user_input and user_input.strip():
+            updated = list(messages)
+            updated.append({"role": "user", "content": user_input.strip()})
+            with st.spinner("Interviewer responding…"):
+                reply = call_recruiter_api(updated, rec_key)
+            updated.append({"role": "assistant", "content": reply})
+            st.session_state["ch1_messages"] = updated
+            st.session_state["ch1_question_count"] = question_count + 1
+            st.rerun()
+    else:
+        st.markdown("---")
+        if st.button(
+            "Finish & Reflect →",
+            type="primary",
+            use_container_width=True,
+        ):
+            st.session_state["ch1_phase"] = "reflection"
+            st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 3 — Self-reflection
+# ---------------------------------------------------------------------------
+
+def screen_reflection() -> None:
+    st.title("Chapter 1 — The Selling Profession")
+
+    st.markdown(
+        """
+        <div style="background:#1A2332; border:1px solid #2E5FA3;
+             border-radius:8px; padding:1rem 1.2rem; margin-bottom:1rem;">
+          <div style="font-weight:700; color:#4A90D9; font-size:1.05rem;
+               margin-bottom:0.4rem;">
+            Before you see your score &mdash; reflect:
+          </div>
+          <div style="color:#ddd;">
+            Your self-assessment will appear alongside your AI evaluation score.
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    ref = st.session_state.get(
+        "ch1_reflection", {"confidence": 3, "specificity": 3, "authentic": 3}
+    )
+
+    confidence = st.slider(
+        "How confident did you feel?", 1, 5, ref["confidence"], key="ch1_ref_conf"
+    )
+    specificity = st.slider(
+        "How specific were your answers?", 1, 5, ref["specificity"], key="ch1_ref_spec"
+    )
+    authentic = st.slider(
+        "Did you sound like yourself?", 1, 5, ref["authentic"], key="ch1_ref_auth"
+    )
+
+    st.markdown("&nbsp;")
+    if st.button("See My Score →", type="primary", use_container_width=True):
+        st.session_state["ch1_reflection"] = {
+            "confidence": confidence,
+            "specificity": specificity,
+            "authentic": authentic,
+        }
+        with st.spinner("Evaluating your interview — this may take 15–25 seconds…"):
+            scorecard = call_coach_api(
+                st.session_state["ch1_messages"],
+                st.session_state["ch1_student_name"],
+                st.session_state["ch1_recruiter_key"],
+            )
+        st.session_state["ch1_scorecard"] = scorecard
+        st.session_state["ch1_phase"] = "scorecard"
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 4 — Scorecard
+# ---------------------------------------------------------------------------
+
+def screen_scorecard() -> None:
+    data = st.session_state.get("ch1_scorecard") or {}
+    rec_key = st.session_state["ch1_recruiter_key"]
+    rec = RECRUITERS[rec_key]
+    student_name = st.session_state["ch1_student_name"]
+    ref = st.session_state.get(
+        "ch1_reflection", {"confidence": 3, "specificity": 3, "authentic": 3}
+    )
+
+    total = data.get("total_score", 0)
+    tier = data.get("tier", "")
+
+    _TIER_COLORS = {
+        "Offer Extended":   "#27AE60",
+        "Strong Candidate": "#2E5FA3",
+        "Developing":       "#F39C12",
+        "Not Ready Yet":    "#E74C3C",
+    }
+    tier_color = _TIER_COLORS.get(tier, "#888")
+
+    st.title("Chapter 1 — Recruiter Scorecard")
+
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.metric("Student", student_name)
+    with c2:
+        st.metric("Position", f"{rec['company']} · {rec['role']}")
+    with c3:
+        st.metric("Date", date.today().strftime("%b %d, %Y"))
+
+    st.markdown("---")
+
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:1px solid #2E5FA3; border-radius:8px;
+             padding:0.7rem 1rem; margin-bottom:0.8rem; font-size:0.9rem; color:#ddd;">
+          <strong style="color:#4A90D9;">Your self-assessment:</strong>
+          &nbsp; Confidence {ref['confidence']}/5
+          &nbsp;&middot;&nbsp; Specificity {ref['specificity']}/5
+          &nbsp;&middot;&nbsp; Authenticity {ref['authentic']}/5
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        f"""
+        <div style="background:{tier_color}22; border:2px solid {tier_color};
+             border-radius:10px; padding:1rem 1.2rem; margin-bottom:1rem; text-align:center;">
+          <div style="font-size:2.2rem; font-weight:700; color:{tier_color};">{total} / 100</div>
+          <div style="font-size:1.05rem; font-weight:600; color:{tier_color}; margin-top:0.2rem;">
+            {_html.escape(tier)}
+          </div>
+          <div style="color:#ddd; font-size:0.9rem; margin-top:0.5rem;">
+            {_html.escape(data.get('plain_english_summary', ''))}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("#### Score Breakdown")
+    for dim in data.get("dimensions", []):
+        score = dim.get("score", 0)
+        max_pts = dim.get("max_points", 0)
+        pct = int(score / max_pts * 100) if max_pts else 0
+        bar_color = "#27AE60" if pct >= 75 else ("#F39C12" if pct >= 50 else "#E74C3C")
+        label = f"{dim.get('name', '')}  —  {score} / {max_pts}"
+        with st.expander(label, expanded=(pct < 70)):
+            st.markdown(
+                f"""
+                <div style="background:#0E1117; border-radius:4px; height:6px;
+                     margin-bottom:0.6rem;">
+                  <div style="background:{bar_color}; width:{pct}%; height:6px;
+                       border-radius:4px;"></div>
+                </div>
+                <div style="color:#aaa; font-size:0.87rem; margin-bottom:0.4rem;">
+                  <em>&#8220;{_html.escape(dim.get('evidence', ''))}&#8221;</em>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            coaching = dim.get("coaching_note", "")
+            if pct < 70:
+                st.info(coaching)
+            else:
+                st.caption(coaching)
+
+    st.markdown("---")
+    ka, kb = st.columns(2)
+    with ka:
+        st.markdown(
+            f"""
+            <div style="background:#1A2332; border-left:4px solid #27AE60;
+                 border-radius:6px; padding:0.8rem 1rem;">
+              <div style="color:#27AE60; font-weight:700; margin-bottom:0.3rem;">
+                &#127942; Strongest Moment
+              </div>
+              <div style="color:#ddd;">
+                {_html.escape(data.get('strongest_moment', ''))}
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with kb:
+        st.markdown(
+            f"""
+            <div style="background:#1A2332; border-left:4px solid #E74C3C;
+                 border-radius:6px; padding:0.8rem 1rem;">
+              <div style="color:#E74C3C; font-weight:700; margin-bottom:0.3rem;">
+                &#128270; Critical Gap
+              </div>
+              <div style="color:#ddd;">
+                {_html.escape(data.get('critical_gap', ''))}
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("&nbsp;")
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border-left:4px solid #F39C12;
+             border-radius:6px; padding:0.8rem 1rem; margin-top:0.5rem;">
+          <div style="color:#F39C12; font-weight:700; margin-bottom:0.3rem;">
+            &#128218; Practice Recommendation
+          </div>
+          <div style="color:#ddd;">
+            {_html.escape(data.get('behavioral_recommendation', ''))}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
+    if st.button("Try Again →", use_container_width=True):
+        _reset_state()
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+def run_chapter1() -> None:
+    _init_state()
+    phase = st.session_state["ch1_phase"]
+    if phase == "setup":
+        screen_setup()
+    elif phase == "interview":
+        screen_interview()
+    elif phase == "reflection":
+        screen_reflection()
+    else:
+        screen_scorecard()
