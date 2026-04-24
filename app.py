@@ -100,7 +100,7 @@ def render_home():
         {
             "num": 2,
             "title": "The B2B Sales Process",
-            "desc": "Navigate a buying center — 5 decisions, $180K deal",
+            "desc": "Navigate a buying center — 10 decisions, $180K deal",
             "badge": "🎮 Game",
             "external": False,
         },
@@ -157,7 +157,7 @@ def render_home():
         {
             "num": 10,
             "title": "Sales Technology Stack",
-            "desc": "Navigate a CRM pipeline — make the right calls",
+            "desc": "Navigate 10 CRM deals — strategy and data hygiene",
             "badge": "🎮 Game",
             "external": False,
         },

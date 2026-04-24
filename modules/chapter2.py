@@ -68,6 +68,51 @@ VARIANTS = {
                 {"text": "Send a 'checking in' email to the full buying center",                                "points":  3, "consequence": "Sarah replies asking who you are. Tom is embarrassed. Trust erodes."},
             ],
         },
+        {
+            "situation": "Deal is closed. During implementation Tom mentions two other divisions could benefit from the solution.",
+            "question": "What do you do?",
+            "options": [
+                {"text": "Ask Tom to introduce you to the other division heads immediately",                    "points":  7, "consequence": "Tom makes introductions. You have 2 new conversations started."},
+                {"text": "Wait until implementation is successful before pursuing expansion",                   "points": 10, "consequence": "Smart. You let results speak first. Three months later Tom becomes your biggest internal advocate and opens two expansion doors."},
+                {"text": "Go directly to Sarah Walsh to discuss enterprise expansion",                          "points":  3, "consequence": "Sarah says 'let's see how this one goes first.' Too early for that conversation."},
+            ],
+        },
+        {
+            "situation": "A prospect in your pipeline asks for a customer reference in manufacturing. Tom Chen is your best option.",
+            "question": "How do you approach Tom?",
+            "options": [
+                {"text": "Ask Tom directly to be a reference",                                                 "points":  7, "consequence": "Tom agrees but seems slightly put on the spot. He does it, but with less enthusiasm than you'd hoped."},
+                {"text": "Check in on Tom's satisfaction first, then ask for the reference",                   "points": 10, "consequence": "Tom appreciates you asked about him first. He volunteers to be a reference before you even ask — and writes a testimonial unprompted."},
+                {"text": "Use Tom's name without asking him first",                                            "points":  0, "consequence": "Tom finds out. Trust is severely damaged. He stops advocating for you internally."},
+            ],
+        },
+        {
+            "situation": "Contract renews in 90 days. Linda Park — the former skeptic — now runs a larger team and is the primary day-to-day user of your solution.",
+            "question": "Who leads the renewal conversation?",
+            "options": [
+                {"text": "Go through Tom — he's your champion and knows the relationship",                     "points":  5, "consequence": "Tom is supportive but Linda now makes the real recommendation. She feels overlooked."},
+                {"text": "Schedule separate conversations with Tom AND Linda before renewal",                   "points": 10, "consequence": "Linda becomes a co-champion. Renewal is approved quickly and includes an upsell."},
+                {"text": "Send renewal paperwork directly to Marcus in Procurement",                           "points":  0, "consequence": "Marcus routes it to Sarah without context from Tom or Linda. Renewal almost falls through."},
+            ],
+        },
+        {
+            "situation": "Marcus Webb tells you a competitor offered the same functionality at 20% lower price for renewal.",
+            "question": "How do you respond?",
+            "options": [
+                {"text": "Match the competitor's price immediately to keep the deal",                          "points":  0, "consequence": "Marcus asks for another 10%. You've shown there's room to move and set a bad precedent."},
+                {"text": "Ask Marcus what specifically appeals about the competitor's offer",                   "points": 10, "consequence": "Marcus reveals it's purely price pressure from the CFO. Linda and Tom both want to stay with you. You address the CFO concern directly and renew at original price."},
+                {"text": "Ask for a meeting with Sarah Walsh to defend your value directly",                   "points":  7, "consequence": "Sarah appreciates the directness. Renewal happens at original price, but it took more effort than necessary."},
+            ],
+        },
+        {
+            "situation": "Sarah Walsh invites you to present at their quarterly business review. You have 10 minutes with the full executive team.",
+            "question": "What do you present?",
+            "options": [
+                {"text": "A product update highlighting your new features and roadmap",                        "points":  0, "consequence": "Sarah says 'we didn't need a sales pitch.' The relationship cools noticeably."},
+                {"text": "ROI achieved using their numbers — delays eliminated, escalations resolved, competitive advantage gained", "points": 10, "consequence": "Sarah shares the presentation with James Ortiz. You're now positioned as a trusted advisor, not a vendor."},
+                {"text": "A case study from another company in their industry",                                "points":  3, "consequence": "Interesting but not specific enough to Meridian's situation. A missed opportunity to demonstrate your value."},
+            ],
+        },
     ]},
     "B": {"decisions": [
         {
@@ -113,6 +158,51 @@ VARIANTS = {
                 {"text": "Hand off to your implementation team and move to your next prospect",                "points":  0, "consequence": "Implementation struggles. Linda's team resists. Tom calls you 3 months later frustrated. Renewal is at risk."},
                 {"text": "Schedule a kickoff call with Tom, Linda, and your implementation lead before you disengage", "points": 10, "consequence": "Linda's concerns are addressed upfront. Implementation goes smoothly. Tom introduces you to two other division heads."},
                 {"text": "Email the full buying center congratulating them on the decision",                    "points":  3, "consequence": "Nice gesture but James Ortiz replies asking who you are. You never built that relationship."},
+            ],
+        },
+        {
+            "situation": "The contract is signed. Tom is proud of the decision but Linda Park — the former skeptic — is now the primary day-to-day user of your platform.",
+            "question": "How do you approach the first month post-close?",
+            "options": [
+                {"text": "Let your implementation team handle onboarding and move on to your next prospect",   "points":  0, "consequence": "Three months later, Linda's team is frustrated. Implementation issues were foreseeable and you weren't there to catch them."},
+                {"text": "Check in with Tom weekly and address any issues he flags",                           "points":  5, "consequence": "Tom appreciates the support but Linda's concerns go unaddressed at the source. A missed relationship opportunity."},
+                {"text": "Schedule a direct touchpoint with Linda in week 2 to understand how her team is experiencing the transition", "points": 10, "consequence": "Linda is pleasantly surprised you reached out to her directly. She becomes a co-champion and refers you to a sister division."},
+            ],
+        },
+        {
+            "situation": "Tom tells you he's been promoted internally and will be moving to a different business unit. He won't oversee your account anymore.",
+            "question": "What do you do?",
+            "options": [
+                {"text": "Congratulate Tom and ask him to introduce you to whoever replaces him",              "points":  7, "consequence": "Tom makes the intro. The new contact is friendly but cautious and needs time to get up to speed."},
+                {"text": "Ask Tom to document your relationship and successes internally before transitioning, then make the intro", "points": 10, "consequence": "Tom writes an internal handoff note that becomes your reference document. His successor starts with a strong picture of the value you've delivered."},
+                {"text": "Reach out to Linda to establish her as your new primary champion",                   "points":  3, "consequence": "Linda is receptive but doesn't have Tom's budget influence. The account feels less supported going into renewal."},
+            ],
+        },
+        {
+            "situation": "Renewal is in 90 days. Sarah Walsh's team has expanded — she now oversees two additional departments that could benefit from your solution.",
+            "question": "How do you prepare for renewal?",
+            "options": [
+                {"text": "Send the standard renewal paperwork through Procurement",                            "points":  0, "consequence": "Marcus processes it at flat rate. The expansion opportunity is never raised."},
+                {"text": "Ask Tom's replacement to lead the renewal conversation",                             "points":  3, "consequence": "Renewal happens but the expansion discussion never comes up — the new contact doesn't know to raise it."},
+                {"text": "Request a business review with Sarah to present results before discussing renewal",  "points": 10, "consequence": "Sarah brings the heads of the two new departments. Renewal becomes an expansion conversation."},
+            ],
+        },
+        {
+            "situation": "Linda Park tells you she received a vendor pitch offering 'the same solution at lower cost.' She emails you: 'We should probably talk.'",
+            "question": "How do you respond to Linda?",
+            "options": [
+                {"text": "Send Linda a feature comparison document showing your advantages",                   "points":  3, "consequence": "Linda reads it but says the price difference is hard to ignore without more context."},
+                {"text": "Match the competitor's pricing immediately to keep Linda's loyalty",                 "points":  0, "consequence": "Linda appreciates it but wonders if she was overcharged before. Trust is subtly damaged."},
+                {"text": "Call Linda and ask what specifically is appealing about the competitor's offer",     "points": 10, "consequence": "Linda reveals the pitch was mostly a colleague's talking point. She prefers your solution but needs cover to justify it internally. You help her build that case."},
+            ],
+        },
+        {
+            "situation": "James Ortiz (CEO) asks Tom's replacement to arrange a brief meeting with you. He wants to understand your company's long-term strategic direction.",
+            "question": "How do you prepare for the CEO meeting?",
+            "options": [
+                {"text": "Prepare a detailed product roadmap presentation with upcoming features",             "points":  0, "consequence": "James says 'I didn't ask for a feature list — I wanted to understand your strategic direction.' The meeting falls flat."},
+                {"text": "Ask Tom's replacement what James cares most about strategically, then tailor your content", "points": 10, "consequence": "You learn James is focused on competitive differentiation. The conversation lands perfectly. He tells Sarah to proceed with renewal and expansion."},
+                {"text": "Bring your VP of Sales to signal seniority and partnership",                         "points":  5, "consequence": "James appreciates the seniority signal but the conversation stays surface-level. A missed listening opportunity."},
             ],
         },
     ]},
@@ -162,6 +252,51 @@ VARIANTS = {
                 {"text": "Tell Tom references will be provided during onboarding",                             "points":  3, "consequence": "Tom feels the relationship cooled after the signature. Early warning sign for renewal."},
             ],
         },
+        {
+            "situation": "Three months post-close, Tom asks if you can speak at an internal team meeting about how other companies have used the solution.",
+            "question": "How do you respond?",
+            "options": [
+                {"text": "Decline — presenting to a customer's internal team isn't part of your role",        "points":  0, "consequence": "Tom stops advocating for you. Without internal momentum, expansion stalls and renewal confidence drops."},
+                {"text": "Accept and prepare a standard industry overview",                                    "points":  5, "consequence": "The session goes fine. Tom introduces you to two colleagues afterward."},
+                {"text": "Accept and tailor the content around Meridian's specific results so far",            "points": 10, "consequence": "The session is a hit. James Ortiz hears about it and calls it 'exactly the kind of partnership we want.' An expansion budget conversation begins."},
+            ],
+        },
+        {
+            "situation": "Tom refers you to a contact at a partner company. He made the intro informally — you haven't met the contact yet.",
+            "question": "What do you do before reaching out to the referral?",
+            "options": [
+                {"text": "Reach out to the referred contact immediately while the intro is fresh",             "points":  3, "consequence": "The call goes well, but Tom doesn't hear back that you followed up. He feels slightly used."},
+                {"text": "Thank Tom and let him know you'll keep him posted as the relationship develops",      "points": 10, "consequence": "Tom appreciates being kept in the loop. He refers you to two more contacts the following month."},
+                {"text": "Ask Tom to join the first call with the referred contact",                           "points":  7, "consequence": "Tom joins and the call is productive, but you've asked more of him than necessary."},
+            ],
+        },
+        {
+            "situation": "90 days before renewal, Marcus Webb tells you Procurement has a new policy: all vendor contracts must go through a formal RFP — even renewals.",
+            "question": "How do you respond?",
+            "options": [
+                {"text": "Submit the RFP response immediately without engaging Tom or Linda first",            "points":  0, "consequence": "Your response is generic. Tom and Linda can't advocate for you because they weren't part of the process."},
+                {"text": "Tell Marcus the policy shouldn't apply to vendors already in good standing",         "points":  3, "consequence": "Marcus holds his ground. You've created friction without resolving anything."},
+                {"text": "Contact Tom and Linda to understand the situation and ask if they can advocate for an expedited process", "points": 10, "consequence": "Tom and Linda both advocate internally. The RFP is shortened to a fast-track review. Renewal proceeds within two weeks."},
+            ],
+        },
+        {
+            "situation": "A competitor approaches James Ortiz directly with an 'enterprise platform' pitch that includes capabilities beyond your current solution.",
+            "question": "How do you respond to this competitive threat?",
+            "options": [
+                {"text": "Send James a competitive comparison document highlighting your advantages",          "points":  3, "consequence": "James reviews it but asks 'what about the capabilities the other vendor mentioned?' You're now on the defensive."},
+                {"text": "Request an urgent meeting with James before they evaluate the competitor",           "points": 10, "consequence": "You discover the competitor's 'extra capabilities' address problems Meridian doesn't actually have. James refocuses on what's working. The threat is neutralized."},
+                {"text": "Ask Tom to brief James on the switching costs and disruption risk",                  "points":  7, "consequence": "Tom delivers a compelling message. James decides to hold off — but still wants to see both options evaluated."},
+            ],
+        },
+        {
+            "situation": "Sarah Walsh invites you to join a 2-day executive offsite as a 'strategic partner.' You have no formal agenda slot — just access.",
+            "question": "How do you approach the two days?",
+            "options": [
+                {"text": "Use the informal access to introduce your expanded product suite to executives",     "points":  0, "consequence": "Executives feel the offsite became a vendor pitch. Sarah reconsiders the 'strategic partner' framing."},
+                {"text": "Listen actively, offer insights on industry trends when asked, and avoid pitching anything", "points": 10, "consequence": "Sarah tells Tom afterward: 'That's the kind of partner we want long-term.' Expansion budget is formally allocated."},
+                {"text": "Attend Day 1 but leave early on Day 2 to handle other priorities",                  "points":  5, "consequence": "You miss the strategic planning session on Day 2 where expansion budgets were discussed."},
+            ],
+        },
     ]},
 }
 
@@ -173,29 +308,29 @@ DIMENSIONS = [
     {
         "name": "Pipeline Stage Discipline",
         "max_pts": 25,
-        "decision_indices": [0, 4],
-        "raw_max": 20,
+        "decision_indices": [0, 4, 7],
+        "raw_max": 30,
         "description": "Avoided forecasting on hope; maintained honest pipeline visibility.",
     },
     {
         "name": "Stakeholder Strategy",
         "max_pts": 30,
-        "decision_indices": [0, 1, 2],
-        "raw_max": 30,
+        "decision_indices": [0, 1, 2, 7, 9],
+        "raw_max": 50,
         "description": "Navigated champion, blocker, and economic buyer correctly.",
     },
     {
         "name": "Deal Strategy",
         "max_pts": 25,
-        "decision_indices": [2, 3],
-        "raw_max": 20,
+        "decision_indices": [2, 3, 8],
+        "raw_max": 30,
         "description": "Handled objections and negotiations with process discipline.",
     },
     {
         "name": "Relationship Quality",
         "max_pts": 20,
-        "decision_indices": [1, 3, 4],
-        "raw_max": 30,
+        "decision_indices": [1, 3, 4, 5, 6, 9],
+        "raw_max": 60,
         "description": "Invested in stakeholder relationships beyond the immediate transaction.",
     },
 ]
@@ -242,7 +377,7 @@ def call_coach_api(choices: dict, variant: str) -> str:
     prompt = (
         "You are a B2B sales coach. A student just completed a stakeholder navigation simulation "
         "managing a $180K deal at a manufacturing company.\n\n"
-        f"Their 5 decisions:\n\n{transcript}\n\n"
+        f"Their 10 decisions:\n\n{transcript}\n\n"
         "Write 2–3 sentences of specific coaching based on their ACTUAL choices. "
         "Reference specific decision numbers. Be direct and constructive. "
         "Focus on what the pattern of choices reveals about their understanding of B2B sales process discipline. "
@@ -258,7 +393,7 @@ def call_coach_api(choices: dict, variant: str) -> str:
         )
         return response.choices[0].message.content.strip()
     except Exception:
-        return "Complete all 5 decisions to receive your personalized process coaching."
+        return "Complete all 10 decisions to receive your personalized process coaching."
 
 
 # ---------------------------------------------------------------------------
@@ -329,7 +464,7 @@ def screen_setup() -> None:
             🎯 <strong>James Ortiz</strong> — CEO <span style="color:#aaa;">(appears if deal progresses well)</span>
           </div>
           <div style="border-top:1px solid #2E5FA3; padding-top:0.7rem; color:#ddd; font-size:0.88rem;">
-            You will make <strong style="color:#FAFAFA;">5 sequential decisions</strong>.
+            You will make <strong style="color:#FAFAFA;">10 sequential decisions</strong>.
             Each decision affects the next. Think carefully —
             in real B2B sales, process discipline determines outcomes.
           </div>
@@ -422,16 +557,16 @@ def screen_game() -> None:
     )
 
     # Progress bar
-    pct = int((idx / 5) * 100)
+    pct = int((idx / 10) * 100)
     bar_segs = "".join(
         f'<div style="flex:1; height:6px; border-radius:3px; margin-right:3px; '
         f'background:{"#4A90D9" if i <= idx else "#2E3A50"};"></div>'
-        for i in range(5)
+        for i in range(10)
     )
     st.markdown(
         f'<div style="margin-bottom:0.25rem;">'
         f'<div style="font-size:0.82rem; color:#aaa; margin-bottom:4px;">'
-        f'Decision {idx + 1} of 5</div>'
+        f'Decision {idx + 1} of 10</div>'
         f'<div style="display:flex; gap:3px;">{bar_segs}</div></div>',
         unsafe_allow_html=True,
     )
@@ -514,7 +649,7 @@ def screen_game() -> None:
             unsafe_allow_html=True,
         )
 
-        if idx < 4:
+        if idx < 9:
             if st.button("Next Decision →", type="primary", use_container_width=True):
                 st.session_state["ch2_current_decision"] = idx + 1
                 st.session_state["ch2_confirmed"] = False
@@ -542,10 +677,10 @@ def screen_scorecard() -> None:
 
     raw_total, scaled_total, dim_results = compute_scores(choices)
 
-    # Deal outcome
-    if raw_total >= 40:
+    # Deal outcome (raw out of 100 with 10 decisions)
+    if raw_total >= 80:
         outcome, outcome_color = "Deal Closed ✅", "#27AE60"
-    elif raw_total >= 25:
+    elif raw_total >= 50:
         outcome, outcome_color = "Deal Stalled ⚠️", "#F39C12"
     else:
         outcome, outcome_color = "Deal Lost ❌", "#E74C3C"
@@ -578,7 +713,7 @@ def screen_scorecard() -> None:
         f' padding:0.8rem 1.2rem; margin-bottom:1rem; display:flex; justify-content:space-between;'
         f' align-items:center;">'
         f'<div style="font-size:1.1rem; font-weight:700; color:{outcome_color};">{outcome}</div>'
-        f'<div style="color:#aaa; font-size:0.88rem;">Raw score: {raw_total}/50</div>'
+        f'<div style="color:#aaa; font-size:0.88rem;">Raw score: {raw_total}/100</div>'
         f'</div>',
         unsafe_allow_html=True,
     )
@@ -615,7 +750,7 @@ def screen_scorecard() -> None:
     # --- Decision review ---
     st.markdown("---")
     st.markdown("### Decision Review")
-    all_pts = [choices.get(i, {}).get("points", 0) for i in range(5)]
+    all_pts = [choices.get(i, {}).get("points", 0) for i in range(10)]
     best_idx = all_pts.index(max(all_pts))
     worst_idx = all_pts.index(min(all_pts))
 
