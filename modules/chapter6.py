@@ -579,19 +579,6 @@ def screen_setup() -> None:
         unsafe_allow_html=True,
     )
 
-    st.markdown("**Your full name (appears on your scorecard):**")
-    student_name = st.text_input(
-        "Your full name",
-        value=st.session_state["ch6_student_name"],
-        placeholder="e.g. Ana García",
-        key="ch6_name_input",
-        label_visibility="collapsed",
-    )
-
-    ready = bool(student_name.strip())
-    if not ready:
-        st.caption("Enter your name above to enable the Start button.")
-
     with st.expander("📊 How you'll be scored"):
         st.markdown(
             """
@@ -633,6 +620,19 @@ def screen_setup() -> None:
             """,
             unsafe_allow_html=True,
         )
+
+    st.markdown("**Your full name (appears on your scorecard):**")
+    student_name = st.text_input(
+        "Your full name",
+        value=st.session_state["ch6_student_name"],
+        placeholder="e.g. Ana García",
+        key="ch6_name_input",
+        label_visibility="collapsed",
+    )
+
+    ready = bool(student_name.strip())
+    if not ready:
+        st.caption("Enter your name above to enable the Start button.")
 
     if st.button(
         "Start Round 1 →",
