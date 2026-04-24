@@ -309,6 +309,15 @@ def get_coach_prompt(message: str, student_name: str, channel_key: str, case: di
 
     return f"""You are a B2B sales coach evaluating a student's outreach message.
 
+IMPORTANT: Do NOT penalize spelling, grammar, or syntax errors in the student's message. This is a B2B sales course, not an English writing course. Many students are non-native English speakers. Evaluate only:
+- The strategic thinking behind the message
+- The personalization and research evident
+- The value proposition and CTA quality
+- The authenticity and tone intent
+A message with spelling errors but genuine personalization should score higher than a perfect message with no research.
+
+AI POLICY: Students may use AI to help write their messages. This is encouraged. Evaluate the final message quality regardless of whether AI was used. If the message shows genuine research and personalization, it scores well — even if AI helped write it.
+
 STUDENT NAME: {student_name}
 CHANNEL: {ch['label']} (word limit: {word_limit} words)
 CHANNEL GUIDANCE: {channel_guidance}
@@ -428,33 +437,36 @@ Return ONLY the JSON object. No markdown, no explanation, no code fences."""
 
 
 def call_coach_api(message: str, student_name: str, channel_key: str, case: dict) -> dict:
-    client = OpenAI(api_key=get_openai_api_key())
-    prompt = get_coach_prompt(message, student_name, channel_key, case)
-    response = client.chat.completions.create(
-        model=MODEL_COACH,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=TEMP_COACH,
-    )
-    raw = response.choices[0].message.content.strip()
-    raw = re.sub(r'^```json\s*', '', raw)
-    raw = re.sub(r'```\s*$', '', raw)
-    raw = raw.strip()
-    start = raw.find('{')
-    end = raw.rfind('}') + 1
-    if start != -1 and end > start:
-        raw = raw[start:end]
+    _fallback = {
+        "dimensions": [],
+        "total_score": 0,
+        "tier": "Error",
+        "plain_english_summary": "Could not generate evaluation. Please try again.",
+        "rewritten_example": "",
+        "one_thing_to_change": "Please resubmit your message.",
+        "_error": True,
+    }
     try:
+        client = OpenAI(api_key=get_openai_api_key())
+        prompt = get_coach_prompt(message, student_name, channel_key, case)
+        response = client.chat.completions.create(
+            model=MODEL_COACH,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=TEMP_COACH,
+        )
+        raw = response.choices[0].message.content.strip()
+        raw = re.sub(r'^```json\s*', '', raw)
+        raw = re.sub(r'```\s*$', '', raw)
+        raw = raw.strip()
+        start = raw.find('{')
+        end = raw.rfind('}') + 1
+        if start != -1 and end > start:
+            raw = raw[start:end]
         return json.loads(raw)
     except json.JSONDecodeError:
-        return {
-            "dimensions": [],
-            "total_score": 0,
-            "tier": "Error",
-            "plain_english_summary": "Could not parse the evaluation. Please try again.",
-            "rewritten_example": "",
-            "one_thing_to_change": "Please resubmit your message.",
-            "_error": True,
-        }
+        return _fallback
+    except Exception:
+        return _fallback
 
 
 # ---------------------------------------------------------------------------
@@ -778,6 +790,19 @@ def screen_round_scorecard() -> None:
     sc = CASES[channel_key][case_key]
     ch = CHANNELS[channel_key]
     icon = _CHANNEL_ICONS[channel_key]
+
+    if not data or data.get("_error"):
+        st.title(f"Round {current_round} — Evaluation")
+        st.error(
+            "We couldn't generate your evaluation. This is usually a temporary issue. "
+            "Click 'Try Again' to resubmit your message."
+        )
+        if st.button("Try Again →", use_container_width=True):
+            st.session_state["ch6_current_round"] -= 1
+            st.session_state["ch6_phase"] = "write"
+            st.session_state["ch6_scorecard"] = None
+            st.rerun()
+        return
 
     total = data.get("total_score", 0)
     tier = data.get("tier", "")

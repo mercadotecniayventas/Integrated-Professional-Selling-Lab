@@ -153,6 +153,10 @@ def get_coach_prompt(conversation_history: list, student_name: str, recruiter_ke
 
     return f"""You are evaluating a mock job interview for a B2B sales position.
 
+IMPORTANT: Do NOT penalize spelling, grammar, or pronunciation errors in the student's answers. This is a B2B sales course, not an English writing course. Many students are non-native English speakers. Evaluate only the strategic thinking, self-awareness, and professional understanding demonstrated — not the language mechanics.
+
+AI POLICY: Students may have used AI to help prepare their answers. This is expected and acceptable. Evaluate the authenticity and relevance of what they actually said in the interview — not whether it sounds AI-drafted.
+
 RECRUITER: {rec['name']} at {rec['company']}
 ROLE: {rec['role']}
 STUDENT: {student_name}
