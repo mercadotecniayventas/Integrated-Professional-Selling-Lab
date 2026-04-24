@@ -27,6 +27,7 @@ SCENARIOS = {
         "industry": "Regional hospital network",
         "rep_company": "ClarityMed Solutions",
         "product": "healthcare analytics software",
+        "context": "Reporting is 48–72 hours stale; clinical teams don't trust the data.",
         "voice": "shimmer",
         "opening": (
             "Thanks for making time. I'll be honest — I have about 20 minutes "
@@ -44,6 +45,7 @@ SCENARIOS = {
         "industry": "Private university",
         "rep_company": "EduPath Analytics",
         "product": "student success and retention software",
+        "context": "18% first-year dropout rate costs ~$42K per student — three years of initiatives with no results.",
         "voice": "echo",
         "opening": (
             "Come in, sit down. I appreciate you coming to campus. "
@@ -61,6 +63,7 @@ SCENARIOS = {
         "industry": "Regional retail chain, 34 stores",
         "rep_company": "SmartStock Solutions",
         "product": "inventory optimization software",
+        "context": "23% seasonal overstock cost $4.2M in markdowns last year — inherited problem, new CEO is watching.",
         "voice": "nova",
         "opening": (
             "I'm going to be direct with you. We've tried two solutions in "
@@ -645,43 +648,77 @@ def screen_setup() -> None:
 def screen_briefing() -> None:
     scenario = st.session_state["ch3_scenario"]
     s = SCENARIOS[scenario]
+    student_name = st.session_state["ch3_student_name"]
 
     st.title("Chapter 3 — Active Listening Roleplay")
     st.markdown("### Your Assignment")
     st.markdown("---")
 
-    st.markdown(
-        f"""
-        <div style="background:#1A2332; border:1px solid #2E5FA3;
-             border-radius:10px; padding:1.4rem 1.6rem; margin-bottom:1rem;">
-          <div style="font-size:0.78rem; color:#4A90D9; font-weight:700;
-               text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.5rem;">
-            Your buyer today
-          </div>
-          <div style="font-size:1.15rem; font-weight:700; color:#FAFAFA; margin-bottom:0.2rem;">
-            {s['buyer_name']}
-          </div>
-          <div style="color:#aaa;">{s['buyer_title']} &nbsp;·&nbsp; {s['company']}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    col_left, col_right = st.columns(2, gap="large")
 
-    st.markdown(
-        f"""
-        <div style="background:#112030; border:1px solid #27AE60;
-             border-radius:10px; padding:1.4rem 1.6rem; margin-bottom:1.5rem;">
-          <div style="font-size:0.78rem; color:#27AE60; font-weight:700;
-               text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.5rem;">
-            You represent
-          </div>
-          <div style="color:#FAFAFA; font-size:1rem;">
-            <strong>{s['rep_company']}</strong> &nbsp;·&nbsp; {s['product']}
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    with col_left:
+        st.markdown(
+            f"""
+            <div style="background:#1A2332; border:1px solid #2E5FA3;
+                 border-radius:10px; padding:1.4rem 1.6rem; min-height:230px;">
+              <div style="font-size:0.75rem; color:#4A90D9; font-weight:700;
+                   text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.75rem;">
+                👤 Your Buyer
+              </div>
+              <div style="font-size:1.2rem; font-weight:700; color:#FAFAFA; margin-bottom:0.2rem;">
+                {s['buyer_name']}
+              </div>
+              <div style="color:#ccc; margin-bottom:0.6rem;">
+                {s['buyer_title']} · {s['company']}
+              </div>
+              <div style="color:#aaa; font-size:0.86rem; margin-bottom:0.15rem;">
+                {s['location']} · {s['size']} · {s['revenue']}
+              </div>
+              <div style="color:#aaa; font-size:0.86rem; margin-bottom:0.75rem;">
+                {s['industry']}
+              </div>
+              <div style="border-top:1px solid #2E5FA3; padding-top:0.6rem;
+                   color:#ddd; font-size:0.88rem; font-style:italic;">
+                {s['context']}
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with col_right:
+        st.markdown(
+            f"""
+            <div style="background:#112030; border:1px solid #27AE60;
+                 border-radius:10px; padding:1.4rem 1.6rem; min-height:230px;">
+              <div style="font-size:0.75rem; color:#27AE60; font-weight:700;
+                   text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.75rem;">
+                🎯 You Are
+              </div>
+              <div style="margin-bottom:0.5rem;">
+                <div style="color:#888; font-size:0.82rem;">Your name</div>
+                <div style="color:#FAFAFA; font-weight:700;">{student_name}</div>
+              </div>
+              <div style="margin-bottom:0.5rem;">
+                <div style="color:#888; font-size:0.82rem;">Your company</div>
+                <div style="color:#FAFAFA; font-weight:700;">{s['rep_company']}</div>
+              </div>
+              <div style="margin-bottom:0.75rem;">
+                <div style="color:#888; font-size:0.82rem;">You sell</div>
+                <div style="color:#FAFAFA;">{s['product']}</div>
+              </div>
+              <div style="border-top:1px solid #27AE60; padding-top:0.6rem;">
+                <div style="color:#888; font-size:0.82rem; margin-bottom:0.2rem;">Your goal</div>
+                <div style="color:#ddd; font-size:0.88rem; font-style:italic;">
+                  Listen deeply. Your only job is to understand their situation — do NOT pitch your product.
+                </div>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
     if st.button(
         "Begin Simulation →",

@@ -23,6 +23,11 @@ SCENARIOS = {
         "company": "Nexbridge Logistics",
         "product": "supply chain visibility software",
         "rep_company": "VisionTrack Solutions",
+        "location": "Atlanta, GA",
+        "size": "340 employees",
+        "revenue": "$90M revenue",
+        "industry": "Third-party logistics, North America",
+        "context": "Has reviewed your supply chain visibility proposal and is ready to raise concerns.",
         "voice": "onyx",
         "opening": (
             "Thanks for walking me through this. I've reviewed the proposal summary. "
@@ -36,6 +41,11 @@ SCENARIOS = {
         "company": "CoreBridge Solutions",
         "product": "HR analytics software",
         "rep_company": "TalentIQ",
+        "location": "Austin, TX",
+        "size": "620 employees",
+        "revenue": "$65M revenue",
+        "industry": "B2B SaaS, project management software",
+        "context": "Has reviewed your HR analytics proposal and is ready to raise concerns.",
         "voice": "nova",
         "opening": (
             "Thanks for walking me through this. I've reviewed the proposal summary. "
@@ -49,6 +59,11 @@ SCENARIOS = {
         "company": "MedVantex",
         "product": "quality management software",
         "rep_company": "QualityPro",
+        "location": "San Diego, CA",
+        "size": "480 employees",
+        "revenue": "$120M revenue",
+        "industry": "Medical device manufacturing (Class II & III)",
+        "context": "Has reviewed your quality management proposal and is ready to raise concerns.",
         "voice": "onyx",
         "opening": (
             "Thanks for walking me through this. I've reviewed the proposal summary. "
@@ -689,43 +704,77 @@ def screen_setup() -> None:
 def screen_briefing() -> None:
     scenario = st.session_state["ch9_scenario"]
     s = SCENARIOS[scenario]
+    student_name = st.session_state["ch9_student_name"]
 
     st.title("Chapter 9 — Objections, Negotiation & Closing")
     st.markdown("### Your Assignment")
     st.markdown("---")
 
-    st.markdown(
-        f"""
-        <div style="background:#1A2332; border:1px solid #2E5FA3;
-             border-radius:10px; padding:1.4rem 1.6rem; margin-bottom:1rem;">
-          <div style="font-size:0.78rem; color:#4A90D9; font-weight:700;
-               text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.5rem;">
-            Your buyer today
-          </div>
-          <div style="font-size:1.15rem; font-weight:700; color:#FAFAFA; margin-bottom:0.2rem;">
-            {s['buyer_name']}
-          </div>
-          <div style="color:#aaa;">{s['buyer_title']} &nbsp;·&nbsp; {s['company']}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    col_left, col_right = st.columns(2, gap="large")
 
-    st.markdown(
-        f"""
-        <div style="background:#112030; border:1px solid #27AE60;
-             border-radius:10px; padding:1.4rem 1.6rem; margin-bottom:1.5rem;">
-          <div style="font-size:0.78rem; color:#27AE60; font-weight:700;
-               text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.5rem;">
-            You represent
-          </div>
-          <div style="color:#FAFAFA; font-size:1rem;">
-            <strong>{s['rep_company']}</strong> &nbsp;·&nbsp; {s['product']}
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    with col_left:
+        st.markdown(
+            f"""
+            <div style="background:#1A2332; border:1px solid #2E5FA3;
+                 border-radius:10px; padding:1.4rem 1.6rem; min-height:230px;">
+              <div style="font-size:0.75rem; color:#4A90D9; font-weight:700;
+                   text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.75rem;">
+                👤 Your Buyer
+              </div>
+              <div style="font-size:1.2rem; font-weight:700; color:#FAFAFA; margin-bottom:0.2rem;">
+                {s['buyer_name']}
+              </div>
+              <div style="color:#ccc; margin-bottom:0.6rem;">
+                {s['buyer_title']} · {s['company']}
+              </div>
+              <div style="color:#aaa; font-size:0.86rem; margin-bottom:0.15rem;">
+                {s['location']} · {s['size']} · {s['revenue']}
+              </div>
+              <div style="color:#aaa; font-size:0.86rem; margin-bottom:0.75rem;">
+                {s['industry']}
+              </div>
+              <div style="border-top:1px solid #2E5FA3; padding-top:0.6rem;
+                   color:#ddd; font-size:0.88rem; font-style:italic;">
+                {s['context']}
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with col_right:
+        st.markdown(
+            f"""
+            <div style="background:#112030; border:1px solid #27AE60;
+                 border-radius:10px; padding:1.4rem 1.6rem; min-height:230px;">
+              <div style="font-size:0.75rem; color:#27AE60; font-weight:700;
+                   text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.75rem;">
+                🎯 You Are
+              </div>
+              <div style="margin-bottom:0.5rem;">
+                <div style="color:#888; font-size:0.82rem;">Your name</div>
+                <div style="color:#FAFAFA; font-weight:700;">{student_name}</div>
+              </div>
+              <div style="margin-bottom:0.5rem;">
+                <div style="color:#888; font-size:0.82rem;">Your company</div>
+                <div style="color:#FAFAFA; font-weight:700;">{s['rep_company']}</div>
+              </div>
+              <div style="margin-bottom:0.75rem;">
+                <div style="color:#888; font-size:0.82rem;">You sell</div>
+                <div style="color:#FAFAFA;">{s['product']}</div>
+              </div>
+              <div style="border-top:1px solid #27AE60; padding-top:0.6rem;">
+                <div style="color:#888; font-size:0.82rem; margin-bottom:0.2rem;">Your goal</div>
+                <div style="color:#ddd; font-size:0.88rem; font-style:italic;">
+                  You've already done discovery. Handle their concerns professionally and attempt to close.
+                </div>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
     if st.button(
         "Begin Simulation →",
