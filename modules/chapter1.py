@@ -1,8 +1,10 @@
+import io
 import json
 import random
 import re
 import html as _html
 import streamlit as st
+from streamlit_mic_recorder import mic_recorder
 from datetime import date
 from openai import OpenAI
 from config import get_openai_api_key
@@ -44,6 +46,7 @@ RECRUITERS = {
                 "Last one: if your numbers were low in month 3, what would you do?"
             ),
         ],
+        "voice": "echo",
     },
     "patricia_moore": {
         "name": "Patricia Moore",
@@ -74,6 +77,7 @@ RECRUITERS = {
             ),
             "Where do you see yourself in this profession in 5 years?",
         ],
+        "voice": "shimmer",
     },
     "david_chen": {
         "name": "David Chen",
@@ -104,6 +108,7 @@ RECRUITERS = {
             "Tell me about an experience where you demonstrated genuine business acumen.",
             "Final question: why Meridian specifically, and why now?",
         ],
+        "voice": "onyx",
     },
 }
 
@@ -289,6 +294,33 @@ def call_coach_api(conversation_history: list, student_name: str, recruiter_key:
     return _parse_json(response.choices[0].message.content.strip())
 
 
+def call_tts_api(text: str, voice: str = "onyx"):
+    try:
+        client = OpenAI(api_key=get_openai_api_key())
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice=voice,
+            input=text,
+        )
+        return response.content
+    except Exception:
+        return None
+
+
+def call_whisper_api(audio_bytes: bytes):
+    try:
+        client = OpenAI(api_key=get_openai_api_key())
+        audio_file = io.BytesIO(audio_bytes)
+        audio_file.name = "recording.webm"
+        result = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file,
+        )
+        return result.text.strip() or None
+    except Exception:
+        return None
+
+
 # ---------------------------------------------------------------------------
 # Session state
 # ---------------------------------------------------------------------------
@@ -314,6 +346,10 @@ def _init_state() -> None:
         "ch1_question_count": 0,
         "ch1_reflection": {"confidence": 3, "specificity": 3, "authentic": 3},
         "ch1_scorecard": None,
+        "ch1_voice_enabled": True,
+        "ch1_tts_bytes": None,
+        "ch1_last_audio_id": None,
+        "ch1_generating": False,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -326,6 +362,7 @@ def _reset_state() -> None:
         "ch1_phase", "ch1_student_name", "ch1_recruiter_key",
         "ch1_messages", "ch1_question_count",
         "ch1_reflection", "ch1_scorecard",
+        "ch1_voice_enabled", "ch1_tts_bytes", "ch1_last_audio_id", "ch1_generating",
     ]:
         st.session_state.pop(k, None)
     st.session_state["ch1_last_recruiter"] = last
@@ -438,20 +475,29 @@ def screen_interview() -> None:
     progress_label = (
         f"Question {question_count + 1} of 6" if question_count < 6 else "Interview complete"
     )
-    st.markdown(
-        f"""
-        <div style="background:#1A2332; border:1px solid #2E5FA3;
-             border-radius:6px; padding:0.45rem 0.8rem; margin-bottom:0.65rem;
-             font-size:0.92rem;">
-          <span style="color:#4A90D9; font-weight:700;">&#127919; {progress_label}</span>
-          <span style="color:#aaa; font-size:0.82rem;">
-            &nbsp;&middot;&nbsp; {_html.escape(rec['name'])}
-            &mdash; {_html.escape(rec['company'])}
-          </span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    _hcol, _vcol = st.columns([5, 1])
+    with _hcol:
+        st.markdown(
+            f"""
+            <div style="background:#1A2332; border:1px solid #2E5FA3;
+                 border-radius:6px; padding:0.45rem 0.8rem; margin-bottom:0.65rem;
+                 font-size:0.92rem;">
+              <span style="color:#4A90D9; font-weight:700;">&#127919; {progress_label}</span>
+              <span style="color:#aaa; font-size:0.82rem;">
+                &nbsp;&middot;&nbsp; {_html.escape(rec['name'])}
+                &mdash; {_html.escape(rec['company'])}
+              </span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with _vcol:
+        voice_on = st.toggle(
+            "🔊 Voice",
+            value=st.session_state.get("ch1_voice_enabled", True),
+            key="ch1_voice_toggle",
+        )
+        st.session_state["ch1_voice_enabled"] = voice_on
 
     for msg in messages:
         if msg["role"] == "assistant":
@@ -461,23 +507,70 @@ def screen_interview() -> None:
             with st.chat_message("user", avatar="🎓"):
                 st.write(msg["content"])
 
+    # Play pending TTS — cleared immediately so it only fires once per reply
+    tts_bytes = st.session_state.get("ch1_tts_bytes")
+    if tts_bytes:
+        st.audio(tts_bytes, format="audio/mp3", autoplay=True)
+        st.session_state["ch1_tts_bytes"] = None
+
     if question_count < 6:
-        user_input = st.chat_input("Type your answer…")
+        # Microphone input
+        audio = mic_recorder(
+            start_prompt="🎤 Click to speak",
+            stop_prompt="⏹ Recording… click to stop",
+            key="ch1_mic",
+        )
+        if audio and audio.get("bytes"):
+            if audio.get("id") != st.session_state.get("ch1_last_audio_id"):
+                st.session_state["ch1_last_audio_id"] = audio["id"]
+                with st.spinner("Transcribing…"):
+                    transcribed = call_whisper_api(audio["bytes"])
+                if transcribed:
+                    updated = list(st.session_state["ch1_messages"])
+                    updated.append({"role": "user", "content": transcribed})
+                    st.session_state["ch1_messages"] = updated
+                    st.session_state["ch1_generating"] = True
+                    st.rerun()
+                else:
+                    st.warning(
+                        "Could not transcribe — please try again or type below."
+                    )
+
+        # Text fallback — always available
+        user_input = st.chat_input(
+            "Type your answer…",
+            disabled=st.session_state.get("ch1_generating", False),
+        )
         if user_input and user_input.strip():
-            updated = list(messages)
+            updated = list(st.session_state["ch1_messages"])
             updated.append({"role": "user", "content": user_input.strip()})
+            st.session_state["ch1_messages"] = updated
+            st.session_state["ch1_generating"] = True
+            st.rerun()
+
+        # Generate recruiter response when flag is set
+        if st.session_state.get("ch1_generating", False):
+            current_msgs = st.session_state["ch1_messages"]
             try:
                 with st.spinner("Interviewer responding…"):
-                    reply = call_recruiter_api(updated, rec_key)
+                    reply = call_recruiter_api(current_msgs, rec_key)
             except Exception as exc:
                 st.error(
                     f"The interviewer couldn't respond ({exc}). "
                     "Please try submitting your answer again."
                 )
+                st.session_state["ch1_generating"] = False
                 st.stop()
+            updated = list(current_msgs)
             updated.append({"role": "assistant", "content": reply})
             st.session_state["ch1_messages"] = updated
             st.session_state["ch1_question_count"] = question_count + 1
+            if st.session_state.get("ch1_voice_enabled", True):
+                with st.spinner("Generating voice…"):
+                    tts = call_tts_api(reply, voice=rec["voice"])
+                if tts:
+                    st.session_state["ch1_tts_bytes"] = tts
+            st.session_state["ch1_generating"] = False
             st.rerun()
     else:
         st.markdown("---")
