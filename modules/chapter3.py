@@ -6,6 +6,7 @@ from datetime import date
 from openai import OpenAI
 from streamlit_mic_recorder import mic_recorder
 from config import get_openai_api_key
+import random
 
 MODEL_BUYER = "gpt-4.1-mini"
 MODEL_COACH = "gpt-4.1-mini"
@@ -553,7 +554,6 @@ def _init_state() -> None:
     defaults = {
         "ch3_phase": "setup",
         "ch3_student_name": "",
-        "ch3_scenario": "health",
         "ch3_messages": [],
         "ch3_student_count": 0,
         "ch3_scorecard": None,
@@ -568,9 +568,12 @@ def _init_state() -> None:
 
 
 def _reset_state() -> None:
+    last = st.session_state.get("ch3_last_scenario")
     keys = [k for k in st.session_state if k.startswith("ch3_")]
     for k in keys:
         del st.session_state[k]
+    if last is not None:
+        st.session_state["ch3_last_scenario"] = last
     _init_state()
 
 
@@ -583,58 +586,10 @@ def screen_setup() -> None:
     st.markdown("### Simulation Setup")
     st.markdown("---")
 
-    student_name = st.text_input(
-        "Your full name",
-        value=st.session_state["ch3_student_name"],
-        placeholder="e.g. Ana García",
-        key="ch3_name_input",
-    )
-
-    st.markdown("#### Select a buyer scenario")
-    scenario_options = list(SCENARIOS.keys())
-    scenario_labels = [SCENARIOS[k]["label"] for k in scenario_options]
-    selected_index = scenario_options.index(st.session_state["ch3_scenario"])
-
-    chosen_index = st.radio(
-        "Scenario",
-        options=range(len(scenario_options)),
-        format_func=lambda i: scenario_labels[i],
-        index=selected_index,
-        label_visibility="collapsed",
-    )
-
-    chosen_key = scenario_options[chosen_index]
-    s = SCENARIOS[chosen_key]
-
-    st.markdown(
-        f"""
-        <div style="margin-top:0.75rem; background:#1A2332; border:1px solid #2E5FA3;
-             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.5rem;">
-          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.6rem;">&#128203; Buyer Profile</div>
-          <strong>{s['buyer_name']}</strong> &nbsp;&middot;&nbsp; {s['buyer_title']}<br>
-          {s['company']} &nbsp;&middot;&nbsp; {s['location']}<br>
-          <span style="color:#aaa;">{s['size']} &nbsp;&middot;&nbsp; {s['revenue']}</span><br>
-          <span style="color:#aaa;">{s['industry']}</span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        f"""
-        <div style="background:#112030; border:1px solid #2E5FA3;
-             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.5rem;">
-          <div style="font-weight:700; color:#27AE60; margin-bottom:0.4rem;">&#128203; Your Role</div>
-          You represent <strong>{s['rep_company']}</strong> selling {s['product']}.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
     st.markdown(
         """
         <div style="background:#112030; border:1px solid #F39C12;
-             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.5rem;">
+             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.75rem;">
           <div style="font-weight:700; color:#F39C12; margin-bottom:0.4rem;">&#127919; Your Mission</div>
           Your only job in this conversation is to <strong>LISTEN</strong>. Do not pitch your product.
           Do not talk about features or benefits. Ask follow-up questions based exactly on what
@@ -645,37 +600,95 @@ def screen_setup() -> None:
         unsafe_allow_html=True,
     )
 
-    st.markdown(
-        """
-        <div style="background:#1A2332; border:1px solid #4A90D9;
-             border-radius:8px; padding:1rem 1.2rem; margin-bottom:0.75rem;">
-          <div style="font-weight:700; color:#4A90D9; margin-bottom:0.4rem;">&#128202; How you'll be scored</div>
-          <span style="color:#ddd;">Listening Responses</span> <strong style="color:#FAFAFA;">(25)</strong> &nbsp;&middot;&nbsp;
-          <span style="color:#ddd;">Silence Tolerance</span> <strong style="color:#FAFAFA;">(20)</strong> &nbsp;&middot;&nbsp;
-          <span style="color:#ddd;">Question Depth</span> <strong style="color:#FAFAFA;">(20)</strong> &nbsp;&middot;&nbsp;
-          <span style="color:#ddd;">Agenda Control</span> <strong style="color:#FAFAFA;">(20)</strong> &nbsp;&middot;&nbsp;
-          <span style="color:#ddd;">Summary Quality</span> <strong style="color:#FAFAFA;">(15)</strong>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    with st.expander("📊 Scoring rubric", expanded=False):
+        st.markdown(
+            "| Dimension | Points |\n"
+            "|-----------|--------|\n"
+            "| Listening Responses | 25 |\n"
+            "| Silence Tolerance | 20 |\n"
+            "| Question Depth | 20 |\n"
+            "| Agenda Control | 20 |\n"
+            "| Summary Quality | 15 |"
+        )
+
+    student_name = st.text_input(
+        "Your full name",
+        value=st.session_state.get("ch3_student_name", ""),
+        placeholder="e.g. Ana García",
+        key="ch3_name_input",
     )
 
     ready = bool(student_name.strip())
     if not ready:
         st.caption("Enter your name above to enable the Start button.")
-    else:
-        st.caption("⚠️ Once you start, the briefing disappears.")
 
     if st.button(
-        "Enter the meeting →",
+        "Start →",
         disabled=not ready,
         type="primary",
         use_container_width=True,
     ):
-        opening = SCENARIOS[chosen_key]["opening"]
+        last = st.session_state.get("ch3_last_scenario")
+        opts = [k for k in SCENARIOS if k != last] if (last and len(SCENARIOS) > 1) else list(SCENARIOS.keys())
+        chosen = random.choice(opts)
         st.session_state["ch3_student_name"] = student_name.strip()
-        st.session_state["ch3_scenario"] = chosen_key
-        st.session_state["ch3_messages"] = [{"role": "assistant", "content": opening}]
+        st.session_state["ch3_scenario"] = chosen
+        st.session_state["ch3_last_scenario"] = chosen
+        st.session_state["ch3_phase"] = "briefing"
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 1b — Briefing
+# ---------------------------------------------------------------------------
+
+def screen_briefing() -> None:
+    scenario = st.session_state["ch3_scenario"]
+    s = SCENARIOS[scenario]
+
+    st.title("Chapter 3 — Active Listening Roleplay")
+    st.markdown("### Your Assignment")
+    st.markdown("---")
+
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:1px solid #2E5FA3;
+             border-radius:10px; padding:1.4rem 1.6rem; margin-bottom:1rem;">
+          <div style="font-size:0.78rem; color:#4A90D9; font-weight:700;
+               text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.5rem;">
+            Your buyer today
+          </div>
+          <div style="font-size:1.15rem; font-weight:700; color:#FAFAFA; margin-bottom:0.2rem;">
+            {s['buyer_name']}
+          </div>
+          <div style="color:#aaa;">{s['buyer_title']} &nbsp;·&nbsp; {s['company']}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        f"""
+        <div style="background:#112030; border:1px solid #27AE60;
+             border-radius:10px; padding:1.4rem 1.6rem; margin-bottom:1.5rem;">
+          <div style="font-size:0.78rem; color:#27AE60; font-weight:700;
+               text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.5rem;">
+            You represent
+          </div>
+          <div style="color:#FAFAFA; font-size:1rem;">
+            <strong>{s['rep_company']}</strong> &nbsp;·&nbsp; {s['product']}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if st.button(
+        "Begin Simulation →",
+        type="primary",
+        use_container_width=True,
+    ):
+        st.session_state["ch3_messages"] = [{"role": "assistant", "content": s["opening"]}]
         st.session_state["ch3_student_count"] = 0
         st.session_state["ch3_phase"] = "chat"
         st.rerun()
@@ -967,6 +980,8 @@ def run_chapter3() -> None:
     phase = st.session_state["ch3_phase"]
     if phase == "setup":
         screen_setup()
+    elif phase == "briefing":
+        screen_briefing()
     elif phase == "chat":
         screen_chat()
     elif phase == "scorecard":
