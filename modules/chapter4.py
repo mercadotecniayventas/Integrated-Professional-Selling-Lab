@@ -152,7 +152,7 @@ def get_coach_prompt(student_prompt: str, student_output: str, round_num: int, s
     r = ROUNDS[round_num - 1]
     return f"""You are an expert B2B sales coach evaluating a student's AI prompt quality.
 
-IMPORTANT: Do NOT penalize spelling or grammar errors in the student's prompt. This is a B2B sales course, not an English writing course. Evaluate only the strategic thinking behind the prompt — the intent, the context provided, and the awareness of AI limitations.
+IMPORTANT: Do NOT penalize spelling, grammar, or syntax errors. This is a B2B sales course, not an English writing course. Many students are non-native English speakers. Evaluate only the strategic thinking, the context provided, and the AI awareness. A response with spelling errors but strong strategic thinking should score well.
 
 This is a LOW-STAKES learning activity. Students are beginners learning to use AI in sales. Be encouraging and constructive. A student who tries but fails strategically should score 60-70, not 40. Reserve scores below 50 only for students who made no attempt to provide context or showed zero strategic thinking.
 
