@@ -164,7 +164,14 @@ def _reset_state() -> None:
 # ---------------------------------------------------------------------------
 
 def _fmt(n: int | float) -> str:
-    return f"${int(n):,}"
+    v = float(n)
+    if v >= 1_000_000_000:
+        return f"${v / 1_000_000_000:.2f} billion"
+    if v >= 1_000_000:
+        return f"${v / 1_000_000:.2f} million"
+    if v >= 1_000:
+        return f"${v / 1_000:.2f}K"
+    return f"${int(v):,}"
 
 
 def _word_count(text: str) -> int:
@@ -600,6 +607,11 @@ def screen_calculator() -> None:
         """,
         unsafe_allow_html=True,
     )
+
+    # Ratio sanity line
+    sam_pct_of_tam = f"{sam / tam * 100:.1f}%" if tam > 0 else "—"
+    som_pct_of_sam = f"{som / sam * 100:.1f}%" if sam > 0 else "—"
+    st.caption(f"SAM is {sam_pct_of_tam} of TAM — SOM is {som_pct_of_sam} of SAM")
 
     # Sanity warnings
     if sam > 0 and som > sam:
