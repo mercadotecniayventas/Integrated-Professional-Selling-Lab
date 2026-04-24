@@ -283,6 +283,8 @@ Next Step Clarity (10 pts):
    0 = No next step
 
 Tier thresholds: 90-100 = "Proposal Ready", 75-89 = "Strong Draft", 60-74 = "Needs Refinement", below 60 = "Rewrite Recommended"
+
+Be appropriately rigorous. A score of 90+ should only be given when the proposal demonstrates exceptional buyer language mirroring AND specific number usage AND a compelling value statement that goes beyond just restating the transcript. Most good proposals should score 75-85. Reserve 90+ for truly exceptional work.
 CRITICAL: total_score must equal sum of all dimension scores."""
 
 
@@ -746,23 +748,13 @@ def screen_scorecard() -> None:
         tier_color = "#E74C3C"
 
     # --- 3-col header ---
-    h1, h2, h3 = st.columns(3)
-    with h1:
-        st.markdown(
-            f"<div style='color:#FAFAFA; font-weight:700;'>{_html.escape(student_name)}</div>",
-            unsafe_allow_html=True,
-        )
-    with h2:
-        st.markdown(
-            f"<div style='color:#4A90D9; font-weight:700; text-align:center;'>"
-            f"{_html.escape(sc['buyer_name'])}</div>",
-            unsafe_allow_html=True,
-        )
-    with h3:
-        st.markdown(
-            f"<div style='color:#aaa; text-align:right;'>{date.today().strftime('%B %d, %Y')}</div>",
-            unsafe_allow_html=True,
-        )
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Student", student_name)
+    with col2:
+        st.metric("Scenario", sc["buyer_name"])
+    with col3:
+        st.metric("Date", date.today().strftime("%B %d, %Y"))
 
     st.markdown("---")
     st.markdown("## Chapter 8 — Proposal Evaluation")
