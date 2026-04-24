@@ -15,14 +15,14 @@ COLOR_DARK = "#0E1117"
 COLOR_CARD_BG = "#1A2332"
 
 CHAPTERS = {
-    1: {"title": "The Selling Profession", "active": False},
-    2: {"title": "Ethics in Sales", "active": False},
+    1: {"title": "The Selling Profession", "active": True},
+    2: {"title": "The B2B Sales Process", "active": True},
     3: {"title": "Active Listening Roleplay", "active": True},
-    4: {"title": "Prospecting", "active": False},
+    4: {"title": "AI Competencies", "active": True},
     5: {"title": "Pre-Approach & Planning", "active": False},
     6: {"title": "Prospecting & Outreach", "active": True},
     7: {"title": "Discovery & SPIN Questioning", "active": True},
-    8: {"title": "Presentation & Demonstration", "active": False},
+    8: {"title": "Proposal & Value Framing", "active": True},
     9: {"title": "Objections, Negotiation & Closing", "active": True},
     10: {"title": "Sales Technology Stack", "active": True},
     11: {"title": "Follow-up & Relationship Management", "active": False},

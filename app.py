@@ -81,35 +81,145 @@ def render_sidebar() -> int | None:
 
 
 def render_home():
-    st.title(f"🎯 {APP_NAME}")
+    st.title("🎯 IPS Lab")
     st.markdown(
-        """
-        Welcome to the **Integrated Professional Selling Lab** — an interactive simulation
-        platform designed to build real B2B sales skills through deliberate practice.
-
-        ### How it works
-        Each chapter lab places you in a live sales scenario with a simulated buyer powered
-        by AI. You'll practice core selling techniques, receive evidence-based feedback,
-        and build the habits that separate top performers.
-
-        ### Get started
-        Choose any active chapter from the sidebar to begin.
-        """
+        "Welcome to **IPS Lab** — practice B2B sales skills through AI-powered simulations. "
+        "Select a module below to begin."
     )
+    st.markdown("---")
+    st.markdown("### Active Modules")
 
-    cols = st.columns(3)
-    with cols[0]:
-        st.info(
-            "**Active now**\n\n"
-            "✅ Ch. 5 — TAM/SAM/SOM Agent ↗\n\n"
-            "✅ Ch. 6 — Prospecting & Outreach\n\n"
-            "✅ Ch. 7 — Discovery & SPIN Questioning\n\n"
-            "✅ Ch. 11 — Personal Branding Agent ↗"
-        )
-    with cols[1]:
-        st.warning("**Coming soon**\n\n8 additional chapter simulations")
-    with cols[2]:
-        st.success("**Your goal**\n\nScore 75+ to earn a Strong Foundation rating")
+    _MODULES = [
+        {
+            "num": 1,
+            "title": "The Selling Profession",
+            "desc": "Practice a job interview with an AI recruiter",
+            "badge": "🎤 Voice + Text",
+            "external": False,
+        },
+        {
+            "num": 2,
+            "title": "The B2B Sales Process",
+            "desc": "Navigate a buying center — 10 decisions, $180K deal",
+            "badge": "🎮 Game",
+            "external": False,
+        },
+        {
+            "num": 3,
+            "title": "Human Competencies",
+            "desc": "Active listening roleplay with a B2B buyer",
+            "badge": "🎤 Voice",
+            "external": False,
+        },
+        {
+            "num": 4,
+            "title": "AI Competencies",
+            "desc": "Write and fix AI prompts across 4 sales scenarios",
+            "badge": "💬 Text",
+            "external": False,
+        },
+        {
+            "num": 5,
+            "title": "Know Your Market",
+            "desc": "Calculate TAM/SAM/SOM for a B2B company",
+            "badge": "💬 Text · ↗ External",
+            "external": True,
+            "url": _EXTERNAL_CHAPTERS[5]["url"],
+        },
+        {
+            "num": 6,
+            "title": "Prospecting & Outreach",
+            "desc": "Write and get evaluated on 4 outreach messages",
+            "badge": "💬 Text",
+            "external": False,
+        },
+        {
+            "num": 7,
+            "title": "Discovery & SPIN",
+            "desc": "Run a discovery call with an AI buyer",
+            "badge": "🎤 Voice",
+            "external": False,
+        },
+        {
+            "num": 8,
+            "title": "Proposal & Value Framing",
+            "desc": "Write a buyer-language proposal from a discovery transcript",
+            "badge": "💬 Text",
+            "external": False,
+        },
+        {
+            "num": 9,
+            "title": "Objections & Closing",
+            "desc": "Handle 5 objections and close the deal",
+            "badge": "🎤 Voice",
+            "external": False,
+        },
+        {
+            "num": 10,
+            "title": "Sales Technology Stack",
+            "desc": "Navigate 10 CRM deals — strategy and data hygiene",
+            "badge": "🎮 Game",
+            "external": False,
+        },
+        {
+            "num": 11,
+            "title": "Personal Branding",
+            "desc": "Build your professional brand and LinkedIn",
+            "badge": "💬 Text · ↗ External",
+            "external": True,
+            "url": _EXTERNAL_CHAPTERS[11]["url"],
+        },
+    ]
+
+    # 2-column grid
+    for row_start in range(0, len(_MODULES), 2):
+        cols = st.columns(2, gap="medium")
+        for col_idx, mod in enumerate(_MODULES[row_start: row_start + 2]):
+            with cols[col_idx]:
+                st.markdown(
+                    f"""
+                    <div style="background:#1A2332; border:1px solid #2E5FA3;
+                         border-radius:10px; padding:1rem 1.1rem; margin-bottom:0.25rem;
+                         min-height:100px;">
+                      <div style="font-size:0.78rem; color:#4A90D9; font-weight:700;
+                           text-transform:uppercase; letter-spacing:0.04em;
+                           margin-bottom:0.25rem;">
+                        Chapter {mod['num']}
+                      </div>
+                      <div style="color:#FAFAFA; font-weight:700; font-size:1rem;
+                           margin-bottom:0.3rem;">
+                        {mod['title']}
+                      </div>
+                      <div style="color:#ddd; font-size:0.88rem; margin-bottom:0.5rem;">
+                        {mod['desc']}
+                      </div>
+                      <div style="display:inline-block; background:#0E1117;
+                           border:1px solid #2E5FA3; border-radius:12px;
+                           padding:2px 10px; font-size:0.78rem; color:#4A90D9;">
+                        {mod['badge']}
+                      </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if mod["external"]:
+                    st.link_button(
+                        "Open →",
+                        mod["url"],
+                        use_container_width=True,
+                    )
+                else:
+                    if st.button(
+                        "Start →",
+                        key=f"home_ch{mod['num']}",
+                        use_container_width=True,
+                        type="primary",
+                    ):
+                        st.session_state["selected_chapter"] = mod["num"]
+                        for key in list(st.session_state.keys()):
+                            if key[:2] == "ch" and key[2:3].isdigit():
+                                del st.session_state[key]
+                        st.rerun()
 
 
 def main():
@@ -117,6 +227,15 @@ def main():
 
     if selected is None:
         render_home()
+    elif selected == 1:
+        from modules.chapter1 import run_chapter1
+        run_chapter1()
+    elif selected == 2:
+        from modules.chapter2 import run_chapter2
+        run_chapter2()
+    elif selected == 4:
+        from modules.chapter4 import run_chapter4
+        run_chapter4()
     elif selected == 6:
         from modules.chapter6 import run_chapter6
         run_chapter6()
@@ -126,6 +245,9 @@ def main():
     elif selected == 7:
         from modules.chapter7 import run_chapter7
         run_chapter7()
+    elif selected == 8:
+        from modules.chapter8 import run_chapter8
+        run_chapter8()
     elif selected == 9:
         from modules.chapter9 import run_chapter9
         run_chapter9()
