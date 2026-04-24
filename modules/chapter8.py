@@ -533,3 +533,175 @@ def screen_write() -> None:
         st.session_state["ch8_scorecard"] = data
         st.session_state["ch8_phase"] = "scorecard"
         st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 3 — Scorecard
+# ---------------------------------------------------------------------------
+
+def screen_scorecard() -> None:
+    _init_state()
+    data: dict = st.session_state.get("ch8_scorecard", {})
+    student_name: str = st.session_state.get("ch8_student_name", "Student")
+    sc = SCENARIOS[st.session_state["ch8_scenario"]]
+
+    if not data or data.get("_error"):
+        st.title("Chapter 8 — Proposal Evaluation")
+        st.error(
+            "We couldn't generate your evaluation. This is usually a temporary issue. "
+            "Click 'Try Again' to resubmit."
+        )
+        if st.button("Try Again →", use_container_width=True):
+            st.session_state["ch8_phase"] = "write"
+            st.session_state["ch8_scorecard"] = None
+            st.rerun()
+        return
+
+    total = data.get("total_score", 0)
+    tier = data.get("tier", "")
+    summary = data.get("plain_english_summary", "")
+    strongest = data.get("strongest_section", "")
+    weakest_name = data.get("weakest_section_name", "")
+    weakest_rewrite = data.get("weakest_section_rewrite", "")
+    one_thing = data.get("one_thing_to_change", "")
+
+    if total >= 90:
+        tier_color = "#27AE60"
+    elif total >= 75:
+        tier_color = "#4A90D9"
+    elif total >= 60:
+        tier_color = "#F39C12"
+    else:
+        tier_color = "#E74C3C"
+
+    # --- 3-col header ---
+    h1, h2, h3 = st.columns(3)
+    with h1:
+        st.markdown(
+            f"<div style='color:#FAFAFA; font-weight:700;'>{_html.escape(student_name)}</div>",
+            unsafe_allow_html=True,
+        )
+    with h2:
+        st.markdown(
+            f"<div style='color:#4A90D9; font-weight:700; text-align:center;'>"
+            f"{_html.escape(sc['buyer_name'])}</div>",
+            unsafe_allow_html=True,
+        )
+    with h3:
+        st.markdown(
+            f"<div style='color:#aaa; text-align:right;'>{date.today().strftime('%B %d, %Y')}</div>",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+    st.markdown("## Chapter 8 — Proposal Evaluation")
+
+    # --- Plain English summary ---
+    st.markdown(
+        f"<div style='color:#ddd; font-size:0.95rem; line-height:1.7; margin-bottom:1rem;'>"
+        f"{_html.escape(summary)}</div>",
+        unsafe_allow_html=True,
+    )
+
+    # --- Score banner ---
+    st.markdown(
+        f'<div style="background:#1A2332; border:2px solid {tier_color}; border-radius:10px;'
+        f' padding:1rem 1.2rem; text-align:center; margin-bottom:1.2rem;">'
+        f'<div style="font-size:2rem; font-weight:700; color:{tier_color};">{total}/100</div>'
+        f'<div style="font-size:1.1rem; font-weight:700; color:#FAFAFA; margin-top:0.2rem;">{_html.escape(tier)}</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+    # --- 5 dimension expanders ---
+    st.markdown("### Dimension Breakdown")
+    for dim in data.get("dimensions", []):
+        d_name = dim.get("name", "")
+        d_score = dim.get("score", 0)
+        d_max = dim.get("max_points", 0)
+        d_evidence = dim.get("evidence", "")
+        d_coaching = dim.get("coaching_note", "")
+        pct = int(d_score / d_max * 100) if d_max else 0
+        bar_c = "#27AE60" if pct >= 70 else ("#F39C12" if pct >= 40 else "#E74C3C")
+
+        with st.expander(f"{d_name} — {d_score}/{d_max}"):
+            st.markdown(
+                f'<div style="background:#0E1117; border-radius:4px; height:8px; margin-bottom:0.6rem;">'
+                f'<div style="background:{bar_c}; width:{pct}%; height:8px; border-radius:4px;"></div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+            if d_evidence and d_evidence.lower() != "not present":
+                st.markdown(
+                    f'<div style="font-size:0.85rem; color:#aaa; margin-bottom:0.4rem;">'
+                    f'<em>Evidence: "{_html.escape(d_evidence)}"</em></div>',
+                    unsafe_allow_html=True,
+                )
+            if pct < 70 and d_coaching:
+                st.markdown(
+                    f'<div style="font-size:0.88rem; color:#F39C12;">'
+                    f'💬 {_html.escape(d_coaching)}</div>',
+                    unsafe_allow_html=True,
+                )
+            elif d_coaching:
+                st.markdown(
+                    f'<div style="font-size:0.88rem; color:#ddd;">{_html.escape(d_coaching)}</div>',
+                    unsafe_allow_html=True,
+                )
+
+    # --- Weakest section rewrite ---
+    if weakest_rewrite:
+        st.markdown("---")
+        with st.expander(f"📝 What a stronger {_html.escape(weakest_name)} looks like"):
+            st.markdown(
+                f'<div style="background:#0D1B2E; border-left:3px solid #4A90D9;'
+                f' padding:0.8rem 1rem; border-radius:0 6px 6px 0;">'
+                f'<div style="font-size:0.82rem; font-weight:700; color:#4A90D9; margin-bottom:0.4rem;">'
+                f'Written using {_html.escape(sc["buyer_name"])}\'s language and numbers</div>'
+                f'<div style="color:#ddd; font-size:0.9rem; line-height:1.7; white-space:pre-wrap;">'
+                f'{_html.escape(weakest_rewrite)}</div></div>',
+                unsafe_allow_html=True,
+            )
+
+    # --- Strongest section note ---
+    if strongest:
+        st.markdown(
+            f'<div style="background:#0D1F14; border:1px solid #27AE60; border-radius:8px;'
+            f' padding:0.75rem 1rem; margin-bottom:0.6rem;">'
+            f'<div style="font-size:0.82rem; font-weight:700; color:#27AE60; margin-bottom:0.2rem;">'
+            f'⭐ Strongest Section</div>'
+            f'<div style="color:#ddd; font-size:0.88rem;">{_html.escape(strongest)}</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    # --- One thing to change ---
+    if one_thing:
+        st.markdown(
+            f'<div style="background:#1A2332; border:1px solid #F39C12; border-radius:8px;'
+            f' padding:0.75rem 1rem; margin-bottom:1rem;">'
+            f'<div style="font-weight:700; color:#F39C12; margin-bottom:0.3rem; font-size:0.9rem;">'
+            f'🎯 One Thing to Change</div>'
+            f'<div style="color:#ddd; font-size:0.9rem;">{_html.escape(one_thing)}</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    if st.button("Try Again →", use_container_width=True):
+        _reset_state()
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+def run_chapter8() -> None:
+    _init_state()
+    phase = st.session_state["ch8_phase"]
+    if phase == "setup":
+        screen_setup()
+    elif phase == "write":
+        screen_write()
+    elif phase == "scorecard":
+        screen_scorecard()
+    else:
+        screen_setup()

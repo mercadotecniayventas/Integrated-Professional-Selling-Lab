@@ -22,7 +22,7 @@ CHAPTERS = {
     5: {"title": "Pre-Approach & Planning", "active": False},
     6: {"title": "Prospecting & Outreach", "active": True},
     7: {"title": "Discovery & SPIN Questioning", "active": True},
-    8: {"title": "Presentation & Demonstration", "active": False},
+    8: {"title": "Proposal & Value Framing", "active": True},
     9: {"title": "Objections, Negotiation & Closing", "active": True},
     10: {"title": "Sales Technology Stack", "active": True},
     11: {"title": "Follow-up & Relationship Management", "active": False},
