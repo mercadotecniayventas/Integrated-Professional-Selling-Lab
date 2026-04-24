@@ -165,21 +165,6 @@ def screen_setup() -> None:
     st.markdown("### TAM / SAM / SOM Calculator")
     st.markdown("---")
 
-    # Scoring rubric expander — ABOVE name input
-    with st.expander("📊 How you'll be scored (100 pts)", expanded=False):
-        st.markdown(
-            "| Dimension | Points |\n"
-            "|-----------|--------|\n"
-            "| Assumption Quality | 30 |\n"
-            "| TAM→SAM→SOM Logic | 30 |\n"
-            "| Price × Volume Consistency | 25 |\n"
-            "| Strategic Thinking | 15 |"
-        )
-        st.markdown("")
-        for dim in DIMENSIONS:
-            st.markdown(f"**{dim['name']}** — {dim['description']}")
-            st.caption(dim["rubric"])
-
     # Company card
     st.markdown(
         f"""
@@ -245,6 +230,21 @@ def screen_setup() -> None:
         """,
         unsafe_allow_html=True,
     )
+
+    # Scoring rubric expander
+    with st.expander("📊 How you'll be scored (100 pts)", expanded=False):
+        st.markdown(
+            "| Dimension | Points |\n"
+            "|-----------|--------|\n"
+            "| Assumption Quality | 30 |\n"
+            "| TAM→SAM→SOM Logic | 30 |\n"
+            "| Price × Volume Consistency | 25 |\n"
+            "| Strategic Thinking | 15 |"
+        )
+        st.markdown("")
+        for dim in DIMENSIONS:
+            st.markdown(f"**{dim['name']}** — {dim['description']}")
+            st.caption(dim["rubric"])
 
     student_name = st.text_input(
         "Your full name",
@@ -449,6 +449,7 @@ def call_coach_api(
 # ---------------------------------------------------------------------------
 
 def screen_calculator() -> None:
+    st.markdown("<script>window.scrollTo(0, 0);</script>", unsafe_allow_html=True)
     company_key = st.session_state["ch5_company_key"]
     c = COMPANIES[company_key]
 
