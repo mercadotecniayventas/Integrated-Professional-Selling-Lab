@@ -152,6 +152,10 @@ def get_coach_prompt(student_prompt: str, student_output: str, round_num: int, s
     r = ROUNDS[round_num - 1]
     return f"""You are an expert B2B sales coach evaluating a student's AI prompt quality.
 
+IMPORTANT: Do NOT penalize spelling or grammar errors in the student's prompt. This is a B2B sales course, not an English writing course. Evaluate only the strategic thinking behind the prompt — the intent, the context provided, and the awareness of AI limitations.
+
+This is a LOW-STAKES learning activity. Students are beginners learning to use AI in sales. Be encouraging and constructive. A student who tries but fails strategically should score 60-70, not 40. Reserve scores below 50 only for students who made no attempt to provide context or showed zero strategic thinking.
+
 Student name: {student_name}
 Round: {round_num} — {r['title']}
 Situation: {r['situation']}
@@ -169,31 +173,31 @@ Actual AI output produced by student's prompt:
 
 Evaluate the student's prompt across EXACTLY these 4 dimensions. Return ONLY pure JSON — no markdown, no explanation. Start with {{ end with }}.
 
-Dimensions and scoring:
+Dimensions and scoring — MINIMUM SCORES APPLY (see below):
 
-1. Prompt Specificity (30 pts)
+1. Prompt Specificity (30 pts) — minimum score 10 if they attempted to be specific at all
    30 = Highly specific to this exact situation
    20 = Mostly specific, some generic elements
-   10 = Could apply to any sales situation
-    0 = Completely generic
+   10 = Could apply to any sales situation (MINIMUM if any attempt at specificity)
+    0 = Completely generic with zero situational detail
 
-2. Context Provided (25 pts)
+2. Context Provided (25 pts) — minimum score 10 if they provided any relevant context
    25 = Gave AI all relevant context available
    18 = Gave some context, missed key elements
-   10 = Minimal context — AI had to guess
-    0 = No context provided
+   10 = Minimal context — AI had to guess (MINIMUM if any context at all)
+    0 = No context whatsoever provided
 
-3. AI Limitations Awareness (25 pts)
+3. AI Limitations Awareness (25 pts) — minimum score 15 if they didn't over-claim AI capabilities
    25 = Showed any awareness that AI has limits in this context
    18 = Mostly treated AI as capable but acknowledged one limitation
-   12 = Implicit awareness — didn't over-claim what AI would produce
+   15 = Implicit awareness — didn't over-claim what AI would produce (MINIMUM if not over-claiming)
     5 = Treated AI as if it knows everything but prompt was still reasonable
 
-4. Output Quality (20 pts — evaluate based on the actual student output above)
+4. Output Quality (20 pts) — minimum score 10 if the output was coherent at all
    20 = Immediately usable in real B2B work
    14 = Useful with minor edits
-    8 = Needs significant human improvement
-    0 = Generic or unusable
+   10 = Needs significant human improvement but is coherent (MINIMUM if output makes sense)
+    0 = Output is completely unusable or incoherent
 
 Return this exact JSON structure:
 {{
