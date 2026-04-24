@@ -592,6 +592,48 @@ def screen_setup() -> None:
     if not ready:
         st.caption("Enter your name above to enable the Start button.")
 
+    with st.expander("📊 How you'll be scored"):
+        st.markdown(
+            """
+            <div style="color:#ddd; font-size:0.9rem; line-height:1.7;">
+              <div style="font-weight:700; color:#4A90D9; margin-bottom:0.5rem;">
+                100 pts per round
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Personalization</strong>
+                <span style="color:#4A90D9;"> — 25 pts</span><br>
+                Does your message reference specific research?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Value Proposition</strong>
+                <span style="color:#4A90D9;"> — 20 pts</span><br>
+                Is your value clear and prospect-specific?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Call to Action</strong>
+                <span style="color:#4A90D9;"> — 15 pts</span><br>
+                Is your CTA specific and low-friction?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Tone &amp; Authenticity</strong>
+                <span style="color:#4A90D9;"> — 20 pts</span><br>
+                Does it sound human, not like a template?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Length &amp; Format</strong>
+                <span style="color:#4A90D9;"> — 15 pts</span><br>
+                Are you within the word limit?
+              </div>
+              <div>
+                <strong style="color:#FAFAFA;">Ethical Framing</strong>
+                <span style="color:#4A90D9;"> — 5 pts</span><br>
+                Do you have a genuine reason to reach out?
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
     if st.button(
         "Start Round 1 →",
         disabled=not ready,

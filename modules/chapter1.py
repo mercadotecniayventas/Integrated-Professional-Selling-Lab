@@ -431,6 +431,43 @@ def screen_setup() -> None:
     if not ready:
         st.caption("Enter your name above to enable the Start button.")
 
+    with st.expander("📊 How you'll be scored"):
+        st.markdown(
+            """
+            <div style="color:#ddd; font-size:0.9rem; line-height:1.7;">
+              <div style="font-weight:700; color:#4A90D9; margin-bottom:0.5rem;">
+                100 pts total
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Professional Identity</strong>
+                <span style="color:#4A90D9;"> — 25 pts</span><br>
+                Do you understand sales as advisory, not pushy?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Knowledge of the Profession</strong>
+                <span style="color:#4A90D9;"> — 25 pts</span><br>
+                Do you demonstrate real B2B knowledge?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Self-Awareness</strong>
+                <span style="color:#4A90D9;"> — 20 pts</span><br>
+                Do you connect your strengths to sales?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Authentic Communication</strong>
+                <span style="color:#4A90D9;"> — 20 pts</span><br>
+                Do you sound genuine, not rehearsed?
+              </div>
+              <div>
+                <strong style="color:#FAFAFA;">Career Readiness</strong>
+                <span style="color:#4A90D9;"> — 10 pts</span><br>
+                Do you have a real reason to be in sales?
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
     if st.button(
         "Begin Interview →",
         disabled=not ready,
