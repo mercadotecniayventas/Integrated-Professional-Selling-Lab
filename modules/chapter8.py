@@ -280,3 +280,256 @@ def _reset_state() -> None:
     if last is not None:
         st.session_state["ch8_last_scenario"] = last
     _init_state()
+
+
+# ---------------------------------------------------------------------------
+# Screen 1 — Setup
+# ---------------------------------------------------------------------------
+
+def screen_setup() -> None:
+    _init_state()
+    sc = SCENARIOS[st.session_state["ch8_scenario"]]
+
+    st.title("Chapter 8 — Proposal & Value Framing")
+
+    # Buyer card
+    st.markdown(
+        f"""
+        <div style="background:#1A2332; border:1px solid #2E5FA3; border-radius:10px;
+             padding:1rem 1.2rem; margin-bottom:1rem; color:#FAFAFA;">
+          <div style="font-size:0.78rem; font-weight:700; color:#4A90D9;
+               text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem;">
+            Your Buyer
+          </div>
+          <div style="font-size:1.05rem; font-weight:700; margin-bottom:0.2rem;">
+            {_html.escape(sc['buyer_name'])}
+          </div>
+          <div style="color:#ddd; font-size:0.9rem; margin-bottom:0.2rem;">
+            {_html.escape(sc['buyer_title'])} · {_html.escape(sc['company'])}
+          </div>
+          <div style="color:#4A90D9; font-size:0.88rem; margin-top:0.4rem;">
+            You sell: {_html.escape(sc['seller_product'])} ({_html.escape(sc['seller_product_type'])})
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Instruction box
+    st.markdown(
+        """
+        <div style="background:#1A2332; border:1px solid #2E5FA3; border-radius:10px;
+             padding:1.1rem 1.3rem; margin-bottom:1.2rem; color:#FAFAFA;
+             font-size:0.93rem; line-height:1.75;">
+          <div style="font-size:1rem; font-weight:700; color:#4A90D9; margin-bottom:0.6rem;">
+            📋 Your Task
+          </div>
+          <div style="margin-bottom:0.5rem;">
+            Read the discovery transcript carefully. Then write a one-page proposal with
+            these 4 sections:
+          </div>
+          <div style="margin-left:0.5rem; margin-bottom:0.4rem;">
+            <strong>1. Executive Summary</strong> (2–3 sentences)<br>
+            <span style="color:#ddd; font-size:0.88rem;">What problem are you solving and for whom?</span>
+          </div>
+          <div style="margin-left:0.5rem; margin-bottom:0.4rem;">
+            <strong>2. Proposed Solution</strong> (3–4 sentences)<br>
+            <span style="color:#ddd; font-size:0.88rem;">What specifically will you provide?</span>
+          </div>
+          <div style="margin-left:0.5rem; margin-bottom:0.4rem;">
+            <strong>3. Value Statement</strong> (2–3 sentences)<br>
+            <span style="color:#ddd; font-size:0.88rem;">Why is this worth the investment?
+            Use their numbers, not generic ROI claims.</span>
+          </div>
+          <div style="margin-left:0.5rem; margin-bottom:0.8rem;">
+            <strong>4. Recommended Next Step</strong> (1–2 sentences)<br>
+            <span style="color:#ddd; font-size:0.88rem;">What happens after they say yes?</span>
+          </div>
+          <div style="border-top:1px solid #2E5FA3; padding-top:0.7rem; color:#F39C12;
+               font-size:0.88rem;">
+            🤖 <strong>AI note:</strong> You may use AI to help write this proposal.
+            Give AI the discovery transcript — a proposal written without transcript
+            context will score poorly, AI or not.
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Scoring expander ABOVE name input
+    with st.expander("📊 How you'll be scored (100 pts)"):
+        st.markdown(
+            """
+            <div style="color:#ddd; font-size:0.9rem; line-height:1.7;">
+              <div style="font-weight:700; color:#4A90D9; margin-bottom:0.5rem;">100 pts total</div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Buyer Language</strong>
+                <span style="color:#4A90D9;"> — 25 pts</span><br>
+                Does your proposal use the buyer's own words and priorities?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Problem-Solution Fit</strong>
+                <span style="color:#4A90D9;"> — 25 pts</span><br>
+                Does your solution directly address the problems discovered?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Value Quantification</strong>
+                <span style="color:#4A90D9;"> — 20 pts</span><br>
+                Do you use the buyer's actual numbers?
+              </div>
+              <div style="margin-bottom:0.4rem;">
+                <strong style="color:#FAFAFA;">Specificity</strong>
+                <span style="color:#4A90D9;"> — 20 pts</span><br>
+                Is this proposal specific to THIS buyer or could it be sent to anyone?
+              </div>
+              <div>
+                <strong style="color:#FAFAFA;">Next Step Clarity</strong>
+                <span style="color:#4A90D9;"> — 10 pts</span><br>
+                Does it end with a concrete next step?
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("**Your full name (appears on your scorecard):**")
+    student_name = st.text_input(
+        "Your full name",
+        value=st.session_state["ch8_student_name"],
+        placeholder="e.g. Ana García",
+        key="ch8_name_input",
+        label_visibility="collapsed",
+    )
+
+    ready = bool(student_name.strip())
+    if not ready:
+        st.caption("Enter your name above to enable the Start button.")
+
+    if st.button(
+        "Begin Proposal →",
+        disabled=not ready,
+        type="primary",
+        use_container_width=True,
+    ):
+        st.session_state["ch8_student_name"] = student_name.strip()
+        st.session_state["ch8_phase"] = "write"
+        st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 2 — Write
+# ---------------------------------------------------------------------------
+
+_SECTIONS = [
+    {
+        "key": "exec_summary",
+        "label": "1. Executive Summary",
+        "sublabel": "What problem are you solving and for whom?",
+        "word_limit": 50,
+        "min_words": 10,
+        "height": 120,
+    },
+    {
+        "key": "solution",
+        "label": "2. Proposed Solution",
+        "sublabel": "What specifically will you provide?",
+        "word_limit": 75,
+        "min_words": 10,
+        "height": 140,
+    },
+    {
+        "key": "value",
+        "label": "3. Value Statement",
+        "sublabel": "Why is this worth the investment? Use their numbers.",
+        "word_limit": 50,
+        "min_words": 10,
+        "height": 120,
+    },
+    {
+        "key": "next_step",
+        "label": "4. Recommended Next Step",
+        "sublabel": "What happens after they say yes?",
+        "word_limit": 30,
+        "min_words": 10,
+        "height": 90,
+    },
+]
+
+
+def _wc(text: str) -> int:
+    return len(text.split()) if text.strip() else 0
+
+
+def screen_write() -> None:
+    _init_state()
+    sc = SCENARIOS[st.session_state["ch8_scenario"]]
+
+    st.markdown(f"### Proposal for {sc['buyer_name']}, {sc['buyer_title']} — {sc['company']}")
+
+    # Transcript expander
+    with st.expander("📋 Discovery Transcript (reference)"):
+        st.markdown(
+            f"<div style='font-size:0.9rem; color:#ddd; white-space:pre-wrap; line-height:1.7;'>"
+            f"{_html.escape(sc['transcript'])}</div>",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+    st.markdown(
+        "<div style='color:#aaa; font-size:0.88rem; margin-bottom:0.8rem;'>"
+        "Write each section below. Use the buyer's actual words and numbers from the transcript.</div>",
+        unsafe_allow_html=True,
+    )
+
+    sections = dict(st.session_state["ch8_sections"])
+    all_ready = True
+
+    for sec in _SECTIONS:
+        k = sec["key"]
+        st.markdown(
+            f"<div style='font-weight:700; color:#FAFAFA; margin-bottom:2px;'>{sec['label']}</div>"
+            f"<div style='color:#aaa; font-size:0.85rem; margin-bottom:4px;'>{sec['sublabel']}</div>",
+            unsafe_allow_html=True,
+        )
+        val = st.text_area(
+            sec["label"],
+            value=sections.get(k, ""),
+            height=sec["height"],
+            key=f"ch8_{k}",
+            label_visibility="collapsed",
+            placeholder="Write here…",
+        )
+        sections[k] = val
+        wc = _wc(val)
+        limit = sec["word_limit"]
+        wc_color = "#E74C3C" if wc > limit else ("#27AE60" if wc >= sec["min_words"] else "#888")
+        st.markdown(
+            f"<div style='font-size:0.8rem; color:{wc_color}; text-align:right; margin-bottom:0.8rem;'>"
+            f"{wc} / {limit} words</div>",
+            unsafe_allow_html=True,
+        )
+        if wc < sec["min_words"]:
+            all_ready = False
+
+    # Persist section text continuously
+    st.session_state["ch8_sections"] = sections
+
+    if not all_ready:
+        st.caption("Each section needs at least 10 words to enable evaluation.")
+
+    if st.button(
+        "Get Evaluation →",
+        disabled=not all_ready,
+        type="primary",
+        use_container_width=True,
+        key="ch8_btn_evaluate",
+    ):
+        with st.spinner("Evaluating your proposal — this may take 10–20 seconds…"):
+            data = call_coach_api(
+                sections,
+                st.session_state["ch8_student_name"],
+                st.session_state["ch8_scenario"],
+            )
+        st.session_state["ch8_scorecard"] = data
+        st.session_state["ch8_phase"] = "scorecard"
+        st.rerun()
