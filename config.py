@@ -25,7 +25,7 @@ CHAPTERS = {
     8: {"title": "Proposal & Value Framing", "active": True},
     9: {"title": "Objections, Negotiation & Closing", "active": True},
     10: {"title": "Sales Technology Stack", "active": True},
-    11: {"title": "Follow-up & Relationship Management", "active": False},
+    11: {"title": "Your First 90 Days", "active": True},
 }
 
 

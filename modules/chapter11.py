@@ -1067,6 +1067,199 @@ def screen_pitch_voice() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Scorecard summary generator
+# ---------------------------------------------------------------------------
+
+def _generate_scorecard_summary() -> dict:
+    feedback = st.session_state["ch11_feedback"]
+    scores = st.session_state["ch11_scores"]
+    name = st.session_state["ch11_student_name"]
+    title = st.session_state["ch11_job_title"]
+    company = st.session_state["ch11_company"]
+
+    sections_text = ""
+    all_improvements = []
+    for key, label in [
+        ("resume", "Resume"),
+        ("linkedin", "LinkedIn"),
+        ("pitch_written", "Pitch Written"),
+        ("pitch_voice", "Voice Pitch"),
+    ]:
+        data = feedback.get(key, {})
+        if data:
+            sections_text += (
+                f"\n{label} ({scores.get(key, 0)}/{SECTION_MAX[key]} pts):\n"
+                f"  Summary: {data.get('plain_english_summary', '')}\n"
+                f"  Strongest: {data.get('strongest_element', '')}\n"
+            )
+            for item in data.get("top_3_improvements", []):
+                all_improvements.append(f"[{label}] {item}")
+
+    prompt = f"""Student: {name}
+Target role: {title} at {company}
+
+Personal brand evaluations:
+{sections_text}
+All improvement suggestions:
+{chr(10).join(all_improvements)}
+
+Write a combined personal branding assessment. Respond ONLY with a JSON object from {{ to }}:
+{{
+  "summary": "<4 sentences combining insights from all 4 components into one coherent narrative specific to this student and role>",
+  "top_priorities": ["<most impactful improvement across all sections>", "<second most impactful>", "<third most impactful>"]
+}}"""
+
+    client = OpenAI(api_key=get_openai_api_key())
+    response = client.chat.completions.create(
+        model=MODEL_COACH,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=TEMP_COACH,
+    )
+    raw = response.choices[0].message.content.strip()
+    raw = re.sub(r"^```json\s*", "", raw)
+    raw = re.sub(r"```\s*$", "", raw)
+    raw = raw.strip()
+    start = raw.find("{")
+    end = raw.rfind("}") + 1
+    if start != -1 and end > start:
+        raw = raw[start:end]
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return {
+            "summary": "Unable to generate summary. Review the section feedback above for details.",
+            "top_priorities": ["Re-submit your work to regenerate the AI summary."],
+        }
+
+
+# ---------------------------------------------------------------------------
+# Screen 6 — Scorecard
+# ---------------------------------------------------------------------------
+
+def screen_scorecard() -> None:
+    scores = st.session_state["ch11_scores"]
+    feedback = st.session_state["ch11_feedback"]
+    name = st.session_state["ch11_student_name"]
+    title = st.session_state["ch11_job_title"]
+    company = st.session_state["ch11_company"]
+
+    total = sum(scores.get(k, 0) or 0 for k in SECTION_MAX)
+
+    if total >= 90:
+        tier, color = "Outstanding", "#27AE60"
+    elif total >= 75:
+        tier, color = "Strong Candidate", "#4A90D9"
+    elif total >= 60:
+        tier, color = "Developing", "#F39C12"
+    else:
+        tier, color = "Keep Improving", "#E74C3C"
+
+    st.info(
+        "📸 Screenshot this page to submit to Canvas — "
+        "your name and date must be visible in the screenshot."
+    )
+
+    st.title("Chapter 11 — Personal Branding Scorecard")
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Student", name)
+    with col2:
+        st.metric("Target Role", f"{title} at {company}")
+    with col3:
+        st.metric("Date", str(date.today()))
+
+    st.markdown("---")
+
+    st.markdown(
+        f"""
+        <div style="background:{color}22; border:3px solid {color}; border-radius:12px;
+             padding:1.5rem; margin:0.5rem 0 1rem 0; text-align:center;">
+          <div style="font-size:0.85rem; color:{color}; font-weight:700; text-transform:uppercase;
+               letter-spacing:0.08em; margin-bottom:0.4rem;">Overall Score</div>
+          <div style="font-size:3.2rem; font-weight:900; color:{color}; line-height:1.1;">{total}/100</div>
+          <div style="font-size:1.25rem; font-weight:700; color:{color}; margin-top:0.3rem;">{tier}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
+    st.markdown("### Section Breakdown")
+
+    SECTION_DISPLAY = [
+        ("resume",       "📄 Resume",       20),
+        ("linkedin",     "💼 LinkedIn",     20),
+        ("pitch_written","✍️ Pitch Written", 25),
+        ("pitch_voice",  "🎤 Pitch Voice",   35),
+    ]
+
+    for row in [SECTION_DISPLAY[:2], SECTION_DISPLAY[2:]]:
+        cols = st.columns(2, gap="medium")
+        for i, (key, label, max_pts) in enumerate(row):
+            with cols[i]:
+                sec_score = scores.get(key, 0) or 0
+                strongest = feedback.get(key, {}).get("strongest_element", "—")
+                pct = sec_score / max_pts if max_pts > 0 else 0
+                st.markdown(
+                    f"""
+                    <div style="background:#1A2332; border:1px solid #2E5FA3;
+                         border-radius:10px; padding:1rem; margin-bottom:0.3rem;">
+                      <div style="color:#4A90D9; font-weight:700; font-size:0.88rem;
+                           margin-bottom:0.25rem;">{label}</div>
+                      <div style="font-size:1.7rem; font-weight:800; color:#FAFAFA;
+                           line-height:1.1;">{sec_score}/{max_pts}</div>
+                      <div style="color:#aaa; font-size:0.8rem; margin-top:0.35rem;">
+                        ⭐ {strongest}
+                      </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.progress(pct)
+
+    st.markdown("---")
+
+    if not st.session_state.get("ch11_scorecard_summary"):
+        with st.spinner("Generating your personal branding summary…"):
+            summary_data = _generate_scorecard_summary()
+        st.session_state["ch11_scorecard_summary"] = summary_data
+    else:
+        summary_data = st.session_state["ch11_scorecard_summary"]
+
+    st.markdown("### 📋 Your Personal Branding Summary")
+    st.markdown(summary_data.get("summary", ""))
+
+    st.markdown("### 🎯 Your Top 3 Priorities")
+    for i, item in enumerate(summary_data.get("top_priorities", []), 1):
+        st.markdown(f"**{i}.** {item}")
+
+    st.markdown("---")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button(
+            "🔄 Improve a section",
+            type="primary",
+            use_container_width=True,
+            key="ch11_sc_improve",
+        ):
+            for k in st.session_state["ch11_locked"]:
+                st.session_state["ch11_locked"][k] = False
+            st.session_state["ch11_phase"] = "resume"
+            st.session_state["ch11_scorecard_summary"] = None
+            st.rerun()
+    with col2:
+        if st.button(
+            "🆕 Start over",
+            use_container_width=True,
+            key="ch11_sc_reset",
+        ):
+            _reset_state()
+            st.rerun()
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -1084,6 +1277,6 @@ def run_chapter11() -> None:
     elif phase == "pitch_voice":
         screen_pitch_voice()
     elif phase == "scorecard":
-        st.info("Scorecard coming in Part 3.")
+        screen_scorecard()
     else:
         screen_setup()

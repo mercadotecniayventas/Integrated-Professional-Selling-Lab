@@ -39,9 +39,7 @@ st.markdown(
 )
 
 
-_EXTERNAL_CHAPTERS = {
-    11: {"label": "Ch. 11 — Personal Branding ↗",   "url": "https://personal-branding-chatbot.streamlit.app"},
-}
+_EXTERNAL_CHAPTERS: dict = {}
 
 
 def render_sidebar() -> int | None:
@@ -161,11 +159,10 @@ def render_home():
         },
         {
             "num": 11,
-            "title": "Personal Branding",
-            "desc": "Build your professional brand and LinkedIn",
-            "badge": "💬 Text · ↗ External",
-            "external": True,
-            "url": _EXTERNAL_CHAPTERS[11]["url"],
+            "title": "Personal Branding Lab",
+            "desc": "Resume, LinkedIn, elevator pitch — evaluated against your target job",
+            "badge": "💬 Text + 🎤 Voice",
+            "external": False,
         },
     ]
 
@@ -255,6 +252,9 @@ def main():
     elif selected == 10:
         from modules.chapter10 import run_chapter10
         run_chapter10()
+    elif selected == 11:
+        from modules.chapter11 import run_chapter11
+        run_chapter11()
     else:
         info = CHAPTERS[selected]
         st.title(f"Chapter {selected} — {info['title']}")
