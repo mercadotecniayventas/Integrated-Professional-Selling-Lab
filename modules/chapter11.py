@@ -131,7 +131,8 @@ Respond with ONLY a JSON object — no markdown, no explanation, just the raw JS
   "tier": "<Outstanding | Strong | Developing | Needs Work — keep improving>",
   "plain_english_summary": "<3–4 sentences on overall resume quality for this role>",
   "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
-  "strongest_element": "<what the student did best>"
+  "strongest_element": "<what the student did best>",
+  "improved_version": "<Full rewritten resume incorporating all improvements — written in first person, matching the student's general style, ready to use with minor personal edits.>"
 }}"""
 
 
@@ -191,7 +192,8 @@ Respond with ONLY a JSON object — no markdown, no explanation, just the raw JS
   "tier": "<Outstanding | Strong | Developing | Needs Work — keep improving>",
   "plain_english_summary": "<3–4 sentences on overall LinkedIn quality for this role>",
   "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
-  "strongest_element": "<what the student did best>"
+  "strongest_element": "<what the student did best>",
+  "improved_version": "<Full rewritten LinkedIn profile. Format as: HEADLINE: [headline text]\\n\\nABOUT: [about section text]. Incorporate all improvements, written in first person, ready to use with minor personal edits.>"
 }}"""
 
 
@@ -276,7 +278,8 @@ Respond with ONLY a JSON object — no markdown, no explanation, just the raw JS
   "tier": "<Outstanding | Strong | Developing | Needs Work — keep improving>",
   "plain_english_summary": "<3–4 sentences on overall pitch quality>",
   "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
-  "strongest_element": "<what the student did best>"
+  "strongest_element": "<what the student did best>",
+  "improved_version": "<Full rewritten elevator pitch incorporating all improvements — written in first person, 130–200 words, ready to use with minor personal edits.>"
 }}"""
 
 
@@ -369,7 +372,8 @@ Respond with ONLY a JSON object — no markdown, no explanation, just the raw JS
   "tier": "<Outstanding | Strong | Developing | Needs Work — keep improving>",
   "plain_english_summary": "<3–4 sentences on overall voice pitch quality>",
   "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
-  "strongest_element": "<what the student did best>"
+  "strongest_element": "<what the student did best>",
+  "improved_version": "<Full revised pitch script optimized for natural spoken delivery — written in first person, 130–200 words, ready to practice and record.>"
 }}"""
 
 
@@ -638,6 +642,18 @@ def _render_results(section_key: str, extra_note: str = "") -> None:
         unsafe_allow_html=True,
     )
 
+    improved = data.get("improved_version", "")
+    if improved:
+        st.markdown("---")
+        st.markdown("#### ✨ Here's an improved version")
+        iteration = st.session_state["ch11_iterations"].get(section_key, 0)
+        st.text_area(
+            "Copy this improved version, personalize it, then paste it above and re-evaluate.",
+            value=improved,
+            height=300,
+            key=f"ch11_improved_{section_key}_{iteration}",
+        )
+
     if extra_note:
         st.caption(extra_note)
 
@@ -646,6 +662,7 @@ def _action_buttons(section_key: str) -> str | None:
     """Returns 're_evaluate', 'lock', 'unlock', or None."""
     locked = st.session_state["ch11_locked"][section_key]
     score = st.session_state["ch11_scores"][section_key]
+    max_score = SECTION_MAX[section_key]
 
     if locked:
         col1, col2 = st.columns([1, 4])
@@ -664,24 +681,39 @@ def _action_buttons(section_key: str) -> str | None:
         return None
 
     if score < 75:
-        st.warning("Your score is below 75. Review the feedback above and improve before locking.")
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button(
-                "Improve & Re-evaluate",
-                key=f"ch11_reeval_{section_key}",
-                type="primary",
-                use_container_width=True,
-            ):
-                return "re_evaluate"
-        with col2:
-            if st.button(
-                "Lock anyway & continue →",
-                key=f"ch11_lock_{section_key}",
-                use_container_width=True,
-            ):
-                return "lock"
+        st.markdown(
+            f"""
+            <div style="background:#F39C1222; border:1px solid #F39C12; border-radius:8px;
+                 padding:0.75rem 1rem; margin-bottom:0.75rem; color:#FAFAFA;">
+              ⚠️ Your score is <strong>{score}/{max_score}</strong>.
+              Use the improved version above to help you get above 75.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button(
+            "🔄 Re-evaluate with my changes",
+            key=f"ch11_reeval_{section_key}",
+            type="primary",
+            use_container_width=True,
+        ):
+            return "re_evaluate"
+        if st.button(
+            "Skip and continue anyway →",
+            key=f"ch11_lock_{section_key}",
+            use_container_width=True,
+        ):
+            return "lock"
     else:
+        st.markdown(
+            f"""
+            <div style="background:#27AE6022; border:1px solid #27AE60; border-radius:8px;
+                 padding:0.75rem 1rem; margin-bottom:0.75rem; color:#FAFAFA;">
+              ✅ Great work! Score: <strong>{score}/{max_score}</strong>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         col1, col2 = st.columns(2)
         with col1:
             if st.button(
@@ -693,7 +725,7 @@ def _action_buttons(section_key: str) -> str | None:
                 return "lock"
         with col2:
             if st.button(
-                "Re-evaluate with changes",
+                "🔄 Re-evaluate with changes",
                 key=f"ch11_reeval_{section_key}",
                 use_container_width=True,
             ):
