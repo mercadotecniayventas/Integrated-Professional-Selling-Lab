@@ -1054,6 +1054,9 @@ def screen_scorecard() -> None:
 
 def run_chapter9() -> None:
     _init_state()
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image("Chapter 9.png", use_column_width=True)
     phase = st.session_state["ch9_phase"]
     if phase == "setup":
         screen_setup()
