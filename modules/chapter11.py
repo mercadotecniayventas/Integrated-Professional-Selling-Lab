@@ -49,6 +49,7 @@ def _init_state() -> None:
         "ch11_recruiter_name": "",
         "ch11_recruiter_voice": "alloy",
         "ch11_interview_complete": False,
+        "ch11_interview_started": False,
         "ch11_tts_bytes": None,
         "ch11_last_audio_id": None,
         "ch11_generating": False,
@@ -1320,6 +1321,27 @@ def screen_pitch_voice() -> None:
     recruiter_name = st.session_state["ch11_recruiter_name"]
     recruiter_voice = st.session_state.get("ch11_recruiter_voice", "nova")
 
+    # --- Pre-start gate ---
+    if not st.session_state.get("ch11_interview_started", False):
+        st.markdown(
+            f"""
+            <div style="background:#1B3A6B; border-radius:10px; padding:1.1rem 1.3rem;
+                 margin-bottom:1.25rem; color:#FAFAFA;">
+              <div style="font-weight:700; font-size:1.05rem; margin-bottom:0.3rem;">
+                🎤 Voice Interview — {company}
+              </div>
+              <div style="color:#B8C8E0; font-size:0.9rem;">
+                Target role: <strong>{job_title}</strong>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("🎤 Start Interview →", type="primary", use_container_width=True, key="ch11_start_interview"):
+            st.session_state["ch11_interview_started"] = True
+            st.rerun()
+        return
+
     locked = st.session_state["ch11_locked"]["pitch_voice"]
     messages = st.session_state.get("ch11_voice_messages", [])
     interview_complete = st.session_state.get("ch11_interview_complete", False)
@@ -1350,6 +1372,7 @@ def screen_pitch_voice() -> None:
             )
             if st.button("Try Again →", use_container_width=True):
                 st.session_state["ch11_voice_messages"] = []
+                st.session_state["ch11_interview_started"] = False
                 st.rerun()
             return
         clean_opening = opening.replace("[INTERVIEW_COMPLETE]", "").strip()
