@@ -92,14 +92,24 @@ JOB POSTING:
 STUDENT RESUME:
 {resume}
 
-Evaluate across 3 dimensions. Do NOT penalize spelling or grammar — evaluate strategic content only.
+Evaluate this resume on THREE things ONLY:
+1. Does it use keywords from the job posting? (not whether the experience is identical)
+2. Does it show quantified achievements? (any numbers count — students, businesses, courses, revenue, percentages)
+3. Is the experience relevant or transferable? (teaching sales = sales experience, consulting businesses = client management, academic leadership = executive presence)
 
-Dimensions and max points:
-1. Keyword Alignment (8 pts): Does the resume use language, skills, and terminology from the job posting?
-2. Impact & Metrics (7 pts): Are achievements quantified with numbers, percentages, or concrete outcomes?
-3. Role Relevance (5 pts): Is the experience directly relevant to this specific role at this specific company?
+CRITICAL: Do NOT penalize for:
+- Academic vs corporate experience
+- Teaching vs direct selling
+- Different industry background
 
-Scoring tiers per dimension: award points based on how well the content meets the criterion.
+DO penalize for:
+- Missing keywords that ARE in the resume but not connected to job requirements
+- Vague claims with zero numbers
+- No connection made to target role
+
+A resume with strong transferable experience, good keyword alignment, and some metrics should score 16-18/20.
+
+Scoring per dimension: award points based on how well the content meets the criterion.
 Overall tiers: 90–100 = Outstanding, 75–89 = Strong, 60–74 = Developing, below 60 = Needs Work.
 
 Respond with ONLY a JSON object — no markdown, no explanation, just the raw JSON from {{ to }}:
@@ -153,14 +163,24 @@ JOB POSTING:
 STUDENT LINKEDIN PROFILE:
 {linkedin}
 
-Evaluate across 3 dimensions. Do NOT penalize spelling or grammar — evaluate strategic content only.
+Evaluate this LinkedIn profile on THREE things ONLY:
+1. Does the headline use keywords from the job posting and signal this target role? (not whether it matches a senior professional's headline — any clear targeting counts)
+2. Does the About section tell a connected story? (academic projects, part-time work, volunteering all count — any narrative that links background to the role)
+3. Does the profile use the employer's language? (any keywords from the job posting present anywhere = full credit for that criterion)
 
-Dimensions and max points:
-1. Headline Positioning (8 pts): Does the headline clearly communicate value and align with the target role?
-2. About Section (8 pts): Does the About section tell a compelling story that speaks the employer's language?
-3. Keyword Optimization (4 pts): Does the profile use keywords from the job posting that recruiters search for?
+CRITICAL: Do NOT penalize for:
+- Being a student or recent graduate
+- Limited work history
+- Non-corporate or non-traditional background
 
-Scoring tiers per dimension: award points based on how well the content meets the criterion.
+DO penalize for:
+- Headline with zero connection to the target role
+- About section with no narrative — just a list of unconnected facts
+- No keywords from the job posting anywhere in the profile
+
+A profile with a targeted headline, a connected story, and good keyword presence should score 16-18/20.
+
+Scoring per dimension: award points based on how well the content meets the criterion.
 Overall tiers: 90–100 = Outstanding, 75–89 = Strong, 60–74 = Developing, below 60 = Needs Work.
 
 Respond with ONLY a JSON object — no markdown, no explanation, just the raw JSON from {{ to }}:
@@ -223,16 +243,27 @@ JOB POSTING:
 STUDENT WRITTEN PITCH:
 {pitch}
 
-Evaluate across 5 dimensions. Do NOT penalize spelling or grammar — evaluate strategic content only.
+Evaluate this written pitch on FIVE things ONLY:
+1. Hook (5 pts): Does the opening create interest? (a question, bold statement, or surprising fact all count — penalize only if it opens with "Hi, my name is..." and nothing else)
+2. Who You Are (5 pts): Does the student clearly state their identity and what they bring? (student, academic, career-changer are all valid if stated with confidence and direction)
+3. Value Proposition (8 pts): Is there a specific value tied to this employer's needs? (transferable value counts — teaching, consulting, research, leadership all map to B2B sales competencies)
+4. Call to Action (5 pts): Does it end with a specific ask or next step? (any clear, confident close counts)
+5. Job Alignment (2 pts): Does it reference the company, role, or specific needs from the posting? (any direct reference counts for full credit)
 
-Dimensions and max points:
-1. Hook (5 pts): Does the opening grab attention and make the listener want to hear more?
-2. Who You Are (5 pts): Does the student clearly state who they are and what they bring?
-3. Value Proposition (8 pts): Does the student articulate a clear, specific value they offer this employer?
-4. Call to Action (5 pts): Does the pitch end with a clear, confident ask or next step?
-5. Job Alignment (2 pts): Does the pitch speak directly to this role and company, not generically?
+CRITICAL: Do NOT penalize for:
+- Academic or non-corporate background
+- Less than 5 years of work experience
+- Non-traditional career path
 
-Scoring tiers per dimension: award points based on how well the content meets the criterion.
+DO penalize for:
+- No discernible opening hook — pitch just states name with no engagement
+- Value proposition with zero specifics ("I'm a hard worker" alone)
+- No CTA — pitch simply stops without a close
+- Zero reference to the role or company anywhere
+
+A pitch with clear structure, specific transferable value, and a real CTA should score 20-22/25.
+
+Scoring per dimension: award points based on how well the content meets the criterion.
 Overall tiers: 90–100 = Outstanding, 75–89 = Strong, 60–74 = Developing, below 60 = Needs Work.
 
 Respond with ONLY a JSON object — no markdown, no explanation, just the raw JSON from {{ to }}:
@@ -317,16 +348,26 @@ JOB POSTING:
 VOICE PITCH TRANSCRIPT:
 {transcript}
 
-Evaluate across 5 dimensions. Do NOT penalize spelling or grammar — evaluate strategic content and delivery only.
-
-Dimensions and max points:
-1. Hook (7 pts): Does the opening grab attention and make the listener want to hear more?
-2. Fluency (7 pts): Does the delivery sound natural and conversational, or does it sound scripted and read aloud?
-3. Value Proposition (10 pts): Does the student articulate a clear, specific value they offer this employer?
-4. Call to Action (7 pts): Does the pitch end with a clear, confident ask or next step?
+Evaluate this voice pitch transcript on FIVE things ONLY:
+1. Hook (7 pts): Does the opening create interest when heard out loud? (any engaging opening counts — penalize only if it opens with flat self-introduction and nothing more)
+2. Fluency (7 pts): Does it sound conversational rather than read? (natural pauses, contractions, and slight imperfections are FINE and expected — penalize only if clearly monotone and word-for-word scripted with zero variation)
+3. Value Proposition (10 pts): Is there a specific value tied to this employer's needs? (transferable value from any background counts — teaching, consulting, research, leadership all map to sales competencies)
+4. Call to Action (7 pts): Does it end with a clear, confident ask? (any genuine close counts)
 5. Timing (4 pts): 60–90 sec = full 4 pts; 45–60 or 90–105 sec = 2 pts; outside that range = 0 pts.
 
-Scoring tiers per dimension: award points based on how well the content meets the criterion.
+CRITICAL: Do NOT penalize for:
+- Accent or non-native English patterns
+- Nervousness, brief pauses, or filler words (um, uh) in moderation
+- Academic or non-corporate background in the content
+
+DO penalize for:
+- Clearly reading word-for-word (monotone, no rhythm, no natural variation)
+- No discernible value proposition — content is entirely vague
+- No CTA — pitch stops mid-thought without a close
+
+A pitch with clear structure, natural delivery, specific transferable value, and proper timing should score 28-32/35.
+
+Scoring per dimension: award points based on how well the content meets the criterion.
 Overall tiers: 90–100 = Outstanding, 75–89 = Strong, 60–74 = Developing, below 60 = Needs Work.
 
 Respond with ONLY a JSON object — no markdown, no explanation, just the raw JSON from {{ to }}:
