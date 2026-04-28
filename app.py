@@ -1,6 +1,9 @@
 import os
+from pathlib import Path
 import streamlit as st
 from config import APP_NAME, CHAPTERS, COLOR_PRIMARY
+
+_ASSETS = Path(__file__).parent / "assets" / "images"
 
 st.set_page_config(
     page_title=APP_NAME,
@@ -102,9 +105,11 @@ def render_home():
     # ── Section 1 — Hero ────────────────────────────────────────────────────
     _, img_col, _ = st.columns([1, 1, 1])
     with img_col:
-        cover = "assets/images/Cover.png"
-        if os.path.exists(cover):
-            st.image(cover, width=320)
+        cover_path = _ASSETS / "Cover.png"
+        if cover_path.exists():
+            st.image(str(cover_path), width=320)
+        else:
+            st.warning(f"Cover image not found at: {cover_path}")
 
     st.title("Integrated Professional Selling Lab")
     st.markdown(
@@ -189,14 +194,14 @@ def render_home():
             num, title, desc = _MODULES[idx]
             with cols[col_idx]:
                 with st.container():
-                    img_path = f"assets/images/Chapter {num}.png"
-                    if os.path.exists(img_path):
-                        st.image(img_path, use_container_width=True)
+                    img_path = _ASSETS / f"Chapter {num}.png"
+                    if img_path.exists():
+                        st.image(str(img_path), use_container_width=True)
                     st.markdown(
                         f"""
                         <div style="background:#1A2332; border:1px solid #2E5FA3;
                              border-radius:0 0 10px 10px; padding:0.9rem 1rem;
-                             margin-bottom:1rem;">
+                             margin-bottom:0.25rem;">
                           <div style="font-size:0.75rem; color:#4A90D9; font-weight:700;
                                text-transform:uppercase; letter-spacing:0.05em;
                                margin-bottom:0.2rem;">Chapter {num}</div>
@@ -207,6 +212,14 @@ def render_home():
                         """,
                         unsafe_allow_html=True,
                     )
+                    if st.button(
+                        f"Open Chapter {num} →",
+                        key=f"home_ch{num}",
+                        use_container_width=True,
+                        type="primary",
+                    ):
+                        _go_chapter(num)
+                        st.rerun()
 
 
 # ---------------------------------------------------------------------------
