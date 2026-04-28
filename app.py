@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from config import APP_NAME, CHAPTERS, COLOR_PRIMARY
 
@@ -11,24 +12,12 @@ st.set_page_config(
 st.markdown(
     f"""
     <style>
-    .sidebar-title {{
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: {COLOR_PRIMARY};
-        padding: 0.5rem 0;
-    }}
-    .chapter-badge {{
-        display: inline-block;
-        background: {COLOR_PRIMARY};
-        color: white;
-        border-radius: 12px;
-        padding: 2px 8px;
-        font-size: 0.75rem;
-        margin-left: 4px;
-    }}
     .coming-soon {{
         color: #888;
         font-style: italic;
+        font-size: 0.88rem;
+        padding: 0.25rem 0;
+        display: block;
     }}
     .stButton > button {{
         border-radius: 8px;
@@ -42,13 +31,26 @@ st.markdown(
 _EXTERNAL_CHAPTERS: dict = {}
 
 
+def _go_home():
+    st.session_state["selected_chapter"] = None
+
+
+def _go_chapter(num: int):
+    st.session_state["selected_chapter"] = num
+    for key in list(st.session_state.keys()):
+        if key[:2] == "ch" and key[2:3].isdigit():
+            del st.session_state[key]
+
+
 def render_sidebar() -> int | None:
     with st.sidebar:
-        st.markdown(f"## 🎯 {APP_NAME}")
+        # Home button — top of sidebar
+        if st.button("🏠 Home", key="sidebar_home", use_container_width=True):
+            _go_home()
+            st.rerun()
+
         st.markdown("---")
         st.markdown("### Chapters")
-
-        selected = st.session_state.get("selected_chapter", None)
 
         for num, info in CHAPTERS.items():
             if num in _EXTERNAL_CHAPTERS:
@@ -60,162 +62,156 @@ def render_sidebar() -> int | None:
             elif info["active"]:
                 label = f"Ch. {num} — {info['title']}"
                 if st.button(label, key=f"ch_{num}", use_container_width=True):
-                    st.session_state["selected_chapter"] = num
-                    for key in list(st.session_state.keys()):
-                        if key[:2] == "ch" and key[2:3].isdigit():
-                            del st.session_state[key]
+                    _go_chapter(num)
                     st.rerun()
             else:
                 st.markdown(
-                    f'<span class="coming-soon">Ch. {num} — {info["title"]} *(Coming soon)*</span>',
+                    f'<span class="coming-soon">Ch. {num} — {info["title"]} (Coming soon)</span>',
                     unsafe_allow_html=True,
                 )
 
         st.markdown("---")
-        st.caption(f"v1.0.0 · B2B Sales Course")
+        st.caption(
+            "Developed by Carlos Valdez, Ph.D.\n"
+            "For educational purposes only."
+        )
 
     return st.session_state.get("selected_chapter", None)
 
 
+# ---------------------------------------------------------------------------
+# Home page
+# ---------------------------------------------------------------------------
+
+_MODULES = [
+    (1,  "The Selling Profession",    "Practice a job interview with an AI recruiter"),
+    (2,  "The B2B Sales Process",     "Navigate a buying center — 10 decisions, $180K deal"),
+    (3,  "Human Competencies",        "Active listening roleplay with a B2B buyer"),
+    (4,  "AI Competencies",           "Write and fix AI prompts across 4 sales scenarios"),
+    (5,  "Know Your Market",          "Calculate TAM/SAM/SOM for an assigned B2B company"),
+    (6,  "Prospecting & Outreach",    "Write and get evaluated on 4 outreach messages"),
+    (7,  "Discovery & SPIN",          "Live SPIN questioning roleplay with a B2B buyer"),
+    (8,  "Proposal & Value Framing",  "Build a full value proposition for a real company"),
+    (9,  "Objections & Closing",      "Handle objections and close a live B2B deal"),
+    (10, "Sales Technology Stack",    "Build and present a real sales tech stack"),
+    (11, "Personal Branding Lab",     "Resume + LinkedIn + Elevator Pitch with AI recruiter"),
+]
+
+
 def render_home():
-    st.title("🎯 IPS Lab")
+    # ── Section 1 — Hero ────────────────────────────────────────────────────
+    _, img_col, _ = st.columns([1, 1, 1])
+    with img_col:
+        cover = "assets/images/Cover.png"
+        if os.path.exists(cover):
+            st.image(cover, width=320)
+
+    st.title("Integrated Professional Selling Lab")
     st.markdown(
-        "Welcome to **IPS Lab** — practice B2B sales skills through AI-powered simulations. "
-        "Select a module below to begin."
+        "*B2B Sales in the Age of AI* — AI-powered simulations based on the textbook by "
+        "**Dr. Carlos Valdez** | University of Central Florida"
     )
+
     st.markdown("---")
-    st.markdown("### Active Modules")
 
-    _MODULES = [
-        {
-            "num": 1,
-            "title": "The Selling Profession",
-            "desc": "Practice a job interview with an AI recruiter",
-            "badge": "🎤 Voice + Text",
-            "external": False,
-        },
-        {
-            "num": 2,
-            "title": "The B2B Sales Process",
-            "desc": "Navigate a buying center — 10 decisions, $180K deal",
-            "badge": "🎮 Game",
-            "external": False,
-        },
-        {
-            "num": 3,
-            "title": "Human Competencies",
-            "desc": "Active listening roleplay with a B2B buyer",
-            "badge": "🎤 Voice",
-            "external": False,
-        },
-        {
-            "num": 4,
-            "title": "AI Competencies",
-            "desc": "Write and fix AI prompts across 4 sales scenarios",
-            "badge": "💬 Text",
-            "external": False,
-        },
-        {
-            "num": 5,
-            "title": "Know Your Market",
-            "desc": "Calculate TAM/SAM/SOM for an assigned B2B company",
-            "badge": "💬 Text",
-            "external": False,
-        },
-        {
-            "num": 6,
-            "title": "Prospecting & Outreach",
-            "desc": "Write and get evaluated on 4 outreach messages",
-            "badge": "💬 Text",
-            "external": False,
-        },
-        {
-            "num": 7,
-            "title": "Discovery & SPIN",
-            "desc": "Run a discovery call with an AI buyer",
-            "badge": "🎤 Voice",
-            "external": False,
-        },
-        {
-            "num": 8,
-            "title": "Proposal & Value Framing",
-            "desc": "Write a buyer-language proposal from a discovery transcript",
-            "badge": "💬 Text",
-            "external": False,
-        },
-        {
-            "num": 9,
-            "title": "Objections & Closing",
-            "desc": "Handle 5 objections and close the deal",
-            "badge": "🎤 Voice",
-            "external": False,
-        },
-        {
-            "num": 10,
-            "title": "Sales Technology Stack",
-            "desc": "Navigate 10 CRM deals — strategy and data hygiene",
-            "badge": "🎮 Game",
-            "external": False,
-        },
-        {
-            "num": 11,
-            "title": "Personal Branding Lab",
-            "desc": "Resume, LinkedIn, elevator pitch — evaluated against your target job",
-            "badge": "💬 Text + 🎤 Voice",
-            "external": False,
-        },
-    ]
+    # ── Section 2 — What is IPS Lab ─────────────────────────────────────────
+    st.markdown(
+        "IPS Lab is an AI-powered simulation platform built around "
+        "*Integrated Professional Selling: B2B Sales in the Age of AI*. "
+        "Each module gives you a hands-on activity — roleplay with an AI recruiter, "
+        "navigate a live deal, practice discovery conversations, and more. "
+        "You get instant feedback and a score you can report to your instructor. "
+        "Select any chapter from the left sidebar to begin."
+    )
 
-    # 2-column grid
+    st.markdown("---")
+
+    # ── Section 3 — How it works ─────────────────────────────────────────────
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.markdown(
+            """
+            <div style="text-align:center; padding:1rem;">
+              <div style="font-size:2rem;">🤖</div>
+              <div style="font-weight:700; font-size:1rem; margin:0.4rem 0;">Practice</div>
+              <div style="color:#aaa; font-size:0.88rem;">Complete an AI-powered simulation</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with c2:
+        st.markdown(
+            """
+            <div style="text-align:center; padding:1rem;">
+              <div style="font-size:2rem;">📊</div>
+              <div style="font-weight:700; font-size:1rem; margin:0.4rem 0;">Get scored</div>
+              <div style="color:#aaa; font-size:0.88rem;">Receive instant feedback and a score</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with c3:
+        st.markdown(
+            """
+            <div style="text-align:center; padding:1rem;">
+              <div style="font-size:2rem;">📋</div>
+              <div style="font-weight:700; font-size:1rem; margin:0.4rem 0;">Report it</div>
+              <div style="color:#aaa; font-size:0.88rem;">Screenshot your score and submit to Webcourses</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+
+    # ── Section 4 — How to submit ────────────────────────────────────────────
+    with st.expander("📋 How to submit your score to Webcourses"):
+        st.markdown(
+            "1. Complete the activity and reach the score screen\n"
+            "2. Take a screenshot of your full score\n"
+            "3. Go to Webcourses → find the assignment for that chapter\n"
+            "4. Upload your screenshot as your submission\n"
+            "5. You may repeat each activity as many times as you want — "
+            "only submit your best score"
+        )
+
+    st.markdown("---")
+
+    # ── Section 5 — The 11 Modules ───────────────────────────────────────────
+    st.markdown("## The 11 Modules")
+
     for row_start in range(0, len(_MODULES), 2):
         cols = st.columns(2, gap="medium")
-        for col_idx, mod in enumerate(_MODULES[row_start: row_start + 2]):
+        for col_idx in range(2):
+            idx = row_start + col_idx
+            if idx >= len(_MODULES):
+                break
+            num, title, desc = _MODULES[idx]
             with cols[col_idx]:
-                st.markdown(
-                    f"""
-                    <div style="background:#1A2332; border:1px solid #2E5FA3;
-                         border-radius:10px; padding:1rem 1.1rem; margin-bottom:0.25rem;
-                         min-height:100px;">
-                      <div style="font-size:0.78rem; color:#4A90D9; font-weight:700;
-                           text-transform:uppercase; letter-spacing:0.04em;
-                           margin-bottom:0.25rem;">
-                        Chapter {mod['num']}
-                      </div>
-                      <div style="color:#FAFAFA; font-weight:700; font-size:1rem;
-                           margin-bottom:0.3rem;">
-                        {mod['title']}
-                      </div>
-                      <div style="color:#ddd; font-size:0.88rem; margin-bottom:0.5rem;">
-                        {mod['desc']}
-                      </div>
-                      <div style="display:inline-block; background:#0E1117;
-                           border:1px solid #2E5FA3; border-radius:12px;
-                           padding:2px 10px; font-size:0.78rem; color:#4A90D9;">
-                        {mod['badge']}
-                      </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                if mod["external"]:
-                    st.link_button(
-                        "Open →",
-                        mod["url"],
-                        use_container_width=True,
+                with st.container():
+                    img_path = f"assets/images/Chapter {num}.png"
+                    if os.path.exists(img_path):
+                        st.image(img_path, use_container_width=True)
+                    st.markdown(
+                        f"""
+                        <div style="background:#1A2332; border:1px solid #2E5FA3;
+                             border-radius:0 0 10px 10px; padding:0.9rem 1rem;
+                             margin-bottom:1rem;">
+                          <div style="font-size:0.75rem; color:#4A90D9; font-weight:700;
+                               text-transform:uppercase; letter-spacing:0.05em;
+                               margin-bottom:0.2rem;">Chapter {num}</div>
+                          <div style="color:#FAFAFA; font-weight:700; font-size:0.98rem;
+                               margin-bottom:0.3rem;">{title}</div>
+                          <div style="color:#bbb; font-size:0.85rem;">{desc}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
                     )
-                else:
-                    if st.button(
-                        "Start →",
-                        key=f"home_ch{mod['num']}",
-                        use_container_width=True,
-                        type="primary",
-                    ):
-                        st.session_state["selected_chapter"] = mod["num"]
-                        for key in list(st.session_state.keys()):
-                            if key[:2] == "ch" and key[2:3].isdigit():
-                                del st.session_state[key]
-                        st.rerun()
 
+
+# ---------------------------------------------------------------------------
+# Main router
+# ---------------------------------------------------------------------------
 
 def main():
     selected = render_sidebar()
@@ -228,6 +224,9 @@ def main():
     elif selected == 2:
         from modules.chapter2 import run_chapter2
         run_chapter2()
+    elif selected == 3:
+        from modules.chapter3 import run_chapter3
+        run_chapter3()
     elif selected == 4:
         from modules.chapter4 import run_chapter4
         run_chapter4()
@@ -237,9 +236,6 @@ def main():
     elif selected == 6:
         from modules.chapter6 import run_chapter6
         run_chapter6()
-    elif selected == 3:
-        from modules.chapter3 import run_chapter3
-        run_chapter3()
     elif selected == 7:
         from modules.chapter7 import run_chapter7
         run_chapter7()
