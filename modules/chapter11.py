@@ -132,7 +132,7 @@ Respond with ONLY a JSON object — no markdown, no explanation, just the raw JS
   "plain_english_summary": "<3–4 sentences on overall resume quality for this role>",
   "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
   "strongest_element": "<what the student did best>",
-  "improved_version": "<Full rewritten resume incorporating all improvements — written in first person, matching the student's general style, ready to use with minor personal edits.>"
+  "improved_version": "<Rewrite the student's resume completely optimized for this specific job posting. Rules: (1) Keep all real facts, experiences, and credentials from the original — never invent achievements. (2) Reframe their actual experience using the exact language and keywords from the job posting. (3) Add specific metrics where the student mentioned vague outcomes (e.g. 'helped businesses grow' → 'consulted 100+ businesses, driving measurable revenue improvements'). (4) Lead with the most relevant experience first. (5) Mirror the job posting's terminology throughout — use their exact phrases for skills and competencies. (6) Add a strong professional summary at the top that directly addresses what the job posting asks for. (7) Make it sound like this person was MADE for this specific role. (8) Write in first person, professional tone. (9) This improved version should score 85+ if re-evaluated — make it substantially better, not just marginally tweaked.>"
 }}"""
 
 
@@ -193,7 +193,7 @@ Respond with ONLY a JSON object — no markdown, no explanation, just the raw JS
   "plain_english_summary": "<3–4 sentences on overall LinkedIn quality for this role>",
   "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
   "strongest_element": "<what the student did best>",
-  "improved_version": "<Full rewritten LinkedIn profile. Format as: HEADLINE: [headline text]\\n\\nABOUT: [about section text]. Incorporate all improvements, written in first person, ready to use with minor personal edits.>"
+  "improved_version": "<Rewrite the student's LinkedIn profile completely optimized for this specific job posting. Format as: HEADLINE: [headline text]\\n\\nABOUT: [about section text]. Rules: (1) Keep all real facts and credentials — never invent experience. (2) Craft a headline that uses the job posting's exact role title and key skills — make it immediately recognizable to recruiters searching for this role. (3) Rewrite the About section to open with a strong hook, use the job posting's language throughout, and close with a clear call to action. (4) Mirror the job posting's terminology for skills and competencies. (5) Make every sentence speak directly to what this employer needs. (6) Write in first person, professional but conversational tone. (7) This improved version should score 85+ if re-evaluated — make it substantially better, not just marginally tweaked.>"
 }}"""
 
 
@@ -279,7 +279,7 @@ Respond with ONLY a JSON object — no markdown, no explanation, just the raw JS
   "plain_english_summary": "<3–4 sentences on overall pitch quality>",
   "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
   "strongest_element": "<what the student did best>",
-  "improved_version": "<Full rewritten elevator pitch incorporating all improvements — written in first person, 130–200 words, ready to use with minor personal edits.>"
+  "improved_version": "<Rewrite the student's elevator pitch completely optimized for this specific job posting. Rules: (1) Keep all real facts and credentials — never invent experience. (2) Open with a compelling hook that immediately signals fit for this role. (3) State who they are using the exact language the employer uses in the posting. (4) Articulate a specific value proposition tied directly to what this employer needs — not generic. (5) Close with a confident, specific call to action. (6) Mirror the job posting's terminology throughout. (7) Target 130–200 words (60–90 seconds spoken). (8) Write in first person, natural and confident tone — not stiff or corporate. (9) This improved version should score 85+ if re-evaluated — make it substantially better, not just marginally tweaked.>"
 }}"""
 
 
@@ -373,7 +373,7 @@ Respond with ONLY a JSON object — no markdown, no explanation, just the raw JS
   "plain_english_summary": "<3–4 sentences on overall voice pitch quality>",
   "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
   "strongest_element": "<what the student did best>",
-  "improved_version": "<Full revised pitch script optimized for natural spoken delivery — written in first person, 130–200 words, ready to practice and record.>"
+  "improved_version": "<Rewrite the student's elevator pitch as a polished script optimized for natural spoken delivery and this specific job posting. Rules: (1) Keep all real facts and credentials — never invent experience. (2) Open with a hook that sounds natural out loud — not like a written sentence being read. (3) State who they are in conversational language that still signals direct fit for this role. (4) Articulate a specific value proposition tied to what this employer needs — avoid generic phrases. (5) Close with a confident, natural-sounding call to action. (6) Mirror the job posting's terminology but keep the language flowing and unscripted. (7) Target 130–200 words (60–90 seconds at natural pace). (8) Write for the ear, not the eye — use short sentences, natural rhythm, and contractions where appropriate. (9) This improved version should score 85+ if re-evaluated — make it substantially better, not just marginally tweaked.>"
 }}"""
 
 
