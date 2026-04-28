@@ -111,10 +111,14 @@ def render_home():
         else:
             st.warning(f"Cover image not found at: {cover_path}")
 
-    st.title("Integrated Professional Selling Lab")
     st.markdown(
-        "*B2B Sales in the Age of AI* — AI-powered simulations based on the textbook by "
-        "**Dr. Carlos Valdez** | University of Central Florida"
+        "<h1 style='text-align:center;'>Integrated Professional Selling Lab</h1>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        "<p style='text-align:center;'>AI-powered simulations based on the textbook by "
+        "<strong>Dr. Carlos Valdez</strong> | University of Central Florida</p>",
+        unsafe_allow_html=True,
     )
 
     st.markdown("---")
