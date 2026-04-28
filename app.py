@@ -3,7 +3,7 @@ from pathlib import Path
 import streamlit as st
 from config import APP_NAME, CHAPTERS, COLOR_PRIMARY
 
-_ASSETS = Path(__file__).parent / "assets" / "images"
+_ASSETS = Path(__file__).parent
 
 st.set_page_config(
     page_title=APP_NAME,
