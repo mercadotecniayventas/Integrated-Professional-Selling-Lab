@@ -141,8 +141,7 @@ Respond with ONLY a JSON object — no markdown, no explanation, just the raw JS
   "tier": "<Outstanding | Strong | Developing | Needs Work — keep improving>",
   "plain_english_summary": "<3–4 sentences on overall resume quality for this role>",
   "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
-  "strongest_element": "<what the student did best>",
-  "improved_version": "<Rewrite the student's resume completely optimized for this specific job posting. Rules: (1) Keep all real facts, experiences, and credentials from the original — never invent achievements. (2) Reframe their actual experience using the exact language and keywords from the job posting. (3) Add specific metrics where the student mentioned vague outcomes (e.g. 'helped businesses grow' → 'consulted 100+ businesses, driving measurable revenue improvements'). (4) Lead with the most relevant experience first. (5) Mirror the job posting's terminology throughout — use their exact phrases for skills and competencies. (6) Add a strong professional summary at the top that directly addresses what the job posting asks for. (7) Make it sound like this person was MADE for this specific role. (8) Write in first person, professional tone. (9) This improved version should score 85+ if re-evaluated — make it substantially better, not just marginally tweaked. CRITICAL: The improved version you generate MUST score at least 80/100 if evaluated against this exact same rubric. This means: for resume — it must have explicit keywords from the job posting, quantified achievements, and clear role relevance; for linkedin — headline must directly target this role, about must tell a compelling story; for pitch written — must have clear hook, value prop tied to job posting, strong CTA; for pitch voice — must sound natural, have clear structure, be 60-90 seconds. Do not generate a version that you would score below 80. If the student's original content is limited, add reasonable professional context that elevates it — always keeping their real facts but framing them at their best possible light. You are the coach AND the evaluator — your improved version must pass your own test.>"
+  "strongest_element": "<what the student did best>"
 }}"""
 
 
@@ -212,8 +211,7 @@ Respond with ONLY a JSON object — no markdown, no explanation, just the raw JS
   "tier": "<Outstanding | Strong | Developing | Needs Work — keep improving>",
   "plain_english_summary": "<3–4 sentences on overall LinkedIn quality for this role>",
   "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
-  "strongest_element": "<what the student did best>",
-  "improved_version": "<Rewrite the student's LinkedIn profile completely optimized for this specific job posting. Format as: HEADLINE: [headline text]\\n\\nABOUT: [about section text]. Rules: (1) Keep all real facts and credentials — never invent experience. (2) Craft a headline that uses the job posting's exact role title and key skills — make it immediately recognizable to recruiters searching for this role. (3) Rewrite the About section to open with a strong hook, use the job posting's language throughout, and close with a clear call to action. (4) Mirror the job posting's terminology for skills and competencies. (5) Make every sentence speak directly to what this employer needs. (6) Write in first person, professional but conversational tone. (7) This improved version should score 85+ if re-evaluated — make it substantially better, not just marginally tweaked. CRITICAL: The improved version you generate MUST score at least 80/100 if evaluated against this exact same rubric. This means: for resume — it must have explicit keywords from the job posting, quantified achievements, and clear role relevance; for linkedin — headline must directly target this role, about must tell a compelling story; for pitch written — must have clear hook, value prop tied to job posting, strong CTA; for pitch voice — must sound natural, have clear structure, be 60-90 seconds. Do not generate a version that you would score below 80. If the student's original content is limited, add reasonable professional context that elevates it — always keeping their real facts but framing them at their best possible light. You are the coach AND the evaluator — your improved version must pass your own test.>"
+  "strongest_element": "<what the student did best>"
 }}"""
 
 
@@ -309,8 +307,7 @@ Respond with ONLY a JSON object — no markdown, no explanation, just the raw JS
   "tier": "<Outstanding | Strong | Developing | Needs Work — keep improving>",
   "plain_english_summary": "<3–4 sentences on overall pitch quality>",
   "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
-  "strongest_element": "<what the student did best>",
-  "improved_version": "<Rewrite the student's elevator pitch completely optimized for this specific job posting. Rules: (1) Keep all real facts and credentials — never invent experience. (2) Open with a compelling hook that immediately signals fit for this role. (3) State who they are using the exact language the employer uses in the posting. (4) Articulate a specific value proposition tied directly to what this employer needs — not generic. (5) Close with a confident, specific call to action. (6) Mirror the job posting's terminology throughout. (7) Target 130–200 words (60–90 seconds spoken). (8) Write in first person, natural and confident tone — not stiff or corporate. (9) This improved version should score 85+ if re-evaluated — make it substantially better, not just marginally tweaked. CRITICAL: The improved version you generate MUST score at least 80/100 if evaluated against this exact same rubric. This means: for resume — it must have explicit keywords from the job posting, quantified achievements, and clear role relevance; for linkedin — headline must directly target this role, about must tell a compelling story; for pitch written — must have clear hook, value prop tied to job posting, strong CTA; for pitch voice — must sound natural, have clear structure, be 60-90 seconds. Do not generate a version that you would score below 80. If the student's original content is limited, add reasonable professional context that elevates it — always keeping their real facts but framing them at their best possible light. You are the coach AND the evaluator — your improved version must pass your own test.>"
+  "strongest_element": "<what the student did best>"
 }}"""
 
 
@@ -413,8 +410,7 @@ Respond with ONLY a JSON object — no markdown, no explanation, just the raw JS
   "tier": "<Outstanding | Strong | Developing | Needs Work — keep improving>",
   "plain_english_summary": "<3–4 sentences on overall voice pitch quality>",
   "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
-  "strongest_element": "<what the student did best>",
-  "improved_version": "<Rewrite the student's elevator pitch as a polished script optimized for natural spoken delivery and this specific job posting. Rules: (1) Keep all real facts and credentials — never invent experience. (2) Open with a hook that sounds natural out loud — not like a written sentence being read. (3) State who they are in conversational language that still signals direct fit for this role. (4) Articulate a specific value proposition tied to what this employer needs — avoid generic phrases. (5) Close with a confident, natural-sounding call to action. (6) Mirror the job posting's terminology but keep the language flowing and unscripted. (7) Target 130–200 words (60–90 seconds at natural pace). (8) Write for the ear, not the eye — use short sentences, natural rhythm, and contractions where appropriate. (9) This improved version should score 85+ if re-evaluated — make it substantially better, not just marginally tweaked. CRITICAL: The improved version you generate MUST score at least 80/100 if evaluated against this exact same rubric. This means: for resume — it must have explicit keywords from the job posting, quantified achievements, and clear role relevance; for linkedin — headline must directly target this role, about must tell a compelling story; for pitch written — must have clear hook, value prop tied to job posting, strong CTA; for pitch voice — must sound natural, have clear structure, be 60-90 seconds. Do not generate a version that you would score below 80. If the student's original content is limited, add reasonable professional context that elevates it — always keeping their real facts but framing them at their best possible light. You are the coach AND the evaluator — your improved version must pass your own test.>"
+  "strongest_element": "<what the student did best>"
 }}"""
 
 
@@ -463,6 +459,103 @@ def call_whisper_api(audio_bytes: bytes) -> tuple[str, float]:
     transcript = response.text.strip()
     duration = float(response.duration) if hasattr(response, "duration") and response.duration else 0.0
     return transcript, duration
+
+
+_SECTION_LABELS = {
+    "resume": "resume",
+    "linkedin": "LinkedIn profile",
+    "pitch_written": "written elevator pitch",
+    "pitch_voice": "voice elevator pitch script",
+}
+
+_SECTION_FIX_INSTRUCTIONS = {
+    "resume": (
+        "- If Keyword Alignment lost points: add the exact missing keywords from the job posting into relevant sections\n"
+        "- If Impact & Metrics lost points: add specific numbers to every vague claim\n"
+        "- If Role Relevance lost points: reframe every experience to directly connect to job duties"
+    ),
+    "linkedin": (
+        "- If Headline Positioning lost points: rewrite the headline to directly target this role using the posting's exact keywords\n"
+        "- If About Section lost points: open with a hook, tell a connected story, close with a CTA\n"
+        "- If Keyword Optimization lost points: weave the missing keywords naturally into both headline and about\n"
+        "Format the output as: HEADLINE: [headline text]\\n\\nABOUT: [about text]"
+    ),
+    "pitch_written": (
+        "- If Hook lost points: rewrite the opening to immediately create interest\n"
+        "- If Who You Are lost points: state identity and background more clearly and confidently\n"
+        "- If Value Proposition lost points: add specifics tied to this employer's exact needs\n"
+        "- If Call to Action lost points: add a confident, specific close\n"
+        "- If Job Alignment lost points: add an explicit reference to the company and role\n"
+        "Target 130–200 words."
+    ),
+    "pitch_voice": (
+        "- If Hook lost points: rewrite the opening to sound natural and engaging when spoken aloud\n"
+        "- If Fluency lost points: use shorter sentences, contractions, natural rhythm — write for the ear\n"
+        "- If Value Proposition lost points: make value specific and tied to this employer's needs\n"
+        "- If Call to Action lost points: add a confident, natural-sounding close\n"
+        "- If Timing is off: adjust length to target 60–90 seconds at natural speaking pace\n"
+        "Target 130–200 words, written for spoken delivery."
+    ),
+}
+
+
+def call_improve_api(
+    section_key: str,
+    evaluation: dict,
+    original_content: str,
+    job_posting: str,
+    student_name: str,
+    job_title: str,
+    company: str,
+) -> str:
+    """Generate a targeted improved version that explicitly fixes every identified weakness."""
+    dimensions = evaluation.get("dimensions", [])
+    total_score = evaluation.get("total_score", 0)
+    max_score = SECTION_MAX[section_key]
+    section_label = _SECTION_LABELS.get(section_key, section_key)
+    fix_instructions = _SECTION_FIX_INSTRUCTIONS.get(section_key, "")
+
+    dim_lines = ""
+    for dim in dimensions:
+        pts_lost = dim.get("max_points", 0) - dim.get("score", 0)
+        dim_lines += (
+            f"\n{dim['name']}: {dim['score']}/{dim['max_points']} pts"
+            f" ({pts_lost} pts lost)\n"
+            f"  What was weak: {dim.get('rationale', '')}\n"
+            f"  Fix required: {dim.get('suggestion', '')}\n"
+        )
+
+    prompt = f"""You just evaluated a student's {section_label} and gave these scores:
+{dim_lines}
+Total: {total_score}/{max_score}
+
+Student: {student_name}
+Target role: {job_title} at {company}
+
+JOB POSTING:
+{job_posting}
+
+ORIGINAL {section_label.upper()}:
+{original_content}
+
+Now rewrite this {section_label} to fix EVERY weakness you identified above:
+{fix_instructions}
+
+Rules:
+- Do NOT add fictional facts — use only what the student actually wrote
+- Use their real content but frame it to maximize every rubric dimension
+- The rewritten version must earn full or near-full points on every dimension
+- You know exactly what the rubric checks — write to pass it perfectly
+
+Respond with ONLY the rewritten {section_label} — no explanation, no preamble, just the content."""
+
+    client = OpenAI(api_key=get_openai_api_key())
+    response = client.chat.completions.create(
+        model=MODEL_COACH,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=TEMP_COACH,
+    )
+    return response.choices[0].message.content.strip()
 
 
 # ---------------------------------------------------------------------------
@@ -822,6 +915,14 @@ def screen_resume() -> None:
                 st.session_state["ch11_company"],
             )
             data = call_coach_api(prompt, "resume")
+        with st.spinner("Generating targeted improvement…"):
+            data["improved_version"] = call_improve_api(
+                "resume", data, text,
+                st.session_state["ch11_job_posting"],
+                st.session_state["ch11_student_name"],
+                st.session_state["ch11_job_title"],
+                st.session_state["ch11_company"],
+            )
         st.session_state["ch11_resume"] = text
         st.session_state["ch11_feedback"]["resume"] = data
         st.session_state["ch11_scores"]["resume"] = data.get("total_score", 0)
@@ -898,6 +999,14 @@ def screen_linkedin() -> None:
                 st.session_state["ch11_company"],
             )
             data = call_coach_api(prompt, "linkedin")
+        with st.spinner("Generating targeted improvement…"):
+            data["improved_version"] = call_improve_api(
+                "linkedin", data, combined,
+                st.session_state["ch11_job_posting"],
+                st.session_state["ch11_student_name"],
+                st.session_state["ch11_job_title"],
+                st.session_state["ch11_company"],
+            )
         st.session_state["ch11_linkedin"] = combined
         st.session_state["ch11_feedback"]["linkedin"] = data
         st.session_state["ch11_scores"]["linkedin"] = data.get("total_score", 0)
@@ -968,6 +1077,14 @@ def screen_pitch_written() -> None:
                 st.session_state["ch11_company"],
             )
             data = call_coach_api(prompt, "pitch_written")
+        with st.spinner("Generating targeted improvement…"):
+            data["improved_version"] = call_improve_api(
+                "pitch_written", data, text,
+                st.session_state["ch11_job_posting"],
+                st.session_state["ch11_student_name"],
+                st.session_state["ch11_job_title"],
+                st.session_state["ch11_company"],
+            )
         st.session_state["ch11_pitch_written"] = text
         st.session_state["ch11_feedback"]["pitch_written"] = data
         st.session_state["ch11_scores"]["pitch_written"] = data.get("total_score", 0)
@@ -1095,6 +1212,14 @@ def screen_pitch_voice() -> None:
                                 duration,
                             )
                             data = call_coach_api(prompt, "pitch_voice")
+                        with st.spinner("Generating targeted improvement…"):
+                            data["improved_version"] = call_improve_api(
+                                "pitch_voice", data, transcript,
+                                st.session_state["ch11_job_posting"],
+                                st.session_state["ch11_student_name"],
+                                st.session_state["ch11_job_title"],
+                                st.session_state["ch11_company"],
+                            )
                         st.session_state["ch11_feedback"]["pitch_voice"] = data
                         st.session_state["ch11_scores"]["pitch_voice"] = data.get("total_score", 0)
                         st.session_state["ch11_iterations"]["pitch_voice"] += 1
