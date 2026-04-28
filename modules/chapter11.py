@@ -44,6 +44,14 @@ def _init_state() -> None:
             "pitch_written": 0,
             "pitch_voice": 0,
         },
+        "ch11_voice_messages": [],
+        "ch11_voice_enabled": True,
+        "ch11_recruiter_name": "",
+        "ch11_recruiter_voice": "alloy",
+        "ch11_interview_complete": False,
+        "ch11_tts_bytes": None,
+        "ch11_last_audio_id": None,
+        "ch11_generating": False,
     }
     for key, val in defaults.items():
         if key not in st.session_state:
@@ -461,6 +469,19 @@ def call_whisper_api(audio_bytes: bytes) -> tuple[str, float]:
     return transcript, duration
 
 
+def call_tts_api(text: str, voice: str = "alloy") -> bytes | None:
+    try:
+        client = OpenAI(api_key=get_openai_api_key())
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice=voice,
+            input=text,
+        )
+        return response.content
+    except Exception:
+        return None
+
+
 _SECTION_LABELS = {
     "resume": "resume",
     "linkedin": "LinkedIn profile",
@@ -490,10 +511,10 @@ _SECTION_FIX_INSTRUCTIONS = {
     ),
     "pitch_voice": (
         "- If Hook lost points: rewrite the opening to sound natural and engaging when spoken aloud\n"
-        "- If Fluency lost points: use shorter sentences, contractions, natural rhythm — write for the ear\n"
+        "- If Structure & Clarity lost points: organize clearly into who you are → what you offer → why them\n"
+        "- If Language Confidence lost points: use shorter sentences, contractions, natural rhythm — write for the ear\n"
         "- If Value Proposition lost points: make value specific and tied to this employer's needs\n"
         "- If Call to Action lost points: add a confident, natural-sounding close\n"
-        "- If Timing is off: adjust length to target 60–90 seconds at natural speaking pace\n"
         "Target 130–200 words, written for spoken delivery."
     ),
 }
@@ -620,10 +641,10 @@ def screen_setup() -> None:
             "- Job Alignment: 2 pts\n\n"
             "**Elevator Pitch Voice — 35 pts**\n"
             "- Hook: 7 pts\n"
-            "- Fluency: 7 pts\n"
+            "- Structure & Clarity: 7 pts\n"
+            "- Language Confidence: 7 pts\n"
             "- Value Proposition: 10 pts\n"
-            "- Call to Action: 7 pts\n"
-            "- Timing 60–90 sec: 4 pts"
+            "- Call to Action: 4 pts"
         )
 
     name = st.text_input("Your full name", key="ch11_input_name")
@@ -1121,6 +1142,160 @@ def screen_pitch_written() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Voice pitch — recruiter roleplay helpers
+# ---------------------------------------------------------------------------
+
+_CH11_RECRUITERS = [
+    ("Jordan Ellis", "alloy"),
+    ("Taylor Morgan", "nova"),
+    ("Casey Rivera", "shimmer"),
+    ("Alex Chen", "echo"),
+    ("Sam Patel", "fable"),
+]
+
+
+def _generate_recruiter_info(company: str) -> tuple[str, str]:
+    idx = sum(ord(c) for c in company) % len(_CH11_RECRUITERS)
+    return _CH11_RECRUITERS[idx]
+
+
+def get_pitch_recruiter_system_prompt(
+    recruiter_name: str,
+    job_title: str,
+    company: str,
+    job_posting: str,
+) -> str:
+    return f"""You are {recruiter_name}, a recruiter at {company} interviewing a candidate for the role of {job_title}.
+
+You have a few minutes between sessions at a networking event. You will ask the candidate to deliver their elevator pitch, listen carefully, then ask exactly two follow-up questions.
+
+YOUR STYLE: Professional, direct, genuinely curious. React briefly and naturally — not robotically.
+
+SEQUENCE — follow this exactly:
+1. Greet the candidate briefly and ask them to give you their elevator pitch (or tell you about themselves).
+2. After they pitch, react in 1–2 sentences then ask ONE specific follow-up question about something they actually said.
+3. After they answer, react briefly then ask ONE final follow-up question.
+4. After they answer that final question, thank them genuinely and close the conversation.
+
+RULES:
+- Ask only ONE thing per turn. Never combine two questions in one message.
+- Always respond in English only.
+- Keep your responses short — 2–4 sentences max.
+- After the student answers your final follow-up question, close with something like "Great talking with you — I'll be in touch." and append [INTERVIEW_COMPLETE] at the very end of your message on a new line.
+- Never break character. Never mention you are an AI.
+
+JOB POSTING (for context — do not quote directly):
+{job_posting}"""
+
+
+def call_pitch_recruiter_api(
+    messages: list,
+    recruiter_name: str,
+    job_title: str,
+    company: str,
+    job_posting: str,
+) -> str:
+    client = OpenAI(api_key=get_openai_api_key())
+    system = get_pitch_recruiter_system_prompt(recruiter_name, job_title, company, job_posting)
+    payload = [{"role": "system", "content": system}] + messages
+    response = client.chat.completions.create(
+        model=MODEL_COACH,
+        messages=payload,
+        temperature=0.7,
+    )
+    return response.choices[0].message.content.strip()
+
+
+def call_pitch_voice_coach_api(
+    transcript: str,
+    job_posting: str,
+    student_name: str,
+    job_title: str,
+    company: str,
+) -> dict:
+    prompt = f"""You are an expert career coach evaluating a student's elevator pitch delivered during a recruiter roleplay.
+Student: {student_name}
+Target role: {job_title} at {company}
+
+JOB POSTING:
+{job_posting}
+
+STUDENT'S PITCH (extracted from the roleplay — these are all the student's spoken turns):
+{transcript}
+
+Evaluate this pitch on FIVE dimensions ONLY:
+1. Hook (7 pts): Did the opening create immediate interest? (any engaging opener counts — penalize only if it opens flat with zero hook)
+2. Structure & Clarity (7 pts): Is the pitch well-organized? (who I am → what I offer → why them — any clear progression counts)
+3. Language Confidence (7 pts): Did it sound natural and conversational? (contractions, rhythm, genuine delivery — penalize only if clearly robotic or memorized word-for-word)
+4. Value Proposition (10 pts): Is there a specific value tied to this employer's needs? (transferable value from any background counts)
+5. Call to Action (4 pts): Did it end with a clear, confident ask or close? (any genuine closing counts)
+
+CRITICAL: Do NOT penalize for:
+- Accent or non-native English patterns
+- Brief filler words (um, uh) in moderation
+- Academic or non-corporate background
+- Short answers to the recruiter's follow-up questions — evaluate the main pitch delivery primarily
+
+DO penalize for:
+- No discernible hook — opening is entirely flat
+- No clear value proposition — content is purely biographical with zero employer relevance
+- No CTA — pitch stops without any close
+
+A pitch with clear structure, natural delivery, specific transferable value, and a proper close should score 28–32/35.
+
+Scoring per dimension: award points based on how well the content meets the criterion.
+Overall tiers: 90–100 = Outstanding, 75–89 = Strong, 60–74 = Developing, below 60 = Needs Work.
+
+Respond with ONLY a JSON object — no markdown, no explanation, just the raw JSON from {{ to }}:
+{{
+  "dimensions": [
+    {{
+      "name": "Hook",
+      "score": <int 0–7>,
+      "max_points": 7,
+      "rationale": "<2–3 sentences>",
+      "suggestion": "<one concrete improvement>"
+    }},
+    {{
+      "name": "Structure & Clarity",
+      "score": <int 0–7>,
+      "max_points": 7,
+      "rationale": "<2–3 sentences>",
+      "suggestion": "<one concrete improvement>"
+    }},
+    {{
+      "name": "Language Confidence",
+      "score": <int 0–7>,
+      "max_points": 7,
+      "rationale": "<2–3 sentences>",
+      "suggestion": "<one concrete improvement>"
+    }},
+    {{
+      "name": "Value Proposition",
+      "score": <int 0–10>,
+      "max_points": 10,
+      "rationale": "<2–3 sentences>",
+      "suggestion": "<one concrete improvement>"
+    }},
+    {{
+      "name": "Call to Action",
+      "score": <int 0–4>,
+      "max_points": 4,
+      "rationale": "<1–2 sentences>",
+      "suggestion": "<one concrete improvement>"
+    }}
+  ],
+  "total_score": <int 0–35>,
+  "tier": "<Outstanding | Strong | Developing | Needs Work — keep improving>",
+  "plain_english_summary": "<3–4 sentences on overall voice pitch quality>",
+  "top_3_improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"],
+  "strongest_element": "<what the student did best>"
+}}"""
+
+    return call_coach_api(prompt, "pitch_voice")
+
+
+# ---------------------------------------------------------------------------
 # Screen 5 — Elevator Pitch (Voice)
 # ---------------------------------------------------------------------------
 
@@ -1129,126 +1304,241 @@ def screen_pitch_voice() -> None:
     st.subheader("Step 4 — Elevator Pitch (Voice)")
     _render_job_ref()
 
+    job_posting = st.session_state["ch11_job_posting"]
+    job_title = st.session_state["ch11_job_title"]
+    company = st.session_state["ch11_company"]
+    student_name = st.session_state["ch11_student_name"]
+
+    # Determine recruiter once per session
+    if not st.session_state.get("ch11_recruiter_name"):
+        name, voice = _generate_recruiter_info(company)
+        st.session_state["ch11_recruiter_name"] = name
+        st.session_state["ch11_recruiter_voice"] = voice
+    recruiter_name = st.session_state["ch11_recruiter_name"]
+    recruiter_voice = st.session_state.get("ch11_recruiter_voice", "alloy")
+
     written_pitch = st.session_state.get("ch11_pitch_written", "")
     if written_pitch:
         with st.expander("📝 Your written pitch (for reference)", expanded=False):
             st.markdown(written_pitch)
 
     locked = st.session_state["ch11_locked"]["pitch_voice"]
-    transcript = st.session_state.get("ch11_pitch_voice_transcript", "")
-    duration = st.session_state.get("ch11_voice_duration", 0.0)
-    audio_bytes = st.session_state.get("ch11_voice_audio_bytes", None)
+    messages = st.session_state.get("ch11_voice_messages", [])
+    interview_complete = st.session_state.get("ch11_interview_complete", False)
 
-    if not locked:
+    # --- Locked view ---
+    if locked:
+        if st.session_state["ch11_scores"]["pitch_voice"] is not None:
+            _render_results("pitch_voice")
+            st.markdown("---")
+            action = _action_buttons("pitch_voice")
+            if action == "unlock":
+                st.session_state["ch11_locked"]["pitch_voice"] = False
+                st.rerun()
+        _maybe_back_button()
+        return
+
+    # --- No interview started yet ---
+    if not messages:
         st.markdown(
-            """
+            f"""
             <div style="background:#1B3A6B; border-radius:10px; padding:1rem 1.2rem;
                  margin-bottom:1rem; color:#FAFAFA;">
-              <div style="font-weight:700; margin-bottom:0.4rem;">🎤 Record your elevator pitch</div>
-              <div>
-                Aim for <strong>60–90 seconds</strong>. Speak naturally —
-                imagine you are at a networking event or job interview.
-                Do not read from a script.
+              <div style="font-weight:700; margin-bottom:0.4rem;">🎤 Recruiter Roleplay — Elevator Pitch</div>
+              <div style="margin-bottom:0.5rem;">
+                You will practice your elevator pitch with <strong>{recruiter_name}</strong>,
+                a recruiter at {company}.
+              </div>
+              <div style="margin-bottom:0.25rem;">✅ Deliver your pitch naturally — no reading from a script</div>
+              <div style="margin-bottom:0.25rem;">✅ Answer 2 follow-up questions</div>
+              <div style="margin-bottom:0.25rem;">✅ Aim for 60–90 seconds on your main pitch</div>
+              <div style="color:#B8C8E0; font-size:0.88rem; margin-top:0.5rem;">
+                You can speak using the mic or type. Your pitch is scored on hook, structure,
+                language confidence, value proposition, and call to action.
               </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-
-        playback_on = st.checkbox("🔊 Play back my recording", value=True, key="ch11_playback_toggle")
-
-        audio = mic_recorder(
-            start_prompt="🎤 Click to record",
-            stop_prompt="⏹ Stop recording",
-            key="ch11_voice_recorder",
-        )
-
-        if audio and audio.get("bytes"):
-            new_id = str(audio.get("id", ""))
-            if new_id != st.session_state.get("ch11_voice_recording_id", ""):
-                st.session_state["ch11_voice_recording_id"] = new_id
-                st.session_state["ch11_voice_audio_bytes"] = audio["bytes"]
-                st.session_state["ch11_pitch_voice_transcript"] = ""
-                st.session_state["ch11_voice_duration"] = 0.0
-                audio_bytes = audio["bytes"]
-                transcript = ""
-                duration = 0.0
-
-        if audio_bytes:
-            if playback_on:
-                st.audio(audio_bytes, format="audio/wav")
-
-            if not transcript:
-                if st.button("Transcribe recording →", key="ch11_transcribe", use_container_width=True):
-                    with st.spinner("Transcribing your recording…"):
-                        t, d = call_whisper_api(audio_bytes)
-                    st.session_state["ch11_pitch_voice_transcript"] = t
-                    st.session_state["ch11_voice_duration"] = d
-                    st.rerun()
-            else:
-                st.markdown("**Here is what we heard:**")
-                st.markdown(
-                    f'<div style="background:#0E1117; border:1px solid #333; border-radius:8px; '
-                    f'padding:0.75rem 1rem; color:#ccc; font-size:0.9rem;">{transcript}</div>',
-                    unsafe_allow_html=True,
-                )
-                st.caption(f"Recording length: {duration:.0f} seconds")
-
-                col1, col2 = st.columns(2)
-                with col1:
-                    if st.button(
-                        "Evaluate my voice pitch →",
-                        type="primary",
-                        use_container_width=True,
-                        key="ch11_eval_pitch_voice",
-                    ):
-                        with st.spinner("Evaluating your voice pitch…"):
-                            prompt = get_pitch_voice_coach_prompt(
-                                transcript,
-                                st.session_state["ch11_job_posting"],
-                                st.session_state["ch11_student_name"],
-                                st.session_state["ch11_job_title"],
-                                st.session_state["ch11_company"],
-                                duration,
-                            )
-                            data = call_coach_api(prompt, "pitch_voice")
-                        with st.spinner("Generating targeted improvement…"):
-                            data["improved_version"] = call_improve_api(
-                                "pitch_voice", data, transcript,
-                                st.session_state["ch11_job_posting"],
-                                st.session_state["ch11_student_name"],
-                                st.session_state["ch11_job_title"],
-                                st.session_state["ch11_company"],
-                            )
-                        st.session_state["ch11_feedback"]["pitch_voice"] = data
-                        st.session_state["ch11_scores"]["pitch_voice"] = data.get("total_score", 0)
-                        st.session_state["ch11_iterations"]["pitch_voice"] += 1
-                        st.rerun()
-                with col2:
-                    if st.button("Record again", use_container_width=True, key="ch11_rerecord"):
-                        st.session_state["ch11_pitch_voice_transcript"] = ""
-                        st.session_state["ch11_voice_duration"] = 0.0
-                        st.session_state["ch11_voice_audio_bytes"] = None
-                        st.session_state["ch11_voice_recording_id"] = ""
-                        st.rerun()
-    else:
-        if transcript:
-            st.markdown("**Transcript:**")
-            st.markdown(
-                f'<div style="background:#0E1117; border:1px solid #333; border-radius:8px; '
-                f'padding:0.75rem 1rem; color:#ccc; font-size:0.9rem;">{transcript}</div>',
-                unsafe_allow_html=True,
+        _hcol, _vcol = st.columns([5, 1])
+        with _vcol:
+            voice_on = st.toggle(
+                "🔊 Voice",
+                value=st.session_state.get("ch11_voice_enabled", True),
+                key="ch11_voice_toggle",
             )
-            if duration:
-                st.caption(f"Recording length: {duration:.0f} seconds")
+            st.session_state["ch11_voice_enabled"] = voice_on
 
+        if st.button(
+            "Begin Interview →",
+            type="primary",
+            use_container_width=True,
+            key="ch11_begin_voice",
+        ):
+            with st.spinner("Connecting to your recruiter…"):
+                try:
+                    opening = call_pitch_recruiter_api(
+                        [], recruiter_name, job_title, company, job_posting
+                    )
+                except Exception as exc:
+                    st.error(f"Could not reach the recruiter ({exc}). Please try again.")
+                    st.stop()
+            clean_opening = opening.replace("[INTERVIEW_COMPLETE]", "").strip()
+            st.session_state["ch11_voice_messages"] = [{"role": "assistant", "content": clean_opening}]
+            if st.session_state.get("ch11_voice_enabled", True):
+                with st.spinner("Generating voice…"):
+                    tts = call_tts_api(clean_opening, voice=recruiter_voice)
+                if tts:
+                    st.session_state["ch11_tts_bytes"] = tts
+            st.rerun()
+
+        _maybe_back_button()
+        return
+
+    # --- Interview in progress or complete ---
+    _hcol, _vcol = st.columns([5, 1])
+    with _hcol:
+        status = "Interview complete" if interview_complete else "Interview in progress"
+        st.markdown(
+            f"""
+            <div style="background:#1A2332; border:1px solid #2E5FA3;
+                 border-radius:6px; padding:0.45rem 0.8rem; margin-bottom:0.65rem;
+                 font-size:0.92rem;">
+              <span style="color:#4A90D9; font-weight:700;">🎤 {status}</span>
+              <span style="color:#aaa; font-size:0.82rem;">
+                &nbsp;·&nbsp; {recruiter_name} — {company}
+              </span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with _vcol:
+        voice_on = st.toggle(
+            "🔊 Voice",
+            value=st.session_state.get("ch11_voice_enabled", True),
+            key="ch11_voice_toggle",
+        )
+        st.session_state["ch11_voice_enabled"] = voice_on
+
+    # Render chat history
+    for msg in messages:
+        if msg["role"] == "assistant":
+            with st.chat_message("assistant", avatar="👔"):
+                st.write(msg["content"])
+        else:
+            with st.chat_message("user", avatar="🎓"):
+                st.write(msg["content"])
+
+    # Play pending TTS — cleared immediately so it only fires once
+    tts_bytes = st.session_state.get("ch11_tts_bytes")
+    if tts_bytes:
+        st.audio(tts_bytes, format="audio/mp3", autoplay=True)
+        st.session_state["ch11_tts_bytes"] = None
+
+    if not interview_complete:
+        # Mic input
+        audio = mic_recorder(
+            start_prompt="🎤 Click to speak",
+            stop_prompt="⏹ Recording… click to stop",
+            key="ch11_voice_mic",
+        )
+        if audio and audio.get("bytes"):
+            if audio.get("id") != st.session_state.get("ch11_last_audio_id"):
+                st.session_state["ch11_last_audio_id"] = audio["id"]
+                with st.spinner("Transcribing…"):
+                    t, _ = call_whisper_api(audio["bytes"])
+                if t:
+                    updated = list(st.session_state["ch11_voice_messages"])
+                    updated.append({"role": "user", "content": t})
+                    st.session_state["ch11_voice_messages"] = updated
+                    st.session_state["ch11_generating"] = True
+                    st.rerun()
+                else:
+                    st.warning("Could not transcribe — please try again or type below.")
+
+        # Text fallback
+        user_input = st.chat_input(
+            "Type your answer…",
+            disabled=st.session_state.get("ch11_generating", False),
+        )
+        if user_input and user_input.strip():
+            updated = list(st.session_state["ch11_voice_messages"])
+            updated.append({"role": "user", "content": user_input.strip()})
+            st.session_state["ch11_voice_messages"] = updated
+            st.session_state["ch11_generating"] = True
+            st.rerun()
+
+        # Generate recruiter response
+        if st.session_state.get("ch11_generating", False):
+            current_msgs = st.session_state["ch11_voice_messages"]
+            try:
+                with st.spinner("Recruiter responding…"):
+                    reply = call_pitch_recruiter_api(
+                        current_msgs, recruiter_name, job_title, company, job_posting
+                    )
+            except Exception as exc:
+                st.error(f"The recruiter couldn't respond ({exc}). Please try again.")
+                st.session_state["ch11_generating"] = False
+                st.stop()
+
+            complete = "[INTERVIEW_COMPLETE]" in reply
+            clean_reply = reply.replace("[INTERVIEW_COMPLETE]", "").strip()
+
+            updated = list(current_msgs)
+            updated.append({"role": "assistant", "content": clean_reply})
+            st.session_state["ch11_voice_messages"] = updated
+            st.session_state["ch11_generating"] = False
+
+            if complete:
+                st.session_state["ch11_interview_complete"] = True
+
+            if st.session_state.get("ch11_voice_enabled", True):
+                with st.spinner("Generating voice…"):
+                    tts = call_tts_api(clean_reply, voice=recruiter_voice)
+                if tts:
+                    st.session_state["ch11_tts_bytes"] = tts
+
+            st.rerun()
+    else:
+        # Interview complete — show evaluate button if not yet scored
+        st.markdown("---")
+        if st.session_state["ch11_scores"]["pitch_voice"] is None:
+            if st.button(
+                "📊 Evaluate My Pitch →",
+                type="primary",
+                use_container_width=True,
+                key="ch11_eval_voice_pitch",
+            ):
+                student_turns = [
+                    m["content"]
+                    for m in st.session_state["ch11_voice_messages"]
+                    if m["role"] == "user"
+                ]
+                transcript = "\n\n".join(student_turns)
+                st.session_state["ch11_pitch_voice_transcript"] = transcript
+
+                with st.spinner("Evaluating your pitch…"):
+                    data = call_pitch_voice_coach_api(
+                        transcript, job_posting, student_name, job_title, company
+                    )
+                with st.spinner("Generating targeted improvement…"):
+                    data["improved_version"] = call_improve_api(
+                        "pitch_voice", data, transcript,
+                        job_posting, student_name, job_title, company,
+                    )
+                st.session_state["ch11_feedback"]["pitch_voice"] = data
+                st.session_state["ch11_scores"]["pitch_voice"] = data.get("total_score", 0)
+                st.session_state["ch11_iterations"]["pitch_voice"] += 1
+                st.rerun()
+
+    # Show results if scored
     if st.session_state["ch11_scores"]["pitch_voice"] is not None:
         st.markdown("---")
         _render_results(
             "pitch_voice",
             extra_note=(
-                "The AI evaluates your transcript for natural language patterns. "
-                "Filler words, incomplete sentences, and very short recordings affect the Fluency score."
+                "Your pitch is evaluated on hook, structure, language confidence, value, and CTA. "
+                "Follow-up answers are not scored — only your main pitch delivery."
             ),
         )
         st.markdown("---")
@@ -1259,6 +1549,12 @@ def screen_pitch_voice() -> None:
             st.rerun()
         elif action == "unlock":
             st.session_state["ch11_locked"]["pitch_voice"] = False
+            st.rerun()
+        elif action == "re_evaluate":
+            st.session_state["ch11_interview_complete"] = False
+            st.session_state["ch11_voice_messages"] = []
+            st.session_state["ch11_scores"]["pitch_voice"] = None
+            st.session_state["ch11_feedback"].pop("pitch_voice", None)
             st.rerun()
 
     _maybe_back_button()
