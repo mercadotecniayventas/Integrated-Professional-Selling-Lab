@@ -1337,7 +1337,7 @@ def screen_pitch_voice() -> None:
             """,
             unsafe_allow_html=True,
         )
-        if st.button("🎤 Start Interview →", type="primary", use_container_width=True, key="ch11_start_interview"):
+        if st.button("🎤 I'm ready — Start Interview", type="primary", use_container_width=True, key="ch11_start_interview"):
             st.session_state["ch11_interview_started"] = True
             st.rerun()
         return
